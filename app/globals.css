@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* ============================================================
+   阿渡 WebPilot · 设计系统
+   基调：政务/公共服务蓝（信任感）+ 大字号大留白（适老）
+   原则：所有颜色、圆角、阴影收敛到这里的变量，
+        页面里不出现「随手写」的颜色，保证视觉统一。
+   ============================================================ */
+
+:root {
+  /* 色阶：主色（公共服务蓝） */
+  --wp-brand-900: #0b3c72;
+  --wp-brand-800: #0f4379;
+  --wp-brand-700: #0f6e8f;
+  --wp-brand-600: #0f6e8f;
+  --wp-brand-100: #e1f0f5;
+  --wp-brand-50: #f2f7fd;
+
+  /* 中性色阶 */
+  --wp-ink: #14202e;
+  --wp-ink-2: #4b5563;
+  --wp-ink-3: #6b7280;
+  --wp-ink-4: #9aa3af;
+  --wp-line: #e6eaf0;
+  --wp-line-2: #eceff4;
+  --wp-surface: #ffffff;
+  --wp-surface-2: #f7f9fc;
+  --wp-canvas: #f4f6f9;
+
+  /* 语义色 */
+  --wp-ok: #15803d;
+  --wp-ok-bg: #f0faf5;
+  --wp-ok-line: #a8ddc4;
+  --wp-warn: #8a5a10;
+  --wp-warn-bg: #fffaf0;
+  --wp-warn-line: #e0c088;
+  --wp-danger: #a32d2d;
+  --wp-danger-bg: #fdf3f3;
+  --wp-danger-line: #e8b4b4;
+  --wp-action: #b45309;
+
+  /* 形状与阴影 */
+  --wp-radius: 12px;
+  --wp-radius-lg: 16px;
+  --wp-shadow-sm: 0 1px 2px rgba(16, 32, 54, 0.05);
+  --wp-shadow-md: 0 4px 16px rgba(16, 32, 54, 0.08);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Source Han Sans SC",
+    system-ui, -apple-system, sans-serif;
+  color: var(--wp-ink);
+  background: var(--wp-canvas);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 适老：正文默认 16px 起步，行高放宽 */
+body {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+::selection {
+  background: var(--wp-brand-100);
+  color: var(--wp-brand-900);
+}
+
+/* 可访问性：全站统一可见焦点环，键盘用户也能操作 */
+:where(button, a, textarea, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--wp-brand-600);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.wp-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.wp-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wp-scroll::-webkit-scrollbar-thumb {
+  background: #ccd4de;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 10px;
+}
+.wp-scroll::-webkit-scrollbar-thumb:hover {
+  background: #aeb9c6;
+  background-clip: content-box;
+}
+
+/* 被 Agent 操作中的元素：柔和呼吸光，作为「正在代您操作」的视觉锚点 */
+@keyframes wp-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 104, 220, 0.32);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(22, 104, 220, 0);
+  }
+}
+
+.wp-focus {
+  animation: wp-pulse 1.4s ease-in-out infinite;
+}
+
+/* 轨迹新条目入场 */
+@keyframes wp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.wp-rise {
+  animation: wp-rise 0.26s ease-out both;
+}
+
+/* 运行中指示灯 */
+@keyframes wp-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.wp-blink {
+  animation: wp-blink 1.1s ease-in-out infinite;
+}
+
+/* 尊重系统「减少动态效果」偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .wp-focus,
+  .wp-rise,
+  .wp-blink {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

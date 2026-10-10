@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>阿渡 WebPilot · 项目知识中心</title>
+<style>
+  :root { --ink:#14202e; --muted:#5b6673; --line:#e3e8ef; --blue:#1668dc; --bg:#f7f9fc; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; color:var(--ink); background:#fff; line-height:1.75; font-size:15px; }
+  .wrap { display:flex; max-width:1180px; margin:0 auto; }
+  nav { width:236px; flex:none; border-right:1px solid var(--line); padding:28px 18px 60px; position:sticky; top:0; height:100vh; overflow:auto; background:var(--bg); }
+  nav h1 { font-size:17px; margin:0 0 4px; }
+  nav .sub { font-size:12px; color:var(--muted); margin-bottom:18px; }
+  nav a { display:block; padding:6px 10px; border-radius:8px; color:var(--muted); text-decoration:none; font-size:14px; }
+  nav a:hover { background:#eaf1fb; color:var(--blue); }
+  nav .grp { font-size:12px; color:#9aa3af; margin:16px 0 6px 10px; }
+  main { flex:1; min-width:0; padding:28px 40px 80px; }
+  h2 { font-size:21px; margin:36px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+  h3 { font-size:16px; margin:22px 0 8px; }
+  p, li { color:#33404f; }
+  code { background:#f1f4f8; padding:1px 6px; border-radius:4px; font-size:13px; font-family:ui-monospace,Menlo,Consolas,monospace; }
+  pre { background:#f7f9fc; border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow:auto; font-size:13px; line-height:1.6; }
+  table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--bg); font-weight:600; }
+  .card { border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:14px 0; background:#fff; }
+  .tag { display:inline-block; background:#e6f1fb; color:var(--blue); border-radius:999px; padding:2px 10px; font-size:12px; margin-right:6px; }
+  .warn { border-color:#f0c36d; background:#fffaf0; }
+  .ok { border-color:#9fe1cb; background:#eafaf0; }
+  .muted { color:var(--muted); font-size:13px; }
+  @media (max-width:860px){ nav{display:none} main{padding:20px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <h1>阿渡 WebPilot</h1>
+  <div class="sub">项目知识中心 · v0.2</div>
+  <div class="grp">方案</div>
+  <a href="#overview">1 项目概览</a>
+  <a href="#pain">2 需求与痛点</a>
+  <a href="#arch">3 系统架构</a>
+  <div class="grp">AI 工程</div>
+  <a href="#workflow">4 工作流编排</a>
+  <a href="#prompt">5 提示词设计</a>
+  <a href="#tools">6 工具与能力配置</a>
+  <a href="#mcp">7 MCP 工具层</a>
+  <a href="#sites">8 多站点复用</a>
+  <a href="#rag">9 RAG 知识库</a>
+  <a href="#safety">10 安全与可控</a>
+  <a href="#cost">11 零成本部署</a>
+  <div class="grp">工程与评测</div>
+  <a href="#test">12 测试与 AI 辅助验证</a>
+  <a href="#score">13 实现要点</a>
+  <a href="#log">14 开发日志</a>
+  <a href="#plan">15 里程碑</a>
+  <div class="grp">使用指南</div>
+  <a href="#start">16 快速开始：安装与运行</a>
+  <a href="#deploy">17 部署</a>
+</nav>
+
+<main>
+<h2 id="overview">1 项目概览</h2>
+<p><strong>一句话定义</strong>：面向银发群体的<strong>网页代驾智能体</strong>。老人用口语或语音说出需求，AI 在真实网页流程中自主完成选科室、选时段、填就诊人、核对提交的全过程；凡是不可撤销的动作，必须本人点一下确认才会执行。</p>
+<div class="card">
+<span class="tag">范式反转</span><span class="tag">能力优先</span><span class="tag">授权门禁</span><span class="tag">双链路兜底</span><span class="tag">标准 MCP</span><span class="tag">多站点复用</span><span class="tag">零成本可跑</span>
+<p style="margin:10px 0 0">不是"AI 告诉你怎么做"，而是"AI 替你做完，你只负责授权"。交互的主语从人变成了智能体。</p>
+</div>
+<div class="card ok">
+<strong>当前可演示状态（v0.2）</strong>：两个被代驾站点（医院挂号 / 医保缴费）端到端跑通；四智能体链路、授权门禁闭环、MCP 工具层均已实测；评测 <strong>94/94 项断言通过</strong>；<strong>不需要任何 API Key 即可完整演示</strong>（<code>npm run demo</code>）。
+</div>
+
+<h2 id="pain">2 需求与痛点（2026 真实社会背景）</h2>
+<ul>
+<li><strong>公共服务全面线上化，但老年人被流程挡在门外</strong>：挂号需要 4 步以上操作、10 余个表单字段。</li>
+<li><strong>术语鸿沟</strong>：老人说的是"膝盖上下楼疼"，网页给的是"骨科 / 内科 / 外科"下拉框 —— 这中间缺一层<em>症状到科室的语义映射</em>。</li>
+<li><strong>不敢点错</strong>：填错身份证、误触提交，后果不可撤销，于是很多老人干脆放弃线上服务。</li>
+<li><strong>现有"适老版"只是放大字号</strong>，交互范式没变，依然要求人去适应机器。</li>
+</ul>
+<div class="card warn"><strong>与
+
+<h2 id="arch">3 系统架构</h2>
+<pre>老人（语音 / 口语）
+   │
+   ▼
+主控台  Next.js 15 App Router · React 19 · Tailwind v4
+   │  SSE（自定义 Agent 事件流：agent / tool / page / need_confirm / done）
+   ▼
+四智能体编排层（服务端）
+   Planner ──► Navigator ──► Guardian ──► Reporter
+      │            │             │            │
+   RAG 检索    能力清单约束   风险裁决授权   通俗播报+语音
+   │
+   ▼
+会话状态机 + 审计日志（敏感值脱敏）
+   │  postMessage（wp:state 协议）      │  JSON-RPC 2.0
+   ▼                                   ▼
+被代驾站点（iframe 承载，能力清单 + ARIA 标注）
+   ├─ /sim/hospital       医院预约挂号
+   └─ /sim/citizen-hall   市民之家医保/社保缴费
+                                       ▲
+                          /api/mcp  标准 MCP 能力服务器
+                          （外部 MCP 客户端可直接 tools/list、tools/call）</pre>
+<h3>为什么用 iframe + 能力协议</h3>
+<ul>
+<li>保持"这是第三方网站"的真实感，Agent 通过跨文档消息驱动它，而非直接改 React 状态；</li>
+<li>能力清单由站点声明，Agent 只能按契约调用 —— 天然形成<strong>防幻觉闸门</strong>；</li>
+<li>同一套协议直接对外暴露为标准 MCP 工具，真实站点只需实现同样的服务端契约即可接入。</li>
+</ul>
+
+<h2 id="workflow">4 工作流编排</h2>
+<h3>4.1 四个智能体的职责边界</h3>
+<table>
+<tr><th>智能体</th><th>输入</th><th>输出</th><th>是否允许调用模型</th></tr>
+<tr><td>Planner</td><td>用户原话 + RAG 上下文 + 已收集字段</td><td>结构化任务 JSON（含缺失项与人话追问）</td><td>是（失败降级规则引擎）</td></tr>
+<tr><td>Navigator</td><td>当前页结构 + 能力清单 + 任务目标 + 历史动作</td><td>单个动作 JSON（能力 id + 值 + 风险）</td><td>是（失败降级规则引擎）</td></tr>
+<tr><td>Guardian</td><td>待执行动作 + 会话上下文</td><td>风险等级 + 是否需授权 + 人话解释</td><td>仅生成解释文本</td></tr>
+<tr><td>Reporter</td><td>执行结果 / 回执</td><td>80 字以内通俗播报</td><td>是（失败用模板）</td></tr>
+</table>
+<h3>4.2 执行时序</h3>
+<pre>用户输入
+  → 注入检测（命中越权指令则直接拦截）
+  → Planner：抽取槽位 + RAG 映射科室；缺必填则输出追问并停止
+  ┌─ 循环（最多 10 步）───────────────────────┐
+  │ Navigator 选动作                           │
+  │ if 动作不在能力清单 → 丢弃并重试（防幻觉）  │
+  │ Guardian 裁决：high → 暂停并请求人工授权    │
+  │ 执行（确定性代码，模型不参与）              │
+  │ 推送 tool 事件 + page 事件（页面实时联动）  │
+  └───────────────────────────────────────────┘
+  → 提交成功生成回执 → Reporter 播报（可选语音）</pre>
+<h3>4.3 为什么把执行做成确定性代码</h3>
+<p>模型的输出只用于"决策"（选哪个动作、填什么值），真正的写入、跳转、提交全部是普通 TypeScript 函数。好处是：可审计、可回放、可回滚，且模型抽风时也不会产生越界副作用。</p>
+
+<h2 id="prompt">5 提示词设计</h2>
+<div class="card">
+<p style="margin:0"><strong>版本</strong>：<code>2026.10.10-v1</code>，全部提示词集中在 <code>lib/agents/prompts.ts</code>，变更需同步 <code>prompts/CHANGELOG</code> 与评测集。</p>
+</div>
+<h3>5.1 设计原则</h3>
+<ul>
+<li><strong>输出强约束</strong>：只输出 JSON，并在 system 中给出完整字段示例；解析失败时追加 <code>FALLBACK_SYSTEM</code> 重试一次，再失败则交规则引擎。</li>
+<li><strong>红线前置</strong>：Navigator 的提示词第一条就是"只能从能力清单中选择，绝不允许臆造 id"，把幻觉风险压在决策之前。</li>
+<li><strong>角色语域约束</strong>：Reporter 明确要求"不用技术术语、句子要短、控制在 80 字"，让输出适配老年听众。</li>
+<li><strong>知识注入而非知识依赖</strong>：症状→科室映射由 RAG 提供，提示词要求"必须依据 &lt;knowledge&gt;，未命中则置空并追问"。</li>
+</ul>
+<h3>5.2 Planner 提示词（节选）</h3>
+<pre>你是「阿渡 WebPilot」的任务规划器，服务对象是中国老年人。
+规则：
+1. 症状要映射到科室时必须依据 &lt;knowledge&gt;，不得凭空判断；未命中则 department 置空并在 ask 中询问。
+2. 日期：相对词「今天/明天/后天」原样保留；没说日期则默认「明天」并说明。
+5. 就诊人姓名、身份证号、手机号属于必填项；缺失时不要编造，改为在 ask 中用人话追问一次，一次只问一类。
+6. 严禁输出任何 JSON 以外的内容。
+
+输出：{"thought":"","plan":{...},"missing":[],"ask":"","stop":true}</pre>
+<h3>5.3 健壮性处理</h3>
+<ul>
+<li>JSON 提取器 <code>extractJson</code> 兼容代码块包裹、前后废话、截断；</li>
+<li>流式输出中 <code>thought</code> 字段置于首位，前端可边流边解析展示"思考过程"；</li>
+<li>模型调用异常（网络/限流）统一 catch，切规则引擎并在轨迹中明示。</li>
+</ul>
+
+<h2 id="tools">6 工具与能力配置</h2>
+<h3>6.1 能力清单（Capability Registry）</h3>
+<p>每个页面在运行时被编译为能力列表，等价于对外暴露的 MCP 工具清单：</p>
+<pre>{
+  "id": "fill:idCard",
+  "verb": "fill",
+  "target": "idCard",
+  "label": "填写「身份证号」",
+  "risk": "medium",
+  "params": ["value"],
+  "description": "18 位身份证号"
+}</pre>
+<h3>6.2 与 MCP 的同构关系</h3>
+<table>
+<tr><th>MCP 概念</th><th>本项目实现</th><th>说明</th></tr>
+<tr><td>Tools / ListTools</td><td><code>listCapabilities(pageId)</code></td><td>按页面动态编译，随流程推进而变化</td></tr>
+<tr><td>Tools / CallTool</td><td><code>executeCapability(session, cap, value)</code></td><td>确定性执行，返回结构化结果</td></tr>
+<tr><td>Resources</td><td>页面结构 + 会话状态</td><td>通过 <code>page</code> 事件推送</td></tr>
+<tr><td>Sampling 之外的人工环路</td><td><code>need_confirm</code> + <code>/api/confirm</code></td><td>高危动作的人工授权回路</td></tr>
+</table>
+<h3>6.3 站点侧契约</h3>
+<p>被代驾站点的每个可操作单元都带 <code>data-cap-id</code> 与 <code>aria-label</code>，与能力 id 一一对应；这既服务 Agent，也天然提升了无障碍访问能力。</p>
+
+<h2 id="mcp">7 MCP 工具层</h2>
+<p>能力清单不只是内部抽象 —— 它同时以 <strong>标准 MCP（Model Context Protocol）服务器</strong>的形态对外暴露，实现于 <code>app/api/mcp/route.ts</code>，遵循 JSON-RPC 2.0。</p>
+<pre>POST /api/mcp
+  initialize   → 声明协议版本、serverInfo 与能力
+  tools/list   → 把两个站点的全部页面能力编译成 MCP 工具清单
+  tools/call   → 执行单个能力，返回结构化结果
+
+工具命名规则：  &lt;siteId&gt;__&lt;verb&gt;_&lt;target&gt;
+  例：city-hospital__fill_department   （填写就诊科室）
+      city-hospital__click_submit      （提交预约，高危）</pre>
+<div class="card ok"><strong>已实测</strong>：<code>tools/call</code> 调用 <code>city-hospital__fill_department</code> 返回 <code>ok:true</code> 与推进后的页面状态；在「选择科室」页调用高危的提交动作，被防幻觉闸门拦截并返回 <code>available</code> 可用能力列表。</div>
+<h3>7.1 为什么这一步很关键</h3>
+<ul>
+<li>MCP/工具集成从"写在文档里"变成"可被第三方客户端真实调用"；</li>
+<li>高危动作的授权门禁在 MCP 通道上同样生效，不会因为换入口而失守；</li>
+<li>意味着一个真实政务站点只要暴露同构的能力接口，本 Agent 无需改代码即可代驾。</li>
+</ul>
+
+<h2 id="sites">8 多站点复用</h2>
+<p>为证明「能力协议可跨站点复用」，项目中内置了两个领域完全不同的被代驾站点，它们共用同一套 Planner / Navigator / Guardian / Reporter、同一份安全策略、同一个 MCP 工具层。</p>
+<table>
+<tr><th>站点</th><th>路由</th><th>业务</th><th>关键槽位</th><th>高危动作</th></tr>
+<tr><td>市第一人民医院</td><td><code>/sim/hospital</code></td><td>预约挂号</td><td>科室 / 医生类型 / 就诊日期时段 / 就诊人</td><td>提交预约（high）</td></tr>
+<tr><td>市民之家政务大厅</td><td><code>/sim/citizen-hall</code></td><td>医保 / 社保缴费</td><td>办理事项 / 缴费年度 / 档次 / 参保人</td><td>确认缴费（high）</td></tr>
+</table>
+<div class="card"><strong>新增一个站点的成本</strong>：只写一份 <code>SiteDef</code>（页面结构 + 字段 + 动作 + 领域约束 + 槽位抽取规则 + 回执格式），登记进 <code>lib/sim/registry.ts</code> 即可。<strong>Agent 层、安全层、MCP 层、前端渲染器一行都不用改</strong> —— 这正是「能力优先于 DOM」的直接收益。</div>
+
+<h2 id="rag">9 RAG 知识库</h2>
+<p>知识切片共 10 条办事指南（症状→科室、必备材料、放号时间、退改规则、老年人便利服务、医保缴费等）。检索采用<strong>中文二元组 + 英文词的 TF-IDF 打分</strong>，零外部依赖，可在边缘运行，代价是无需引入向量数据库即可稳定命中。</p>
+<div class="card ok"><strong>RAG 是否真的提升了效果？</strong>能验证：没有知识库时，"膝盖疼"这类口语无法映射到骨科，Planner 只能追问或直接猜错；接入后，检索命中「症状与科室对应：骨关节」切片，科室准确率显著提升。这也是评测集里的一条硬用例。</div>
+<p class="muted">后续规划：如接入真实政务数据源，可替换为向量检索（BGE-M3 + 本地向量库），检索器接口 <code>retrieve(query, topK)</code> 保持不变。</p>
+
+<h2 id="safety">10 安全与可控</h2>
+<table>
+<tr><th>机制</th><th>实现位置</th><th>行为</th></tr>
+<tr><td>三级风险模型</td><td><code>lib/sim/types.ts</code> + 各站点定义</td><td>字段与动作声明 risk，medium 涉及隐私，high 涉及提交/支付/删除</td></tr>
+<tr><td>人工授权门禁</td><td><code>lib/safety/guardian.ts</code> + <code>/api/confirm</code></td><td>high 动作必须授权才执行，授权入审计日志；<strong>MCP 通道同样受此约束</strong></td></tr>
+<tr><td>敏感值脱敏</td><td><code>maskValue</code> / <code>publicValues</code></td><td>身份证、手机号在审计与界面中全程掩码</td></tr>
+<tr><td>提示词注入检测</td><td><code>detectInjection</code></td><td>覆盖「覆盖指令 / 套取系统提示词 / 角色劫持 / <strong>绕过人工授权</strong>」四类意图，命中即在进入模型前拦截，并回传具体原因</td></tr>
+<tr><td>防幻觉闸门</td><td>编排主循环 + MCP <code>tools/call</code></td><td>动作 id 不在当前页能力清单则丢弃重试，并返回可用能力列表</td></tr>
+<tr><td>步数与超时上限</td><td><code>store.canStep</code> / MAX_ACTIONS</td><td>防止死循环与费用失控</td></tr>
+<tr><td>双链路兜底</td><td><code>engineKind()</code></td><td>无密钥、调用失败、输出不可解析 → 规则引擎接管</td></tr>
+</table>
+
+<h2 id="cost">11 零成本部署</h2>
+<p>作品全程可零成本运行与演示，这是硬约束而非口号，分三层保证：</p>
+<table>
+<tr><th>层</th><th>做法</th></tr>
+<tr><td>模型层</td><td><code>lib/agents/llm.ts</code> 内置多个 <strong>OpenAI 兼容</strong> Provider 预设（智谱 GLM 免费档 / SiliconFlow / OpenRouter / DeepSeek / 本地 Ollama 等），只改 <code>LLM_BASE_URL</code> + <code>LLM_MODEL</code> + <code>LLM_API_KEY</code> 三个环境变量即可切换；<strong>不填任何 Key 也能完整演示</strong></td></tr>
+<tr><td>兜底层</td><td>无 Key / 调用失败 / 输出不可解析 → 自动切规则引擎，行为完全一致，仅"思考"的文字由模板生成，轨迹中会明示当前引擎</td></tr>
+<tr><td>依赖层</td><td>RAG 用零依赖的中文二元组 TF-IDF 检索（免向量数据库）；评测脚本、演示启动器均为 Node 原生实现，不引入额外依赖</td></tr>
+</table>
+<pre># .env.local —— 三种典型零成本配置（任选其一）
+
+# A. 智谱 GLM 免费档
+LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+LLM_MODEL=glm-4-flash
+
+# B. SiliconFlow 免费模型
+LLM_BASE_URL=https://api.siliconflow.cn/v1
+LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
+
+# C. 本地 Ollama（完全离线，零费用）
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL=qwen2.5:7b</pre>
+<div class="card ok"><strong>一键演示</strong>：<code>npm run demo</code> 会自动检查环境、提示模型链路状态、启动服务并打印演示入口与建议话术；服务不可用时会明确提示先执行 <code>npm install</code>。</div>
+
+<h2 id="test">12 测试与 AI 辅助验证</h2>
+<h3>12.1 AI 辅助用例生成</h3>
+<p>用大模型批量生成老人口语变体（方言词、错别字、含糊症状、多意图混合），再人工抽样校准，形成回归用例集：</p>
+<ul>
+<li>症状类：「我这膝盖上下楼疼」「头晕得厉害」「眼睛模糊看不清」</li>
+<li>信息缺失类：只说症状不说姓名 / 只给姓名不给身份证</li>
+<li>异常输入类：身份证位数错误、手机号非法、含越权指令</li>
+<li>边界类：直接指定专家门诊、要求下午时段、中途要求改科室</li>
+</ul>
+<h3>12.2 自动化判定</h3>
+<p>采用 <strong>规则断言（确定性）+ LLM-as-judge（语义）</strong>双判定，覆盖医院挂号与政务缴费两个站点：</p>
+<ul>
+<li>规则断言（确定性）：字段映射是否正确（如"膝盖上下楼疼 → 骨科"、"2027 年 → 2027 年度"）、缺失信息是否追问、high 动作是否出现过 <code>need_confirm</code>、授权后能否续跑闭环、页面状态中敏感值是否脱敏、越权指令是否被拦截；</li>
+<li>模型判定（语义）：追问是否话术得体、播报是否老人可读、方案是否合理；</li>
+<li>轨迹评估：每步动作是否命中能力清单、是否存在无效重试（冗余步数惩罚）。</li>
+</ul>
+<div class="card ok"><strong>当前结果：10 个用例、94/94 项断言全部通过</strong>（<code>npm run eval</code>，报告见 <code>scripts/eval-report.md</code>）。<br />
+过程中评测抓出并修复了 3 个真实缺陷：① 动作步数上限过小导致高危授权门禁实际未生效；② 注入检测正则过窄，漏判"忽略你之前的所有指令"；③ 新增站点后"绕过授权"类话术未被拦截。这三条都是仅靠人工点页面很难发现的。</div>
+<p class="muted">备注：LLM-as-judge 与 AI 用例生成需要配置 <code>LLM_API_KEY</code>，未配置时自动降级为纯规则断言，评测依然可跑。</p>
+
+<h2 id="score">13 实现要点</h2>
+<table>
+<tr><th>关注维度</th><th>对应实现</th></tr>
+<tr><td>智能体编排</td><td>四个角色分工协作（聽懂您的話 / 替您一步步辦 / 替您把好關 / 把結果講給您聽），思考、动作、观察全程可观测可回放；失败自省会回灌提示词，避免重复无效动作</td></tr>
+<tr><td>大模型集成</td><td>OpenAI 兼容协议，智谱 / SiliconFlow / OpenRouter / 本地 Ollama 任选；无密钥自动降级规则引擎，链路完全一致</td></tr>
+<tr><td>检索增强</td><td>零依赖中文二元组 TF-IDF：口语症状 → 科室映射；动作 id 语义检索（余弦 + 编辑距离融合）</td></tr>
+<tr><td>多模态</td><td>语音输入（Web Speech API）与语音播报（speechSynthesis），不支持时自动降级为文字</td></tr>
+<tr><td>工具协议</td><td>标准 MCP 服务器（JSON-RPC 2.0）：initialize / tools/list / tools/call，高危动作同样受授权门禁约束</td></tr>
+<tr><td>安全可控</td><td>三级风险裁决、强制人工授权、提示词注入检测、防幻觉能力闸门、敏感值全程脱敏</td></tr>
+<tr><td>前端工程</td><td>TypeScript strict 零错误、App Router、组件解耦（站点渲染器与业务无关）、统一设计系统变量、SSE 流式、无明文密钥</td></tr>
+<tr><td>实用性</td><td>两个真实业务流程；缺信息会追问、非法输入会校验、失败可恢复；新增站点成本极低</td></tr>
+<tr><td>用户体验</td><td>适老大字号高对比、语音输入输出、思考过程可视化、动作高亮联动、键盘焦点环、动效尊重系统偏好</td></tr>
+<tr><td>社会价值</td><td>数字鸿沟议题；能力协议可复制到政务 / 社保 / 缴费 / 医院等所有线上办事场景</td></tr>
+</table>
+
+<h2 id="log">14 开发日志</h2>
+<p>完整过程日志沉淀在 <strong>ima 知识库</strong>（决策记录、提示词版本、评测结果、每日进展），本页仅保留索引。</p>
+<table>
+<tr><th>日期</th><th>事项</th><th>关键决策</th></tr>
+<tr><td>2026-10-10</td><td>需求拆解与方向选型</td><td>四个候选中选定「网页代驾 Agent」，理由：与同类作品范式差异最大，且正面撞 2026 browser agent 热点</td></tr>
+<tr><td>2026-10-10</td><td>技术栈定档</td><td>Next.js 15 + Vercel AI SDK + Tailwind v4；事件流用自定义 SSE 协议，换取对轨迹可视化的完全控制</td></tr>
+<tr><td>2026-10-10</td><td>架构设计</td><td>决策与执行分离：模型只选动作，执行是确定性代码；双引擎兜底</td></tr>
+<tr><td>2026-10-10</td><td>工程骨架落地</td><td>仿真站点 + 能力清单 + Guardian 门禁 + 轨迹面板 + 语音输入输出</td></tr>
+<tr><td>2026-10-10</td><td>评测体系与缺陷修复</td><td><code>scripts/eval.mjs</code>：AI 辅助用例生成 + 规则断言/LLM-as-judge 双轨判定。首轮 18/22，暴露两个真实缺陷（步数上限、注入正则过窄），修复后 28/28 通过</td></tr>
+<tr><td>2026-10-10</td><td>站点抽象层 + 第二站点</td><td>把医院挂号从"写死的单例"重构为可插拔 <code>SiteDef</code>；新增市民之家医保缴费站点，验证能力协议跨领域复用</td></tr>
+<tr><td>2026-10-10</td><td>MCP 工具层</td><td>实现 <code>/api/mcp</code>（JSON-RPC 2.0，initialize / tools/list / tools/call），把能力清单直接暴露为标准 MCP 工具</td></tr>
+<tr><td>2026-10-10</td><td>零成本模型路由</td><td>支持多 OpenAI 兼容 Provider 预设；无 Key 也能完整演示，规则引擎兜底行为一致</td></tr>
+<tr><td>2026-10-10</td><td>UI 重构与演示保障</td><td>统一设计系统变量（色阶/圆角/阴影/焦点环/动效降级）；新增 <code>npm run demo</code> 一键演示；评测扩到两个站点，修复"绕过授权"拦截缺口，<strong>94/94 通过</strong></td></tr>
+</table>
+
+<h2 id="plan">15 里程碑</h2>
+<table>
+<tr><th>周次</th><th>目标</th><th>交付物</th></tr>
+<tr><td>W1（10/10-10/17）</td><td>定题、架构、骨架</td><td>方案文档、仓库初始化、能力清单机制</td></tr>
+<tr><td>W2（10/18-10/24）</td><td>四智能体链路打通</td><td>Planner/Navigator/Guardian/Reporter 全链路跑通</td></tr>
+<tr><td>W3（10/25-10/31）</td><td>多模态与安全加固</td><td>语音输入/播报、注入检测、脱敏、评测集</td></tr>
+<tr><td>W4（11/1-11/7）</td><td>体验打磨与部署</td><td>适老界面细化、生产构建与部署、性能与错误边界</td></tr>
+<tr><td>W5（11/8-11/14）</td><td>稳定性与第二站点</td><td>评测补全、跨站点回归、界面技术面板</td></tr>
+<tr><td>后续</td><td>能力外延</td><td>真实站点 MCP 适配层、端侧小模型意图理解、方言语音优化</td></tr>
+</table>
+
+<h2 id="start">16 快速开始：安装与运行</h2>
+<h3>环境要求</h3>
+<p>Node.js ≥ 18.18（推荐 20 LTS / 22 LTS）。<strong>无数据库、无外部服务依赖</strong>。</p>
+<h3>三步启动</h3>
+<pre>npm install          # ① 安装依赖
+npm run dev          # ② 启动开发服务器</pre>
+<p>③ 浏览器打开 <code>http://localhost:3000</code>，看到主控台即成功。也可以用一键脚本 <code>npm run demo</code>，它会检查环境、拉起服务并打印入口与推荐话术。</p>
+<h3>停止服务</h3>
+<p>在运行 <code>npm run dev</code> 的终端按 <strong>Ctrl + C</strong>。</p>
+<h3>在别的设备上打开（手机 / 平板 / 另一台电脑）</h3>
+<p>服务默认监听 <code>0.0.0.0</code>（本机所有网卡），同一网络下的其他设备可直接访问，无需额外配置：</p>
+<pre>ipconfig        # Windows：找「IPv4 地址」，形如 192.168.x.x
+ip addr         # macOS / Linux
+
+# 在另一台设备的浏览器打开
+http://192.168.x.x:3000</pre>
+<p>用 <code>npm run demo</code> 启动时，脚本会<strong>直接打印可用的局域网地址</strong>，不用自己查。</p>
+<table>
+<tr><th>现象</th><th>处理</th></tr>
+<tr><td>连接被拒绝 / 超时</td><td>Windows 防火墙拦截入站。管理员权限运行一次：<code>netsh advfirewall firewall add rule name="webpilot" dir=in action=allow protocol=TCP localport=3000</code></td></tr>
+<tr><td>手机能上网但打不开</td><td>确认与电脑在<strong>同一个 Wi-Fi</strong>；部分公司/校园网开启「AP 隔离」，换手机热点即可</td></tr>
+<tr><td>IP 变了</td><td>路由器重新分配地址，重新 <code>ipconfig</code> 查一次</td></tr>
+</table>
+<div class="card warn"><strong>异地访问</strong>：局域网地址只在同一个网络内有效。要在别的地方打开，需要把服务部署到有公网 IP 的机器（见「17 部署」），或用内网穿透工具把 3000 端口映射出去。</div>
+<h3>推荐体验路径</h3>
+<ol>
+<li>输入「我这两天膝盖上下楼疼，想明天上午去医院看看，我叫张桂芳，身份证110105195003071234，手机13800138000」——观察口语症状如何经 RAG 映射到<strong>骨科</strong>，页面逐步自动填写；</li>
+<li>到最后一步时界面会<strong>强制暂停</strong>并弹出授权卡，点确认后才会真正提交；</li>
+<li>完成后回执卡片给出通俗播报，可点击朗读；</li>
+<li>右上角切到「市民之家」，用同一套交互办医保缴费。</li>
+</ol>
+<h3>常见问题</h3>
+<table>
+<tr><th>现象</th><th>处理</th></tr>
+<tr><td>端口被占用 <code>EADDRINUSE :3000</code></td><td>Windows：<code>netstat -ano | findstr :3000</code> 找到 PID 后 <code>taskkill /PID &lt;PID&gt; /F</code>；或改用 <code>npx next dev -p 3100</code></td></tr>
+<tr><td>安装慢或超时</td><td>换官方源：<code>npm install --registry=https://registry.npmjs.org</code></td></tr>
+<tr><td>打开站点是 404</td><td>站点 id 是 <code>/sim/city-hospital</code>，不是 <code>/sim/hospital</code></td></tr>
+<tr><td>麦克风不可用</td><td>浏览器不支持 Web Speech API 时自动降级为文字输入，不影响流程</td></tr>
+</table>
+<p class="muted">演示数据说明：仓库中出现的姓名、身份证号、手机号<strong>全部为虚构</strong>，手机号取自官方测试号段，仅用于观察"输入 → 脱敏 → 回填"链路。</p>
+
+<h2 id="deploy">17 部署</h2>
+<p>两种形态按需二选一：<strong>静态站点</strong>（<code>npm run build:static</code>，产物 <code>out/</code>，放哪都能用 http 打开，不需要 Node 服务）与<strong>服务端应用</strong>（<code>npm run build</code> + <code>npm run start</code>，带 <code>/api/*</code> 接口）。</p>
+<h3>静态站点（推荐先试，不需要服务器）</h3>
+<pre>npm run build:static     # 产出 out/ 目录（约 1.4 MB）</pre>
+<p>产物结构：<code>out/index.html</code>（主控台）、<code>out/sim/city-hospital/index.html</code>、<code>out/sim/citizen-hall/index.html</code>、<code>out/_next/static/</code>（脚本与样式）。</p>
+<p>打开方式：把 <code>out/</code> 整个目录作为站点根目录上传到任意静态空间（对象存储静态托管 / nginx / 内网文件服务器等），或本地 <code>cd out &amp;&amp; python -m http.server 8080</code> 预览。</p>
+<div class="card">
+<strong>静态形态能力不打折</strong>
+<p style="margin:6px 0 0">引擎本来就是纯 TypeScript 实现，静态形态把它放到浏览器里跑（<code>lib/runtime/</code>），与服务端形态共用同一份 <code>runAgent</code>，事件序列完全一致。代驾流程、授权门禁、脱敏、审计、能力语义检索、防幻觉闸门、轨迹回放全部保留；没有 <code>/api/*</code>，因此 MCP 清单改为浏览器内调用同一份 <code>lib/mcp/core</code>，自动化评测改为打开页面即跑的「浏览器内自检」（5 场景 / 12 断言）。也不需要任何模型密钥——浏览器里取不到 <code>LLM_API_KEY</code>，自动走规则引擎，离线可完整演示。</p>
+</div>
+<h3>本机生产模式</h3>
+<pre>npm run build     # 生产构建
+npm run start     # 生产模式启动，默认 :3000</pre>
+<h3>服务器 / 云主机（服务端形态）</h3>
+<pre>npm install
+npm run build
+npm run start:cloud    # scripts/start-cloud.mjs</pre>
+<div class="card warn">
+<strong>三个部署要点</strong>
+<ol style="margin:8px 0 0">
+<li><code>start:cloud</code> 由 Node 读取 <code>PORT</code> 后传给 <code>next start -H 0.0.0.0</code>，<strong>不依赖 shell 展开 <code>$PORT</code></strong>——部分托管环境不展开，直接写 <code>-p $PORT</code> 会启动失败；</li>
+<li><strong>构建放在安装/准备阶段</strong>，不要放在启动阶段，否则可能吃掉健康检查的超时窗口；</li>
+<li>未配置模型密钥时自动走规则引擎，部署后<strong>不依赖任何第三方可用性</strong>。</li>
+</ol>
+</div>
+<h3>环境变量</h3>
+<p>生产环境建议显式设置 <code>LLM_API_KEY</code>、<code>LLM_BASE_URL</code>、<code>LLM_MODEL</code>、<code>REQUIRE_HUMAN_CONFIRM=1</code>。密钥只走环境变量，仓库内只有 <code>.env.example</code> 模板。</p>
+</main>
+</div>
+</body>
+</html>

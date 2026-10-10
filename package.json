@@ -1,0 +1,39 @@
+{
+  "name": "webpilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "阿渡 WebPilot - 面向银发群体的网页代驾 Agent：一句话，AI 替你把网页流程跑完",
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "build": "next build",
+    "build:static": "node scripts/build-static.mjs",
+    "start": "next start -H 0.0.0.0 -p 3000",
+    "start:cloud": "node scripts/start-cloud.mjs",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "demo": "node scripts/demo.mjs",
+    "eval": "node scripts/eval.mjs",
+    "eval:gen": "node scripts/eval.mjs --gen",
+    "verify": "node scripts/verify.mjs",
+    "acceptance": "node scripts/acceptance.mjs"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.0",
+    "@ai-sdk/react": "^2.0.0",
+    "ai": "^5.0.0",
+    "next": "^15.5.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "^15.5.4",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.7.0"
+  }
+}

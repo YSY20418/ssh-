@@ -1,0 +1,14 @@
+node_modules
+.next
+.next*
+out
+.api-hold
+build
+.env
+.env.local
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+npm-debug.log*
+yarn-error.log*
+coverage
