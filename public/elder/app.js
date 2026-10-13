@@ -35,6 +35,11 @@
       'step0.lead': '您只要一步一步点，就能把号挂好。不急，慢慢来。',
       'step0.cta': '我要预约挂号',
       'step0.ctaDesc': '点一下，开始挂号',
+      'ability.title': '这一页会替您做什么',
+      'ability.1': '听懂您的话：您说哪儿不舒服，我来判断该挂哪个科。',
+      'ability.2': '替您一步步办：挂号要点的每一步都由我点，您看着就行。',
+      'ability.3': '替您把好关：提交、付款这类要紧事，一定要您本人点头。',
+      'ability.4': '把结果讲给您听：每一步都能念出来，听不清可以再念一遍。',
 
       'step1.title': '第 1 步 · 您哪里不舒服？',
       'step1.lead': '请点一个最像您现在感觉的选项。',
@@ -76,6 +81,11 @@
       'step5.tip1': '带上身份证（或医保卡），进门要刷。',
       'step5.tip2': '比预约时间提前 15 分钟到医院，不要迟到。',
       'step5.tip3': '先去一楼分诊台报名字，护士会告诉您去哪间诊室。',
+      'step5.protectTitle': '到院那天的小提醒',
+      'step5.protect1': '戴好口罩',
+      'step5.protect2': '带齐平时要吃的药',
+      'step5.protect3': '摸了门把手要洗手',
+      'step5.protect4': '人多的地方少停留',
       'step5.again': '再挂一个号',
       'step5.finish': '好了，我知道了',
 
@@ -147,6 +157,11 @@
       'step0.lead': '您只要一步一步點，就能把號掛好。不急，慢慢來。',
       'step0.cta': '我要預約掛號',
       'step0.ctaDesc': '點一下，開始掛號',
+      'ability.title': '這一頁會替您做什麼',
+      'ability.1': '聽懂您的話：您說哪兒不舒服，我來判斷該掛哪一科。',
+      'ability.2': '替您一步步辦：掛號要點的每一步都由我點，您看著就行。',
+      'ability.3': '替您把好關：提交、付款這類要緊事，一定要您本人點頭。',
+      'ability.4': '把結果講給您聽：每一步都能唸出來，聽不清可以再唸一遍。',
 
       'step1.title': '第 1 步 · 您哪裡不舒服？',
       'step1.lead': '請點一個最像您現在感覺的選項。',
@@ -188,6 +203,11 @@
       'step5.tip1': '帶上身分證（或健保卡），進門要刷。',
       'step5.tip2': '比預約時間提前 15 分鐘到醫院，不要遲到。',
       'step5.tip3': '先去一樓分診台報名字，護士會告訴您去哪間診室。',
+      'step5.protectTitle': '到院那天的小提醒',
+      'step5.protect1': '戴好口罩',
+      'step5.protect2': '帶齊平時要吃的藥',
+      'step5.protect3': '摸了門把手要洗手',
+      'step5.protect4': '人多的地方少停留',
       'step5.again': '再掛一個號',
       'step5.finish': '好了，我知道了',
 
@@ -259,6 +279,11 @@
       'step0.lead': 'Just tap step by step and I will book the appointment for you. Take your time.',
       'step0.cta': 'Book an appointment',
       'step0.ctaDesc': 'Tap here to start',
+      'ability.title': 'What this page does for you',
+      'ability.1': 'I listen: tell me what troubles you and I pick the right department.',
+      'ability.2': 'I do the steps: I tap every step of the booking for you.',
+      'ability.3': 'I keep you safe: submitting and paying always need your own nod.',
+      'ability.4': 'I read it out: every step can be read aloud, as often as you like.',
 
       'step1.title': 'Step 1 · What troubles you?',
       'step1.lead': 'Tap the option that best matches how you feel right now.',
@@ -300,6 +325,11 @@
       'step5.tip1': 'Bring your ID card (or medical insurance card) — it is scanned at the entrance.',
       'step5.tip2': 'Arrive 15 minutes before your appointment time. Do not be late.',
       'step5.tip3': 'Go to the triage desk on the first floor first; the nurse will tell you which room.',
+      'step5.protectTitle': 'A few small reminders for the day you come',
+      'step5.protect1': 'Wear a face mask',
+      'step5.protect2': 'Bring your usual medicines',
+      'step5.protect3': 'Wash your hands often',
+      'step5.protect4': 'Do not stay in crowds',
       'step5.again': 'Book another one',
       'step5.finish': 'Got it, thank you',
 
@@ -352,26 +382,26 @@
     }
   };
 
-  /* ---------------- 症状 → 科室 ---------------- */
+  /* 症状 → 科室（ico 为图标名，icon 为图标缺失时的文字兜底） */
   var SYMPTOMS = [
-    { id: 'head', icon: '晕', name: { zh: '头晕头痛', 'zh-Hant': '頭暈頭痛', en: 'Dizziness or headache' }, dept: 'neurology', alts: ['cardiology'] },
-    { id: 'chest', icon: '心', name: { zh: '心慌胸闷', 'zh-Hant': '心慌胸悶', en: 'Palpitations or chest tightness' }, dept: 'cardiology', alts: ['respiratory'] },
-    { id: 'fever', icon: '咳', name: { zh: '咳嗽发烧', 'zh-Hant': '咳嗽發燒', en: 'Cough or fever' }, dept: 'respiratory', alts: ['gp'] },
-    { id: 'belly', icon: '肚', name: { zh: '肚子痛', 'zh-Hant': '肚子痛', en: 'Stomach ache' }, dept: 'gastro', alts: ['surgery'] },
-    { id: 'leg', icon: '腿', name: { zh: '腿疼', 'zh-Hant': '腿疼', en: 'Leg pain' }, dept: 'orthopedics', alts: ['gp'] },
-    { id: 'eye', icon: '眼', name: { zh: '眼睛不舒服', 'zh-Hant': '眼睛不舒服', en: 'Eye discomfort' }, dept: 'ophthalmology', alts: [] },
-    { id: 'unsure', icon: '？', name: { zh: '不知道选什么', 'zh-Hant': '不知道選什麼', en: 'Not sure what to choose' }, dept: 'gp', alts: ['neurology'] }
+    { id: 'head', icon: '晕', ico: 'head', name: { zh: '头晕头痛', 'zh-Hant': '頭暈頭痛', en: 'Dizziness or headache' }, dept: 'neurology', alts: ['cardiology'] },
+    { id: 'chest', icon: '心', ico: 'heart-pulse', name: { zh: '心慌胸闷', 'zh-Hant': '心慌胸悶', en: 'Palpitations or chest tightness' }, dept: 'cardiology', alts: ['respiratory'] },
+    { id: 'fever', icon: '咳', ico: 'mask', name: { zh: '咳嗽发烧', 'zh-Hant': '咳嗽發燒', en: 'Cough or fever' }, dept: 'respiratory', alts: ['gp'] },
+    { id: 'belly', icon: '肚', ico: 'stomach', name: { zh: '肚子痛', 'zh-Hant': '肚子痛', en: 'Stomach ache' }, dept: 'gastro', alts: ['surgery'] },
+    { id: 'leg', icon: '腿', ico: 'bone', name: { zh: '腿疼', 'zh-Hant': '腿疼', en: 'Leg pain' }, dept: 'orthopedics', alts: ['gp'] },
+    { id: 'eye', icon: '眼', ico: 'eye', name: { zh: '眼睛不舒服', 'zh-Hant': '眼睛不舒服', en: 'Eye discomfort' }, dept: 'ophthalmology', alts: [] },
+    { id: 'unsure', icon: '？', ico: 'plus-circle', name: { zh: '不知道选什么', 'zh-Hant': '不知道選什麼', en: 'Not sure what to choose' }, dept: 'gp', alts: ['neurology'] }
   ];
 
   var DEPTS = {
-    neurology: { name: { zh: '神经内科', 'zh-Hant': '神經內科', en: 'Neurology' }, place: { zh: '门诊楼 2 层 · 3 号诊室', 'zh-Hant': '門診樓 2 層 · 3 號診室', en: 'Outpatient Bldg, Floor 2 · Room 3' } },
-    cardiology: { name: { zh: '心血管内科', 'zh-Hant': '心血管內科', en: 'Cardiology' }, place: { zh: '门诊楼 3 层 · 5 号诊室', 'zh-Hant': '門診樓 3 層 · 5 號診室', en: 'Outpatient Bldg, Floor 3 · Room 5' } },
-    respiratory: { name: { zh: '呼吸内科', 'zh-Hant': '呼吸內科', en: 'Respiratory Medicine' }, place: { zh: '门诊楼 2 层 · 8 号诊室', 'zh-Hant': '門診樓 2 層 · 8 號診室', en: 'Outpatient Bldg, Floor 2 · Room 8' } },
-    gastro: { name: { zh: '消化内科', 'zh-Hant': '消化內科', en: 'Gastroenterology' }, place: { zh: '门诊楼 4 层 · 2 号诊室', 'zh-Hant': '門診樓 4 層 · 2 號診室', en: 'Outpatient Bldg, Floor 4 · Room 2' } },
-    surgery: { name: { zh: '普通外科', 'zh-Hant': '普通外科', en: 'General Surgery' }, place: { zh: '门诊楼 4 层 · 6 号诊室', 'zh-Hant': '門診樓 4 層 · 6 號診室', en: 'Outpatient Bldg, Floor 4 · Room 6' } },
-    orthopedics: { name: { zh: '骨科', 'zh-Hant': '骨科', en: 'Orthopedics' }, place: { zh: '门诊楼 3 层 · 9 号诊室', 'zh-Hant': '門診樓 3 層 · 9 號診室', en: 'Outpatient Bldg, Floor 3 · Room 9' } },
-    ophthalmology: { name: { zh: '眼科', 'zh-Hant': '眼科', en: 'Ophthalmology' }, place: { zh: '门诊楼 5 层 · 1 号诊室', 'zh-Hant': '門診樓 5 層 · 1 號診室', en: 'Outpatient Bldg, Floor 5 · Room 1' } },
-    gp: { name: { zh: '全科医学科', 'zh-Hant': '全科醫學科', en: 'General Practice' }, place: { zh: '门诊楼 1 层 · 导诊台旁 2 号诊室', 'zh-Hant': '門診樓 1 層 · 導診台旁 2 號診室', en: 'Outpatient Bldg, Floor 1 · Room 2, next to triage' } }
+    neurology: { ico: 'dna', name: { zh: '神经内科', 'zh-Hant': '神經內科', en: 'Neurology' }, place: { zh: '门诊楼 2 层 · 3 号诊室', 'zh-Hant': '門診樓 2 層 · 3 號診室', en: 'Outpatient Bldg, Floor 2 · Room 3' } },
+    cardiology: { ico: 'heart-pulse', name: { zh: '心血管内科', 'zh-Hant': '心血管內科', en: 'Cardiology' }, place: { zh: '门诊楼 3 层 · 5 号诊室', 'zh-Hant': '門診樓 3 層 · 5 號診室', en: 'Outpatient Bldg, Floor 3 · Room 5' } },
+    respiratory: { ico: 'mask', name: { zh: '呼吸内科', 'zh-Hant': '呼吸內科', en: 'Respiratory Medicine' }, place: { zh: '门诊楼 2 层 · 8 号诊室', 'zh-Hant': '門診樓 2 層 · 8 號診室', en: 'Outpatient Bldg, Floor 2 · Room 8' } },
+    gastro: { ico: 'pill-bottle', name: { zh: '消化内科', 'zh-Hant': '消化內科', en: 'Gastroenterology' }, place: { zh: '门诊楼 4 层 · 2 号诊室', 'zh-Hant': '門診樓 4 層 · 2 號診室', en: 'Outpatient Bldg, Floor 4 · Room 2' } },
+    surgery: { ico: 'medkit', name: { zh: '普通外科', 'zh-Hant': '普通外科', en: 'General Surgery' }, place: { zh: '门诊楼 4 层 · 6 号诊室', 'zh-Hant': '門診樓 4 層 · 6 號診室', en: 'Outpatient Bldg, Floor 4 · Room 6' } },
+    orthopedics: { ico: 'bone', name: { zh: '骨科', 'zh-Hant': '骨科', en: 'Orthopedics' }, place: { zh: '门诊楼 3 层 · 9 号诊室', 'zh-Hant': '門診樓 3 層 · 9 號診室', en: 'Outpatient Bldg, Floor 3 · Room 9' } },
+    ophthalmology: { ico: 'eye', name: { zh: '眼科', 'zh-Hant': '眼科', en: 'Ophthalmology' }, place: { zh: '门诊楼 5 层 · 1 号诊室', 'zh-Hant': '門診樓 5 層 · 1 號診室', en: 'Outpatient Bldg, Floor 5 · Room 1' } },
+    gp: { ico: 'plus-circle', name: { zh: '全科医学科', 'zh-Hant': '全科醫學科', en: 'General Practice' }, place: { zh: '门诊楼 1 层 · 导诊台旁 2 号诊室', 'zh-Hant': '門診樓 1 層 · 導診台旁 2 號診室', en: 'Outpatient Bldg, Floor 1 · Room 2, next to triage' } }
   };
 
   var AVATAR_COLORS = ['#2f5d62', '#3f6b6f', '#4a6f60', '#55697a', '#6a5f4f', '#5d5a70'];
@@ -432,10 +462,10 @@
   ];
 
   var PAYS = [
-    { id: 'medical', icon: '保', key: 'pay.medical', descKey: 'pay.medicalDesc' },
-    { id: 'wechat', icon: '微', key: 'pay.wechat', descKey: 'pay.wechatDesc' },
-    { id: 'alipay', icon: '支', key: 'pay.alipay', descKey: 'pay.alipayDesc' },
-    { id: 'hospital', icon: '院', key: 'pay.hospital', descKey: 'pay.hospitalDesc' }
+    { id: 'medical', icon: '保', ico: 'shield-cross', key: 'pay.medical', descKey: 'pay.medicalDesc' },
+    { id: 'wechat', icon: '微', ico: 'phone', key: 'pay.wechat', descKey: 'pay.wechatDesc' },
+    { id: 'alipay', icon: '支', ico: 'qr-code', key: 'pay.alipay', descKey: 'pay.alipayDesc' },
+    { id: 'hospital', icon: '院', ico: 'cash', key: 'pay.hospital', descKey: 'pay.hospitalDesc' }
   ];
 
   /* ---------------- 状态 ---------------- */
@@ -457,6 +487,17 @@
   var autoSpeak = false; // 首次交互后才自动朗读，避免浏览器拦截
 
   /* ---------------- 工具 ---------------- */
+  /* 往容器里放一个内联 SVG 图标。
+     图标库没加载、或图标名不存在时返回 false，由调用方用文字兜底 —— 页面不会因此空掉。 */
+  function fillIcon(host, name) {
+    var lib = window.XiaoYuErIcons;
+    if (!host || !lib || !name) return false;
+    var el = lib.element(name);
+    if (!el) return false;
+    host.textContent = '';
+    host.appendChild(el);
+    return true;
+  }
   function $(sel) { return document.querySelector(sel); }
   function $$(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
 
@@ -644,6 +685,8 @@
   function applyStaticI18n() {
     $$('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
     $$('[data-i18n-aria]').forEach(function (el) { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
+    /* 页面里写死的图标占位（顶栏院名、能力带、到院提醒等）在这里补成内联 SVG */
+    $$('[data-icon]').forEach(function (el) { fillIcon(el, el.getAttribute('data-icon')); });
     document.title = t('doc.title');
     document.documentElement.lang = HTML_LANG[state.lang] || 'zh-CN';
     document.documentElement.setAttribute('data-lang', state.lang);
@@ -697,11 +740,11 @@
       av.setAttribute('aria-hidden', 'true');
       av.textContent = opts.avatarText || '';
       btn.appendChild(av);
-    } else if (opts.icon) {
+    } else if (opts.icon || opts.iconSvg) {
       var ic = document.createElement('span');
       ic.className = 'bigcard__icon';
       ic.setAttribute('aria-hidden', 'true');
-      ic.textContent = opts.icon;
+      if (!fillIcon(ic, opts.iconSvg)) ic.textContent = opts.icon || '';
       btn.appendChild(ic);
     }
 
@@ -741,6 +784,7 @@
     SYMPTOMS.forEach(function (s) {
       box.appendChild(optionCard({
         icon: s.icon,
+        iconSvg: s.ico,
         title: pick(s.name),
         selected: state.symptom === s.id,
         action: 'symptom',
@@ -756,10 +800,15 @@
     var result = $('#dept-result');
     if (state.dept) {
       result.hidden = false;
-      $('#dept-name').textContent = pick(DEPTS[state.dept].name);
+      /* 科室名前面带一个图标：老人不认字也认得出这是「哪个科」 */
+      var nameEl = $('#dept-name');
+      nameEl.textContent = '';
+      var deptName = pick(DEPTS[state.dept].name);
+      fillIcon(nameEl, DEPTS[state.dept].ico);
+      nameEl.appendChild(document.createTextNode(deptName));
       $('#dept-reason').textContent = state.deptPicked
-        ? t('step1.pickedDept', { dept: pick(DEPTS[state.dept].name) })
-        : t('step1.recommend', { symptom: pick(currentSymptom().name), dept: pick(DEPTS[state.dept].name) });
+        ? t('step1.pickedDept', { dept: deptName })
+        : t('step1.recommend', { symptom: pick(currentSymptom().name), dept: deptName });
       var altsBox = $('#dept-alts');
       altsBox.innerHTML = '';
       altsBox.hidden = true;
@@ -782,6 +831,7 @@
     altsBox.appendChild(label);
     list.forEach(function (d) {
       altsBox.appendChild(optionCard({
+        iconSvg: DEPTS[d].ico,
         title: pick(DEPTS[d].name),
         selected: false,
         action: 'dept',
@@ -814,7 +864,7 @@
     box.innerHTML = '';
     dateOptions().forEach(function (d) {
       box.appendChild(optionCard({
-        icon: (state.lang === 'en' ? d.label.charAt(0) : d.label.charAt(0)),
+        iconSvg: 'calendar',
         title: d.label,
         desc: d.text,
         selected: state.date === d.id,
@@ -831,7 +881,7 @@
       var left = state.doctor ? slotLeft(state.doctor, state.date || 'd0', s.id) : 1;
       var off = left === 0;
       box.appendChild(optionCard({
-        icon: s.id === 'am' ? '上' : '下',
+        iconSvg: s.id === 'am' ? 'sun' : 'sunset',
         title: t(s.labelKey) + ' ' + t(s.timeKey),
         desc: off ? t('slot.full') : t('slot.left', { n: left }),
         off: off,
@@ -931,6 +981,7 @@
     PAYS.forEach(function (p) {
       box.appendChild(optionCard({
         icon: p.icon,
+        iconSvg: p.ico,
         title: t(p.key),
         desc: t(p.descKey),
         selected: state.pay === p.id,

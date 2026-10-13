@@ -25,7 +25,10 @@
       </span>
       <span class="brand__sep" aria-hidden="true"></span>
       <span class="brand__text brand__text--hospital">
-        <span class="brand__hospital" data-i18n="brand.hospital"></span>
+        <span class="brand__hospital-row">
+          <span class="brand__ico" data-icon="hospital" aria-hidden="true"></span>
+          <span class="brand__hospital" data-i18n="brand.hospital"></span>
+        </span>
         <span class="brand__hospital-sub" data-i18n="brand.hospitalSub"></span>
       </span>
     </div>
@@ -81,12 +84,35 @@
     <h1 class="title" data-i18n="step0.title"></h1>
     <p class="lead" data-i18n="step0.lead"></p>
     <button type="button" class="bigcard bigcard--start" data-action="start">
-      <span class="bigcard__icon" aria-hidden="true">✓</span>
+      <span class="bigcard__icon bigcard__icon--lg" data-icon="clipboard-pulse" aria-hidden="true"></span>
       <span class="bigcard__main">
         <span class="bigcard__title" data-i18n="step0.cta"></span>
         <span class="bigcard__desc" data-i18n="step0.ctaDesc"></span>
       </span>
     </button>
+
+    <!-- 本页四个智能体各自负责什么：图标 + 一句话，老人一眼看懂 -->
+    <div class="ability">
+      <p class="ability__title" data-i18n="ability.title"></p>
+      <div class="ability__list" role="list">
+        <div class="ability__item" role="listitem">
+          <span class="ability__ico" data-icon="stethoscope" aria-hidden="true"></span>
+          <span class="ability__text" data-i18n="ability.1"></span>
+        </div>
+        <div class="ability__item" role="listitem">
+          <span class="ability__ico" data-icon="clipboard-pulse" aria-hidden="true"></span>
+          <span class="ability__text" data-i18n="ability.2"></span>
+        </div>
+        <div class="ability__item" role="listitem">
+          <span class="ability__ico" data-icon="shield-cross" aria-hidden="true"></span>
+          <span class="ability__text" data-i18n="ability.3"></span>
+        </div>
+        <div class="ability__item" role="listitem">
+          <span class="ability__ico" data-icon="voice" aria-hidden="true"></span>
+          <span class="ability__text" data-i18n="ability.4"></span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- 第 1 步：选症状 -->
@@ -146,7 +172,7 @@
   <!-- 第 5 步：预约成功 -->
   <section class="step" id="step-5" hidden>
     <div class="success">
-      <div class="success__badge" aria-hidden="true">✓</div>
+      <div class="success__badge" aria-hidden="true"><span data-icon="check-badge"></span></div>
       <h1 class="title title--success" data-i18n="step5.title"></h1>
       <p class="lead" data-i18n="step5.lead"></p>
     </div>
@@ -156,10 +182,21 @@
     <div class="notice notice--tips">
       <p class="notice__label" data-i18n="step5.tipsLabel"></p>
       <ul class="tips">
-        <li class="tips__item"><span class="tips__no" aria-hidden="true">1</span><span data-i18n="step5.tip1"></span></li>
-        <li class="tips__item"><span class="tips__no" aria-hidden="true">2</span><span data-i18n="step5.tip2"></span></li>
-        <li class="tips__item"><span class="tips__no" aria-hidden="true">3</span><span data-i18n="step5.tip3"></span></li>
+        <li class="tips__item"><span class="tips__ico" data-icon="id-card" aria-hidden="true"></span><span data-i18n="step5.tip1"></span></li>
+        <li class="tips__item"><span class="tips__ico" data-icon="clock" aria-hidden="true"></span><span data-i18n="step5.tip2"></span></li>
+        <li class="tips__item"><span class="tips__ico" data-icon="triage" aria-hidden="true"></span><span data-i18n="step5.tip3"></span></li>
       </ul>
+    </div>
+
+    <!-- 到院那天的小提醒：看一眼就知道要带什么、注意什么 -->
+    <div class="protect">
+      <p class="protect__title" data-i18n="step5.protectTitle"></p>
+      <div class="protect__row">
+        <span class="protect__item"><span class="protect__ico" data-icon="mask" aria-hidden="true"></span><span class="protect__text" data-i18n="step5.protect1"></span></span>
+        <span class="protect__item"><span class="protect__ico" data-icon="pills" aria-hidden="true"></span><span class="protect__text" data-i18n="step5.protect2"></span></span>
+        <span class="protect__item"><span class="protect__ico" data-icon="sanitizer" aria-hidden="true"></span><span class="protect__text" data-i18n="step5.protect3"></span></span>
+        <span class="protect__item"><span class="protect__ico" data-icon="virus" aria-hidden="true"></span><span class="protect__text" data-i18n="step5.protect4"></span></span>
+      </div>
     </div>
 
     <div class="grid grid--2">
@@ -246,6 +283,7 @@
   <div class="noscript">本页需要浏览器开启 JavaScript 才能使用；若无法开启，请到医院一楼服务台由工作人员协助挂号。</div>
 </noscript>
 
+<script src="icons.js" charset="utf-8"></script>
 <script src="app.js" charset="utf-8"></script>
 <script src="ai.js" charset="utf-8"></script>
 </body>

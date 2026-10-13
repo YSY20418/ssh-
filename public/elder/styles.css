@@ -335,7 +335,9 @@ body::before {
   font-size: 1.5rem;
   font-weight: 700;
 }
-.bigcard[aria-pressed="true"] .bigcard__icon { background: #fff; color: var(--brand); }
+/* 选中态：主色底 + 深描边 + 投影，老人一眼能看出选了哪个。
+   图标位改浅青底而非纯白：内联 SVG 是白底图标，纯白底会让它「化掉」。 */
+.bigcard[aria-pressed="true"] .bigcard__icon { background: #eef5f4; color: var(--brand); }
 
 .bigcard__main { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 auto; }
 .bigcard__title { font-size: 1.3rem; font-weight: 700; line-height: 1.4; }
@@ -382,6 +384,66 @@ body::before {
 }
 .bigcard[aria-pressed="true"] .avatar { box-shadow: 0 0 0 3px #fff; }
 
+/* ---------- 图标：全部为内联 SVG ----------
+   不加载任何图片，离线可用；矢量所以放到多大都清楚；
+   轻轻一层投影，让图标像贴在卡片上，而不是压在上面。 */
+.ico {
+  display: block;
+  flex: 0 0 auto;
+  width: 1.45rem; height: 1.45rem;
+  filter: drop-shadow(0 1px 1.5px rgba(47, 93, 98, 0.22));
+}
+.bigcard__icon .ico { width: 2.2rem; height: 2.2rem; }
+.bigcard__icon--lg .ico { width: 2.8rem; height: 2.8rem; }
+.notice__strong .ico { width: 2.3rem; height: 2.3rem; }
+.brand__ico .ico { width: 1.5rem; height: 1.5rem; }
+.ability__ico .ico { width: 2.5rem; height: 2.5rem; }
+.tips__ico .ico { width: 2.1rem; height: 2.1rem; }
+.protect__ico .ico { width: 2.3rem; height: 2.3rem; }
+
+/* 顶栏院名前的院徽 */
+.brand__hospital-row { display: flex; align-items: center; gap: 0.35rem; }
+.brand__ico { flex: 0 0 auto; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; }
+
+/* 第 0 步：本页能替您做什么（四个智能体各管一段） */
+.ability {
+  margin-top: 1.3rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.ability__title { margin: 0 0 0.8rem; font-size: 1.1rem; font-weight: 700; color: var(--brand); }
+.ability__list { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+.ability__item { display: flex; align-items: center; gap: 0.8rem; }
+.ability__ico {
+  flex: 0 0 auto;
+  width: 3.3rem; height: 3.3rem;
+  display: grid; place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--brand-soft);
+}
+.ability__text { font-size: 1.05rem; color: var(--ink-2); line-height: 1.6; }
+
+/* 成功页：到院那天的小提醒 */
+.protect {
+  margin-top: 1.2rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.protect__title { margin: 0 0 0.7rem; font-size: 1.1rem; font-weight: 700; color: var(--brand); }
+.protect__row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.protect__item { display: flex; align-items: center; gap: 0.6rem; font-size: 1.05rem; color: var(--ink-2); line-height: 1.45; }
+.protect__ico {
+  flex: 0 0 auto;
+  width: 2.7rem; height: 2.7rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+}
+
 /* ---------- 语音条 ---------- */
 .voicebar {
   display: flex;
@@ -421,6 +483,9 @@ body::before {
 .notice--tips { margin-top: 1.4rem; }
 .notice__label { font-size: 1.05rem; color: var(--warn-ink); margin: 0 0 0.2rem; font-weight: 700; }
 .notice__strong {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   font-size: 1.55rem; font-weight: 700; color: var(--brand);
   margin: 0.1rem 0 0.3rem;
 }
@@ -449,15 +514,13 @@ body::before {
 /* ---------- 成功页 ---------- */
 .success { text-align: center; padding: 0.5rem 0 0.3rem; }
 .success__badge {
-  width: 5rem; height: 5rem;
+  width: 5.4rem; height: 5.4rem;
   margin: 0 auto 0.7rem;
   display: grid; place-items: center;
-  border-radius: 50%;
-  background: var(--ok-soft);
+  background: transparent;
   color: var(--ok);
-  font-size: 2.6rem;
-  font-weight: 700;
 }
+.success__badge .ico { width: 5.4rem; height: 5.4rem; }
 .ticket {
   background: var(--card);
   border: 2px solid var(--ok);
@@ -483,15 +546,11 @@ body::before {
   display: flex; align-items: flex-start; gap: 0.7rem;
   font-size: 1.2rem; color: var(--ink); line-height: 1.6;
 }
-.tips__no {
+/* 每条提醒前面放一个图形：不认字也看得懂要带什么、去哪 */
+.tips__ico {
   flex: 0 0 auto;
-  width: 1.9rem; height: 1.9rem;
+  width: 2.2rem; height: 2.2rem;
   display: grid; place-items: center;
-  border-radius: 50%;
-  background: var(--brand);
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 700;
   margin-top: 0.15rem;
 }
 
@@ -631,6 +690,9 @@ body::before {
   .grid--2 { grid-template-columns: 1fr 1fr; }
   .grid--3 { grid-template-columns: repeat(3, 1fr); }
   .modal__actions { grid-template-columns: 1fr 1fr; }
+  /* 能力带与到院提醒：两列，一眼扫完 */
+  .ability__list { grid-template-columns: 1fr 1fr; }
+  .protect__row { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* 电脑：主内容包一张白纸 + 右侧常驻摘要栏 */
@@ -725,6 +787,21 @@ body::before {
   .toolgroup { padding: 0.2rem; gap: 0.2rem; }
   .toolbtn { min-height: 2.65rem; min-width: 2.5rem; padding: 0 0.55rem; font-size: 1rem; border-radius: 8px; }
   html[data-lang="en"] .toolbtn { padding: 0 0.4rem; font-size: 0.92rem; }
+
+  /* 手机端图标跟着收一点，别把顶栏和卡片撑高 */
+  .brand__ico { width: 1.25rem; height: 1.25rem; }
+  .brand__ico .ico { width: 1.25rem; height: 1.25rem; }
+  .bigcard__icon { width: 3rem; height: 3rem; }
+  .bigcard__icon .ico { width: 2rem; height: 2rem; }
+  .bigcard__icon--lg .ico { width: 2.5rem; height: 2.5rem; }
+  .ability { padding: 0.95rem 1rem; }
+  .ability__ico { width: 2.9rem; height: 2.9rem; }
+  .ability__ico .ico { width: 2.2rem; height: 2.2rem; }
+  .ability__text { font-size: 1rem; }
+  .protect { padding: 0.95rem 1rem; }
+  .protect__ico { width: 2.3rem; height: 2.3rem; }
+  .protect__ico .ico { width: 2rem; height: 2rem; }
+  .protect__item { font-size: 1rem; gap: 0.5rem; }
 }
 
 /* ---------- 打印：把预约单打成一张纸 ---------- */

@@ -470,7 +470,7 @@ check('编码声明齐全（手机端不乱码的前提）', () => {
     const head = readFileSync(path.join(ELDER, f), 'latin1').slice(0, 20);
     assert(/@charset\s+["']UTF-8["']/i.test(head), `${f} 首行缺 @charset "UTF-8";`);
   }
-  for (const f of ['app.js', 'ai.js']) {
+  for (const f of ['icons.js', 'app.js', 'ai.js']) {
     const b = readFileSync(path.join(ELDER, f));
     assert(b[0] === 0xef && b[1] === 0xbb && b[2] === 0xbf, `${f} 缺 UTF-8 BOM（外链脚本只能靠它兜底）`);
   }
@@ -496,6 +496,8 @@ await checkAsync('单文件版可用（样式脚本全内联，手机端最稳�
   await new Promise((r) => setTimeout(r, 400));
   assert(d.window.XiaoYuEr, '内联后主程序没跑起来');
   assert(d.window.XiaoYuErAI, '内联后语音助手没跑起来');
+  assert(d.window.XiaoYuErIcons && d.window.document.querySelectorAll('svg.ico').length > 10,
+    '内联后图标库没生效（单文件版会缺图）');
   assert(/挂号|预约/.test(d.window.document.title), '标题中文异常：' + d.window.document.title);
   d.window.close();
   const kb = (buf.length / 1024).toFixed(0);
@@ -612,6 +614,84 @@ check('悬浮按钮避让底部操作栏，不遮挡按钮', () => {
   assert(/bottom:\s*calc\(var\(--actionbar-h/.test(css), '悬浮按钮未按操作栏高度避让');
   assert(/body\[data-step="5"\]\s*\.aifab/.test(css), '成功页缺少悬浮按钮复位规则');
   return '按 --actionbar-h 动态避让，窄屏不再压住「需要帮助」';
+});
+
+/* ---------- 图标：内联 SVG、零图片请求、配色不越界 ---------- */
+check('图标全部为内联 SVG，不加载任何图片', () => {
+  const lib = window.XiaoYuErIcons;
+  assert(lib, '未挂载图标库');
+  assert(lib.names.length >= 28, '图标数量偏少：' + lib.names.length);
+  const svgs = $$('svg.ico');
+  assert(svgs.length >= 20, '页面上的内联图标只有 ' + svgs.length + ' 个');
+  svgs.forEach((s) => assert(s.getAttribute('viewBox') === '0 0 48 48', '图标缺少统一 viewBox'));
+  assert(doc.querySelectorAll('img').length === 0, '页面出现了 <img> 外链图片');
+  const src = readFileSync(PAGE, 'utf8') + readFileSync(path.join(ELDER, 'styles.css'), 'utf8');
+  assert(!/\.(png|jpe?g|gif|webp)["')]/i.test(src), '样式或页面里引用了位图素材');
+  return lib.names.length + ' 个内联图标 · 页面 ' + svgs.length + ' 个图标位 · 零图片请求';
+});
+
+check('图标集覆盖素材集：13 件医疗物件一个不少', () => {
+  const lib = window.XiaoYuErIcons;
+  const need = ['clipboard-pulse', 'dna', 'heart-pulse', 'mask', 'medkit', 'plus-circle',
+    'pill-bottle', 'pills', 'sanitizer', 'shield-cross', 'stethoscope', 'syringe', 'virus'];
+  const miss = need.filter((n) => !lib.has(n));
+  assert(miss.length === 0, '缺少图标：' + miss.join('、'));
+  const face = ['head', 'stomach', 'bone', 'eye', 'calendar', 'sun', 'sunset',
+    'id-card', 'clock', 'triage', 'phone', 'qr-code', 'cash', 'check-badge', 'hospital', 'voice'];
+  const missFace = face.filter((n) => !lib.has(n));
+  assert(missFace.length === 0, '缺少页面补充图形：' + missFace.join('、'));
+  return '医疗物件 ' + need.length + ' 件 + 页面补充 ' + face.length + ' 个，共 ' + lib.names.length + ' 个';
+});
+
+check('每一步的选项都带图标（不认字也看得懂）', () => {
+  api.call('reset');
+  api.go(1);
+  const hasIcon = (b) => !!b.querySelector('.bigcard__icon svg');
+  const sym = $$('#symptom-list .bigcard');
+  assert(sym.length === 7 && sym.every(hasIcon), '症状卡片缺少图标');
+  api.call('select_symptom', { value: 'head' });
+  assert($('#dept-name svg'), '推荐科室前缺少图标');
+  click('#dept-change'); // 展开备选科室
+  const alts = $$('#dept-alts .bigcard');
+  assert(alts.length > 0, '备选科室没渲染出来');
+  assert(alts.every(hasIcon), '备选科室缺少图标');
+  api.call('select_doctor', { value: 'n1' });
+  api.go(3);
+  assert($$('#date-list .bigcard').every(hasIcon), '日期卡片缺少图标');
+  assert($$('#slot-list .bigcard').every(hasIcon), '上下午卡片缺少图标');
+  api.call('select_date', { value: 'd0' });
+  api.call('select_slot', { value: 'am' });
+  api.go(4);
+  const pays = $$('#pay-list .bigcard');
+  assert(pays.length === 4 && pays.every(hasIcon), '付款方式缺少图标');
+  assert($$('#patient-list .bigcard .avatar').length === 3, '就诊人仍应保留大头像');
+  api.call('reset');
+  return '症状 7 · 科室推荐与备选 · 日期 3 · 上下午 2 · 付款 4 · 就诊人大头像 3';
+});
+
+check('第 0 步能力带与成功页到院提醒都带图标', () => {
+  const ab = $$('.ability__item');
+  assert(ab.length === 4, '能力带应有 4 项，实际 ' + ab.length);
+  assert(ab.every((i) => i.querySelector('.ability__ico svg')), '能力带缺少图标');
+  const pr = $$('.protect__item');
+  assert(pr.length === 4, '到院提醒应有 4 项，实际 ' + pr.length);
+  assert(pr.every((i) => i.querySelector('.protect__ico svg')), '到院提醒缺少图标');
+  const tp = $$('.tips__item');
+  assert(tp.length === 3, '到院须知应有 3 条');
+  assert(tp.every((i) => i.querySelector('.tips__ico svg')), '到院须知缺少图标');
+  assert($('.brand__ico svg'), '顶栏院名前的院徽缺失');
+  assert($('.success__badge svg'), '成功页徽标未使用内联图标');
+  return '4 项能力 + 4 项到院提醒 + 3 条到院须知 + 院徽 + 成功徽标，全部内联图标';
+});
+
+check('图标配色不越界（只用页面主色，没有高饱和纯绿）', () => {
+  const js = readFileSync(path.join(ELDER, 'icons.js'), 'utf8');
+  const colors = [...new Set((js.match(/#[0-9a-fA-F]{6}/g) || []).map((c) => c.toLowerCase()))];
+  const allowed = ['#2f5d62', '#8fb3ae', '#e4efed', '#ffffff', '#3f6b52'];
+  const extra = colors.filter((c) => !allowed.includes(c));
+  assert(extra.length === 0, '图标里出现了清单外的颜色：' + extra.join('、'));
+  assert(colors.includes('#2f5d62'), '图标没有使用页面主色');
+  return colors.join(' ') + ' —— 与页面三主色同一套色';
 });
 
 /* ---------- 输出 ---------- */

@@ -345,7 +345,9 @@ body::before {
   font-size: 1.5rem;
   font-weight: 700;
 }
-.bigcard[aria-pressed="true"] .bigcard__icon { background: #fff; color: var(--brand); }
+/* 选中态：主色底 + 深描边 + 投影，老人一眼能看出选了哪个。
+   图标位改浅青底而非纯白：内联 SVG 是白底图标，纯白底会让它「化掉」。 */
+.bigcard[aria-pressed="true"] .bigcard__icon { background: #eef5f4; color: var(--brand); }
 
 .bigcard__main { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 auto; }
 .bigcard__title { font-size: 1.3rem; font-weight: 700; line-height: 1.4; }
@@ -392,6 +394,66 @@ body::before {
 }
 .bigcard[aria-pressed="true"] .avatar { box-shadow: 0 0 0 3px #fff; }
 
+/* ---------- 图标：全部为内联 SVG ----------
+   不加载任何图片，离线可用；矢量所以放到多大都清楚；
+   轻轻一层投影，让图标像贴在卡片上，而不是压在上面。 */
+.ico {
+  display: block;
+  flex: 0 0 auto;
+  width: 1.45rem; height: 1.45rem;
+  filter: drop-shadow(0 1px 1.5px rgba(47, 93, 98, 0.22));
+}
+.bigcard__icon .ico { width: 2.2rem; height: 2.2rem; }
+.bigcard__icon--lg .ico { width: 2.8rem; height: 2.8rem; }
+.notice__strong .ico { width: 2.3rem; height: 2.3rem; }
+.brand__ico .ico { width: 1.5rem; height: 1.5rem; }
+.ability__ico .ico { width: 2.5rem; height: 2.5rem; }
+.tips__ico .ico { width: 2.1rem; height: 2.1rem; }
+.protect__ico .ico { width: 2.3rem; height: 2.3rem; }
+
+/* 顶栏院名前的院徽 */
+.brand__hospital-row { display: flex; align-items: center; gap: 0.35rem; }
+.brand__ico { flex: 0 0 auto; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; }
+
+/* 第 0 步：本页能替您做什么（四个智能体各管一段） */
+.ability {
+  margin-top: 1.3rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.ability__title { margin: 0 0 0.8rem; font-size: 1.1rem; font-weight: 700; color: var(--brand); }
+.ability__list { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+.ability__item { display: flex; align-items: center; gap: 0.8rem; }
+.ability__ico {
+  flex: 0 0 auto;
+  width: 3.3rem; height: 3.3rem;
+  display: grid; place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--brand-soft);
+}
+.ability__text { font-size: 1.05rem; color: var(--ink-2); line-height: 1.6; }
+
+/* 成功页：到院那天的小提醒 */
+.protect {
+  margin-top: 1.2rem;
+  padding: 1.1rem 1.2rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.protect__title { margin: 0 0 0.7rem; font-size: 1.1rem; font-weight: 700; color: var(--brand); }
+.protect__row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.protect__item { display: flex; align-items: center; gap: 0.6rem; font-size: 1.05rem; color: var(--ink-2); line-height: 1.45; }
+.protect__ico {
+  flex: 0 0 auto;
+  width: 2.7rem; height: 2.7rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+}
+
 /* ---------- 语音条 ---------- */
 .voicebar {
   display: flex;
@@ -431,6 +493,9 @@ body::before {
 .notice--tips { margin-top: 1.4rem; }
 .notice__label { font-size: 1.05rem; color: var(--warn-ink); margin: 0 0 0.2rem; font-weight: 700; }
 .notice__strong {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   font-size: 1.55rem; font-weight: 700; color: var(--brand);
   margin: 0.1rem 0 0.3rem;
 }
@@ -459,15 +524,13 @@ body::before {
 /* ---------- 成功页 ---------- */
 .success { text-align: center; padding: 0.5rem 0 0.3rem; }
 .success__badge {
-  width: 5rem; height: 5rem;
+  width: 5.4rem; height: 5.4rem;
   margin: 0 auto 0.7rem;
   display: grid; place-items: center;
-  border-radius: 50%;
-  background: var(--ok-soft);
+  background: transparent;
   color: var(--ok);
-  font-size: 2.6rem;
-  font-weight: 700;
 }
+.success__badge .ico { width: 5.4rem; height: 5.4rem; }
 .ticket {
   background: var(--card);
   border: 2px solid var(--ok);
@@ -493,15 +556,11 @@ body::before {
   display: flex; align-items: flex-start; gap: 0.7rem;
   font-size: 1.2rem; color: var(--ink); line-height: 1.6;
 }
-.tips__no {
+/* 每条提醒前面放一个图形：不认字也看得懂要带什么、去哪 */
+.tips__ico {
   flex: 0 0 auto;
-  width: 1.9rem; height: 1.9rem;
+  width: 2.2rem; height: 2.2rem;
   display: grid; place-items: center;
-  border-radius: 50%;
-  background: var(--brand);
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 700;
   margin-top: 0.15rem;
 }
 
@@ -641,6 +700,9 @@ body::before {
   .grid--2 { grid-template-columns: 1fr 1fr; }
   .grid--3 { grid-template-columns: repeat(3, 1fr); }
   .modal__actions { grid-template-columns: 1fr 1fr; }
+  /* 能力带与到院提醒：两列，一眼扫完 */
+  .ability__list { grid-template-columns: 1fr 1fr; }
+  .protect__row { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* 电脑：主内容包一张白纸 + 右侧常驻摘要栏 */
@@ -735,6 +797,21 @@ body::before {
   .toolgroup { padding: 0.2rem; gap: 0.2rem; }
   .toolbtn { min-height: 2.65rem; min-width: 2.5rem; padding: 0 0.55rem; font-size: 1rem; border-radius: 8px; }
   html[data-lang="en"] .toolbtn { padding: 0 0.4rem; font-size: 0.92rem; }
+
+  /* 手机端图标跟着收一点，别把顶栏和卡片撑高 */
+  .brand__ico { width: 1.25rem; height: 1.25rem; }
+  .brand__ico .ico { width: 1.25rem; height: 1.25rem; }
+  .bigcard__icon { width: 3rem; height: 3rem; }
+  .bigcard__icon .ico { width: 2rem; height: 2rem; }
+  .bigcard__icon--lg .ico { width: 2.5rem; height: 2.5rem; }
+  .ability { padding: 0.95rem 1rem; }
+  .ability__ico { width: 2.9rem; height: 2.9rem; }
+  .ability__ico .ico { width: 2.2rem; height: 2.2rem; }
+  .ability__text { font-size: 1rem; }
+  .protect { padding: 0.95rem 1rem; }
+  .protect__ico { width: 2.3rem; height: 2.3rem; }
+  .protect__ico .ico { width: 2rem; height: 2rem; }
+  .protect__item { font-size: 1rem; gap: 0.5rem; }
 }
 
 /* ---------- 打印：把预约单打成一张纸 ---------- */
@@ -995,7 +1072,10 @@ body.ai-open .aifab { display: none; }
       </span>
       <span class="brand__sep" aria-hidden="true"></span>
       <span class="brand__text brand__text--hospital">
-        <span class="brand__hospital" data-i18n="brand.hospital"></span>
+        <span class="brand__hospital-row">
+          <span class="brand__ico" data-icon="hospital" aria-hidden="true"></span>
+          <span class="brand__hospital" data-i18n="brand.hospital"></span>
+        </span>
         <span class="brand__hospital-sub" data-i18n="brand.hospitalSub"></span>
       </span>
     </div>
@@ -1051,12 +1131,35 @@ body.ai-open .aifab { display: none; }
     <h1 class="title" data-i18n="step0.title"></h1>
     <p class="lead" data-i18n="step0.lead"></p>
     <button type="button" class="bigcard bigcard--start" data-action="start">
-      <span class="bigcard__icon" aria-hidden="true">✓</span>
+      <span class="bigcard__icon bigcard__icon--lg" data-icon="clipboard-pulse" aria-hidden="true"></span>
       <span class="bigcard__main">
         <span class="bigcard__title" data-i18n="step0.cta"></span>
         <span class="bigcard__desc" data-i18n="step0.ctaDesc"></span>
       </span>
     </button>
+
+    <!-- 本页四个智能体各自负责什么：图标 + 一句话，老人一眼看懂 -->
+    <div class="ability">
+      <p class="ability__title" data-i18n="ability.title"></p>
+      <div class="ability__list" role="list">
+        <div class="ability__item" role="listitem">
+          <span class="ability__ico" data-icon="stethoscope" aria-hidden="true"></span>
+          <span class="ability__text" data-i18n="ability.1"></span>
+        </div>
+        <div class="ability__item" role="listitem">
+          <span class="ability__ico" data-icon="clipboard-pulse" aria-hidden="true"></span>
+          <span class="ability__text" data-i18n="ability.2"></span>
+        </div>
+        <div class="ability__item" role="listitem">
+          <span class="ability__ico" data-icon="shield-cross" aria-hidden="true"></span>
+          <span class="ability__text" data-i18n="ability.3"></span>
+        </div>
+        <div class="ability__item" role="listitem">
+          <span class="ability__ico" data-icon="voice" aria-hidden="true"></span>
+          <span class="ability__text" data-i18n="ability.4"></span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- 第 1 步：选症状 -->
@@ -1116,7 +1219,7 @@ body.ai-open .aifab { display: none; }
   <!-- 第 5 步：预约成功 -->
   <section class="step" id="step-5" hidden>
     <div class="success">
-      <div class="success__badge" aria-hidden="true">✓</div>
+      <div class="success__badge" aria-hidden="true"><span data-icon="check-badge"></span></div>
       <h1 class="title title--success" data-i18n="step5.title"></h1>
       <p class="lead" data-i18n="step5.lead"></p>
     </div>
@@ -1126,10 +1229,21 @@ body.ai-open .aifab { display: none; }
     <div class="notice notice--tips">
       <p class="notice__label" data-i18n="step5.tipsLabel"></p>
       <ul class="tips">
-        <li class="tips__item"><span class="tips__no" aria-hidden="true">1</span><span data-i18n="step5.tip1"></span></li>
-        <li class="tips__item"><span class="tips__no" aria-hidden="true">2</span><span data-i18n="step5.tip2"></span></li>
-        <li class="tips__item"><span class="tips__no" aria-hidden="true">3</span><span data-i18n="step5.tip3"></span></li>
+        <li class="tips__item"><span class="tips__ico" data-icon="id-card" aria-hidden="true"></span><span data-i18n="step5.tip1"></span></li>
+        <li class="tips__item"><span class="tips__ico" data-icon="clock" aria-hidden="true"></span><span data-i18n="step5.tip2"></span></li>
+        <li class="tips__item"><span class="tips__ico" data-icon="triage" aria-hidden="true"></span><span data-i18n="step5.tip3"></span></li>
       </ul>
+    </div>
+
+    <!-- 到院那天的小提醒：看一眼就知道要带什么、注意什么 -->
+    <div class="protect">
+      <p class="protect__title" data-i18n="step5.protectTitle"></p>
+      <div class="protect__row">
+        <span class="protect__item"><span class="protect__ico" data-icon="mask" aria-hidden="true"></span><span class="protect__text" data-i18n="step5.protect1"></span></span>
+        <span class="protect__item"><span class="protect__ico" data-icon="pills" aria-hidden="true"></span><span class="protect__text" data-i18n="step5.protect2"></span></span>
+        <span class="protect__item"><span class="protect__ico" data-icon="sanitizer" aria-hidden="true"></span><span class="protect__text" data-i18n="step5.protect3"></span></span>
+        <span class="protect__item"><span class="protect__ico" data-icon="virus" aria-hidden="true"></span><span class="protect__text" data-i18n="step5.protect4"></span></span>
+      </div>
     </div>
 
     <div class="grid grid--2">
@@ -1218,6 +1332,310 @@ body.ai-open .aifab { display: none; }
 
 <script>
 /* ============================================================
+   小鱼兒 · 预约挂号（适老版）图标库
+   - 全部为内联 SVG：离线可用、不加载任何图片、不产生网络请求
+   - 双色语言：白色主体 + 深青绿点缀（与页面三主色同一套色）
+   - 尺寸随字号缩放，任何时候都是矢量清晰
+   - 外部用法：XiaoYuErIcons.element('heart-pulse') 取一个 SVG 元素
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var INK = '#2f5d62';      /* 主色：描边与点缀 */
+  var MINT = '#8fb3ae';     /* 淡青：次要线条 */
+  var SOFT = '#e4efed';     /* 很淡的青灰：阴影面 */
+  var WHITE = '#ffffff';    /* 主体 */
+  var OK = '#3f6b52';       /* 成功绿 */
+
+  /* 十字：以 (cx,cy) 为中心，a = 半臂宽，L = 半臂长 */
+  function plus(cx, cy, a, L) {
+    var n = function (v) { return Math.round(v * 10) / 10; };
+    return 'M' + n(cx - a) + ' ' + n(cy - L) +
+      'h' + n(2 * a) + 'v' + n(L - a) + 'h' + n(L - a) + 'v' + n(2 * a) +
+      'h-' + n(L - a) + 'v' + n(L - a) + 'h-' + n(2 * a) +
+      'v-' + n(L - a) + 'h-' + n(L - a) + 'v-' + n(2 * a) + 'h' + n(L - a) + 'z';
+  }
+
+  /* 一圈小圆点（病毒刺突、太阳光芒等） */
+  function ring(cx, cy, r, count, dotR, startDeg) {
+    var s = '';
+    for (var i = 0; i < count; i++) {
+      var deg = (startDeg || 0) + (360 / count) * i;
+      var rad = (deg * Math.PI) / 180;
+      s += '<circle cx="' + (Math.round((cx + r * Math.cos(rad)) * 10) / 10) +
+        '" cy="' + (Math.round((cy + r * Math.sin(rad)) * 10) / 10) +
+        '" r="' + dotR + '"/>';
+    }
+    return s;
+  }
+
+  var CROSS = ' fill="' + INK + '" stroke="none"';
+
+  /* 骨头：一根骨干 + 四个关节球。画两遍 —— 第二遍纯白不带描边，
+     把内部多余的线条盖掉，轮廓就只剩外圈，看起来才是一根完整的骨头。 */
+  function boneShapes(strokeWidth, fill) {
+    var a = (fill ? ' fill="' + fill + '"' : '') + (strokeWidth ? ' stroke-width="' + strokeWidth + '"' : '');
+    return '<rect x="14" y="21" width="20" height="6" rx="3"' + a + '/>' +
+      '<circle cx="13.5" cy="20" r="4.4"' + a + '/>' +
+      '<circle cx="13.5" cy="28" r="4.4"' + a + '/>' +
+      '<circle cx="34.5" cy="20" r="4.4"' + a + '/>' +
+      '<circle cx="34.5" cy="28" r="4.4"' + a + '/>';
+  }
+
+  var ICONS = {
+    /* ---------- 医疗物件（与素材集一一对应） ---------- */
+
+    /* 病历夹 + 心电线 */
+    'clipboard-pulse':
+      '<rect x="11" y="9.5" width="26" height="32.5" rx="4.5" fill="' + WHITE + '"/>' +
+      '<path d="M18.6 6.5h10.8a2.3 2.3 0 0 1 2.3 2.3v3.6H16.3V8.8a2.3 2.3 0 0 1 2.3-2.3z" fill="' + INK + '" stroke="none"/>' +
+      '<path d="M16 30.5h4.3l2.7-6.2 3.7 10.6 2.7-6.4H35" stroke-width="2.3"/>',
+
+    /* 双螺旋 */
+    'dna':
+      '<path d="M16 9.5c10 8 10 21 0 29" stroke-width="2.4"/>' +
+      '<path d="M32 9.5c-10 8-10 21 0 29" stroke-width="2.4"/>' +
+      '<g stroke="' + MINT + '" stroke-width="2.2">' +
+      '<path d="M18.9 12.6h10.2"/><path d="M21.7 17.2h4.6"/>' +
+      '<path d="M21.7 30.8h4.6"/><path d="M18.9 35.4h10.2"/></g>',
+
+    /* 心形 + 脉搏 */
+    'heart-pulse':
+      '<path d="M24 41c-1.5-1.2-15-9.7-17.6-19.5C4.3 14.5 9.6 8.7 16 10.1c3.6.8 6.5 3.4 8 6.6 1.5-3.2 4.4-5.8 8-6.6 6.4-1.4 11.7 4.4 9.6 11.4C39 31.3 25.5 39.8 24 41z" fill="' + WHITE + '"/>' +
+      '<path d="M13 25.4h4.6l2.5-5.5 3.8 10.4 2.6-5.8h6.6" stroke-width="2.3"/>',
+
+    /* 口罩 */
+    'mask':
+      '<path d="M11.5 18.6c0-4.5 5.6-7.1 12.5-7.1s12.5 2.6 12.5 7.1v8.3c0 6.7-6.2 11.4-12.5 11.4S11.5 33.6 11.5 26.9z" fill="' + WHITE + '"/>' +
+      '<path d="M11.6 20c-4.5-.9-6.5 2.7-3.7 6.9M36.4 20c4.5-.9 6.5 2.7 3.7 6.9" stroke-width="2.2"/>' +
+      '<g stroke="' + MINT + '" stroke-width="2.1"><path d="M14.6 24h18.8"/><path d="M14.6 30.2h18.8"/></g>',
+
+    /* 急救箱 */
+    'medkit':
+      '<rect x="8" y="18.5" width="32" height="20.5" rx="4.5" fill="' + WHITE + '"/>' +
+      '<path d="M19 18.5v-3.3a5 5 0 0 1 10 0v3.3" stroke-width="2.2"/>' +
+      '<path d="' + plus(24, 28.6, 2.1, 7) + '"' + CROSS + '/>',
+
+    /* 圆形十字 */
+    'plus-circle':
+      '<circle cx="24" cy="24" r="16.5" fill="' + WHITE + '"/>' +
+      '<path d="' + plus(24, 24, 2.3, 7.6) + '"' + CROSS + '/>',
+
+    /* 药瓶 */
+    'pill-bottle':
+      '<rect x="14" y="17.5" width="20" height="23" rx="4.5" fill="' + WHITE + '"/>' +
+      '<rect x="17" y="9.5" width="14" height="6.6" rx="2.4" fill="' + INK + '" stroke="none"/>' +
+      '<path d="' + plus(24, 28.5, 2.1, 6.6) + '"' + CROSS + '/>',
+
+    /* 药丸、胶囊 */
+    'pills':
+      '<g transform="rotate(-32 24 17)">' +
+      '<rect x="13" y="11.5" width="22" height="11" rx="5.5" fill="' + WHITE + '"/>' +
+      '<path d="M24 11.5h5.5a5.5 5.5 0 0 1 0 11H24z" fill="' + INK + '" stroke="none"/>' +
+      '<path d="M24 11.5v11"/></g>' +
+      '<g transform="rotate(24 33 34)">' +
+      '<rect x="25.5" y="29" width="15" height="10" rx="5" fill="' + WHITE + '"/>' +
+      '<path d="M33 29h2.5a5 5 0 0 1 0 10H33z" fill="' + MINT + '" stroke="none"/>' +
+      '<path d="M33 29v10"/></g>',
+
+    /* 洗手液 */
+    'sanitizer':
+      '<rect x="15" y="19" width="18" height="22" rx="4.5" fill="' + WHITE + '"/>' +
+      '<rect x="19.5" y="12.4" width="9.4" height="4.6" rx="1.6" fill="' + INK + '" stroke="none"/>' +
+      '<path d="M28.9 13.2h4.9v3.4h-4.9" stroke-width="2.1"/>' +
+      '<path d="' + plus(24, 29.6, 2, 4.4) + '"' + CROSS + '/>',
+
+    /* 盾牌十字 */
+    'shield-cross':
+      '<path d="M24 6.5 38 11.8v11.7c0 8.6-5.8 14.6-14 17.6-8.2-3-14-9-14-17.6V11.8z" fill="' + WHITE + '"/>' +
+      '<path d="' + plus(24, 24, 2.2, 8.2) + '"' + CROSS + '/>',
+
+    /* 听诊器 */
+    'stethoscope':
+      '<path d="M15.5 8v8.4a8.5 8.5 0 0 0 17 0V8" stroke-width="2.4"/>' +
+      '<circle cx="15.5" cy="7" r="2.6" fill="' + INK + '" stroke="none"/>' +
+      '<circle cx="32.5" cy="7" r="2.6" fill="' + INK + '" stroke="none"/>' +
+      '<path d="M32.5 16.5v10.6a8 8 0 0 1-8 8" stroke-width="2.4"/>' +
+      '<circle cx="20" cy="37" r="5.6" fill="' + WHITE + '"/>' +
+      '<circle cx="20" cy="37" r="2" fill="' + INK + '" stroke="none"/>',
+
+    /* 注射器 */
+    'syringe':
+      '<g transform="rotate(-35 24 24)">' +
+      '<rect x="19" y="14" width="10" height="19" rx="2" fill="' + WHITE + '"/>' +
+      '<rect x="19.8" y="15.2" width="8.4" height="5.6" rx="1" fill="' + INK + '" stroke="none"/>' +
+      '<rect x="21.6" y="8.8" width="4.8" height="5.2" rx="1" fill="' + INK + '" stroke="none"/>' +
+      '<path d="M24 5.6v3.2" stroke-width="2.4"/>' +
+      '<path d="M17.6 33h12.8" stroke-width="2.4"/>' +
+      '<path d="M24 33v6" stroke-width="2.4"/>' +
+      '<g stroke="' + MINT + '" stroke-width="1.9"><path d="M19 23.5h3.4"/><path d="M19 27.4h3.4"/></g>' +
+      '</g>',
+
+    /* 病毒 */
+    'virus':
+      '<circle cx="24" cy="24" r="11.2" fill="' + WHITE + '"/>' +
+      '<g fill="' + INK + '" stroke="none">' + ring(24, 24, 15.6, 8, 3.3, 0) + '</g>' +
+      '<circle cx="24" cy="24" r="3.2" fill="' + MINT + '" stroke="none"/>' +
+      '<circle cx="24" cy="19" r="1.7" fill="' + INK + '" stroke="none"/>',
+
+    /* ---------- 页面专用的补充图形（同一套笔法） ---------- */
+
+    /* 喇叭 + 声波（把结果念给您听） */
+    'voice':
+      '<path d="M21.5 13v22l-8.6-6.6H7a1.6 1.6 0 0 1-1.6-1.6v-5.6A1.6 1.6 0 0 1 7 19.6h5.9z" fill="' + WHITE + '"/>' +
+      '<path d="M27.5 17.6a9.2 9.2 0 0 1 0 12.8" stroke-width="2.4"/>' +
+      '<path d="M33.6 12.4a16.4 16.4 0 0 1 0 23.2" stroke="' + MINT + '" stroke-width="2.4"/>',
+
+    /* 日历（选日期） */
+    'calendar':
+      '<rect x="8" y="12.5" width="32" height="28" rx="4" fill="' + WHITE + '"/>' +
+      '<path d="M8 16.5v-4a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v4z" fill="' + SOFT + '"/>' +
+      '<path d="M17 8.6v6.4M31 8.6v6.4" stroke-width="2.4"/>' +
+      '<g fill="' + MINT + '" stroke="none">' +
+      '<rect x="14" y="25" width="5" height="4.6" rx="1.4"/>' +
+      '<rect x="21.5" y="25" width="5" height="4.6" rx="1.4"/>' +
+      '<rect x="29" y="25" width="5" height="4.6" rx="1.4"/>' +
+      '<rect x="14" y="32" width="5" height="4.6" rx="1.4"/>' +
+      '<rect x="21.5" y="32" width="5" height="4.6" rx="1.4"/>' +
+      '</g>',
+
+    /* 头部 + 眩晕 */
+    'head':
+      '<path d="M10.5 43.5c0-7 6-11.4 13.5-11.4s13.5 4.4 13.5 11.4z" fill="' + SOFT + '"/>' +
+      '<circle cx="24" cy="19.5" r="11" fill="' + WHITE + '"/>' +
+      '<path d="M20.6 19.9a3.9 3.9 0 1 1 3.9 3.9" stroke-width="2.2"/>' +
+      '<path d="M18.4 15.2h-3.2M33.6 15.2h-2.6" stroke="' + MINT + '" stroke-width="2"/>',
+
+    /* 腹部不适：肚子上一个「痛」的星芒，一眼看出是肚子疼 */
+    'stomach':
+      '<path d="M17.6 7.5h12.8a5.2 5.2 0 0 1 5.2 5.2v4.4c0 3.7 3 5.7 3 10.6v8.4a7 7 0 0 1-7 7H16.4a7 7 0 0 1-7-7v-8.4c0-4.9 3-6.9 3-10.6v-4.4a5.2 5.2 0 0 1 5.2-5.2z" fill="' + WHITE + '"/>' +
+      '<path d="M24 18.4l1.9 4.7 4.7 1.9-4.7 1.9-1.9 4.7-1.9-4.7-4.7-1.9 4.7-1.9z" fill="' + INK + '" stroke="none"/>' +
+      '<path d="M16.6 36.4h14.8" stroke="' + MINT + '" stroke-width="2.1"/>',
+
+    /* 骨头、关节（同一轮廓只描外圈：先粗描一遍，再用白色盖掉内部线条） */
+    'bone':
+      '<g transform="rotate(-35 24 24)">' +
+      boneShapes(3.8, WHITE) +
+      '<g fill="' + WHITE + '" stroke="none">' + boneShapes(0, WHITE) + '</g>' +
+      '</g>',
+
+    /* 眼睛 */
+    'eye':
+      '<path d="M6.5 24c6-8.6 11.6-12.2 17.5-12.2S41.5 15.4 47.5 24c-6 8.6-11.6 12.2-17.5 12.2S12.5 32.6 6.5 24z" fill="' + WHITE + '" transform="translate(-3 0)"/>' +
+      '<circle cx="24" cy="24" r="6.3" fill="' + INK + '" stroke="none"/>' +
+      '<circle cx="21.7" cy="21.7" r="2" fill="' + WHITE + '" stroke="none"/>',
+
+    /* 医院楼宇 */
+    'hospital':
+      '<path d="M24 5.5v9.5M19.4 10.2h9.2" stroke-width="2.6"/>' +
+      '<rect x="12" y="15" width="24" height="27.5" rx="3.5" fill="' + WHITE + '"/>' +
+      '<g fill="' + MINT + '" stroke="none">' +
+      '<rect x="16.4" y="20" width="4.8" height="4.8" rx="1.3"/>' +
+      '<rect x="26.8" y="20" width="4.8" height="4.8" rx="1.3"/>' +
+      '<rect x="16.4" y="28" width="4.8" height="4.8" rx="1.3"/>' +
+      '<rect x="26.8" y="28" width="4.8" height="4.8" rx="1.3"/>' +
+      '</g>' +
+      '<path d="M20.8 42.5V36h6.4v6.5" stroke-width="2.1"/>',
+
+    /* 身份证 */
+    'id-card':
+      '<rect x="6.5" y="13" width="35" height="22" rx="3.6" fill="' + WHITE + '"/>' +
+      '<circle cx="16.6" cy="21.6" r="4.3" fill="' + SOFT + '"/>' +
+      '<path d="M10.3 30c1-3.1 3.4-4.8 6.3-4.8s5.3 1.7 6.3 4.8" stroke-width="1.9"/>' +
+      '<g stroke="' + MINT + '" stroke-width="2.2"><path d="M26 19.6h11.2"/><path d="M26 25.1h11.2"/><path d="M26 30.6h7"/></g>',
+
+    /* 时钟 */
+    'clock':
+      '<circle cx="24" cy="24" r="16.6" fill="' + WHITE + '"/>' +
+      '<path d="M24 14.4V24l7.2 4.8" stroke-width="2.6"/>' +
+      '<g fill="' + INK + '" stroke="none"><circle cx="24" cy="10.4" r="1.5"/><circle cx="37.6" cy="24" r="1.5"/><circle cx="24" cy="37.6" r="1.5"/><circle cx="10.4" cy="24" r="1.5"/></g>',
+
+    /* 服务台 / 分诊台 */
+    'triage':
+      '<rect x="8" y="25" width="32" height="13.5" rx="2.8" fill="' + WHITE + '"/>' +
+      '<rect x="5" y="20" width="38" height="5.8" rx="2.6" fill="' + SOFT + '"/>' +
+      '<rect x="16.6" y="9.4" width="14.8" height="10.6" rx="2.2" fill="' + INK + '" stroke="none"/>' +
+      '<path d="' + plus(24, 14.7, 1.5, 3.3) + '" fill="' + WHITE + '" stroke="none"/>',
+
+    /* 手机 */
+    'phone':
+      '<rect x="15" y="6" width="18" height="36" rx="4.6" fill="' + WHITE + '"/>' +
+      '<path d="M21.6 10.6h4.8" stroke-width="2"/>' +
+      '<g fill="' + INK + '" stroke="none"><rect x="19.4" y="17" width="9.2" height="2.9" rx="1.4"/><rect x="19.4" y="23" width="9.2" height="2.9" rx="1.4"/><rect x="19.4" y="29" width="6" height="2.9" rx="1.4"/></g>',
+
+    /* 二维码 */
+    'qr-code':
+      '<rect x="8" y="8" width="13.4" height="13.4" rx="2.6" fill="' + WHITE + '"/>' +
+      '<rect x="12.2" y="12.2" width="5" height="5" rx="1.2" fill="' + INK + '" stroke="none"/>' +
+      '<rect x="26.6" y="8" width="13.4" height="13.4" rx="2.6" fill="' + WHITE + '"/>' +
+      '<rect x="30.8" y="12.2" width="5" height="5" rx="1.2" fill="' + INK + '" stroke="none"/>' +
+      '<rect x="8" y="26.6" width="13.4" height="13.4" rx="2.6" fill="' + WHITE + '"/>' +
+      '<rect x="12.2" y="30.8" width="5" height="5" rx="1.2" fill="' + INK + '" stroke="none"/>' +
+      '<g fill="' + INK + '" stroke="none">' +
+      '<rect x="26.6" y="26.6" width="5" height="5" rx="1.2"/>' +
+      '<rect x="35" y="26.6" width="5" height="5" rx="1.2"/>' +
+      '<rect x="26.6" y="35" width="5" height="5" rx="1.2"/>' +
+      '<rect x="35" y="35" width="5" height="5" rx="1.2"/>' +
+      '</g>',
+
+    /* 现金 */
+    'cash':
+      '<rect x="10" y="11.5" width="28" height="18" rx="3" fill="' + SOFT + '"/>' +
+      '<rect x="6.5" y="17" width="35" height="21" rx="3.4" fill="' + WHITE + '"/>' +
+      '<circle cx="24" cy="27.5" r="6" fill="' + SOFT + '"/>' +
+      '<path d="M24 23.4v8.2M21.2 25.9h5.6M21.2 29.4h5.6" stroke-width="1.9"/>' +
+      '<g fill="' + MINT + '" stroke="none"><circle cx="12" cy="27.5" r="2.1"/><circle cx="36" cy="27.5" r="2.1"/></g>',
+
+    /* 成功徽标 */
+    'check-badge':
+      '<circle cx="24" cy="24" r="17" fill="' + WHITE + '"/>' +
+      '<path d="M15.4 25.4l6.3 6.3 11-13.4" stroke="' + OK + '" stroke-width="3.4"/>',
+
+    /* 太阳（上午） */
+    'sun':
+      '<circle cx="24" cy="24" r="7.6" fill="' + WHITE + '"/>' +
+      '<path d="M24 4.5v5.2M24 38.3v5.2M4.5 24h5.2M38.3 24h5.2M10.6 10.6l3.7 3.7M33.7 33.7l3.7 3.7M37.4 10.6l-3.7 3.7M14.3 33.7l-3.7 3.7" stroke-width="2.4"/>',
+
+    /* 日落（下午） */
+    'sunset':
+      '<path d="M13.2 34.6a10.8 10.8 0 0 1 21.6 0z" fill="' + WHITE + '"/>' +
+      '<path d="M24 11.5v5.4M37.4 24.6l-3.6-3.6M10.6 24.6l3.6-3.6" stroke-width="2.4"/>' +
+      '<path d="M5.5 34.6h37" stroke-width="2.6"/>'
+  };
+
+  var NAMES = Object.keys(ICONS);
+
+  /* 生成一段 SVG 标记：默认跟着字号缩放（1.4em），也可由外层容器决定尺寸 */
+  function svg(name) {
+    if (!Object.prototype.hasOwnProperty.call(ICONS, name)) return '';
+    return '<svg class="ico ico--' + name + '" viewBox="0 0 48 48" role="img" aria-hidden="true" focusable="false">' +
+      '<g fill="none" stroke="' + INK + '" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' +
+      ICONS[name] +
+      '</g></svg>';
+  }
+
+  /* 取一个可直接 appendChild 的元素；图标名不存在时返回 null，由调用方兜底 */
+  function element(name) {
+    if (typeof document === 'undefined') return null;
+    var markup = svg(name);
+    if (!markup) return null;
+    var box = document.createElement('span');
+    box.className = 'ico-box';
+    box.setAttribute('aria-hidden', 'true');
+    box.innerHTML = markup;
+    return box.firstChild || null;
+  }
+
+  window.XiaoYuErIcons = {
+    names: NAMES,
+    has: function (name) { return Object.prototype.hasOwnProperty.call(ICONS, name); },
+    svg: svg,
+    element: element
+  };
+})();
+</script>
+<script>
+/* ============================================================
    小鱼兒 · 预约挂号（适老版）交互逻辑
    - 全程点选，没有任何键盘输入
    - 每一步只做一件事
@@ -1254,6 +1672,11 @@ body.ai-open .aifab { display: none; }
       'step0.lead': '您只要一步一步点，就能把号挂好。不急，慢慢来。',
       'step0.cta': '我要预约挂号',
       'step0.ctaDesc': '点一下，开始挂号',
+      'ability.title': '这一页会替您做什么',
+      'ability.1': '听懂您的话：您说哪儿不舒服，我来判断该挂哪个科。',
+      'ability.2': '替您一步步办：挂号要点的每一步都由我点，您看着就行。',
+      'ability.3': '替您把好关：提交、付款这类要紧事，一定要您本人点头。',
+      'ability.4': '把结果讲给您听：每一步都能念出来，听不清可以再念一遍。',
 
       'step1.title': '第 1 步 · 您哪里不舒服？',
       'step1.lead': '请点一个最像您现在感觉的选项。',
@@ -1295,6 +1718,11 @@ body.ai-open .aifab { display: none; }
       'step5.tip1': '带上身份证（或医保卡），进门要刷。',
       'step5.tip2': '比预约时间提前 15 分钟到医院，不要迟到。',
       'step5.tip3': '先去一楼分诊台报名字，护士会告诉您去哪间诊室。',
+      'step5.protectTitle': '到院那天的小提醒',
+      'step5.protect1': '戴好口罩',
+      'step5.protect2': '带齐平时要吃的药',
+      'step5.protect3': '摸了门把手要洗手',
+      'step5.protect4': '人多的地方少停留',
       'step5.again': '再挂一个号',
       'step5.finish': '好了，我知道了',
 
@@ -1366,6 +1794,11 @@ body.ai-open .aifab { display: none; }
       'step0.lead': '您只要一步一步點，就能把號掛好。不急，慢慢來。',
       'step0.cta': '我要預約掛號',
       'step0.ctaDesc': '點一下，開始掛號',
+      'ability.title': '這一頁會替您做什麼',
+      'ability.1': '聽懂您的話：您說哪兒不舒服，我來判斷該掛哪一科。',
+      'ability.2': '替您一步步辦：掛號要點的每一步都由我點，您看著就行。',
+      'ability.3': '替您把好關：提交、付款這類要緊事，一定要您本人點頭。',
+      'ability.4': '把結果講給您聽：每一步都能唸出來，聽不清可以再唸一遍。',
 
       'step1.title': '第 1 步 · 您哪裡不舒服？',
       'step1.lead': '請點一個最像您現在感覺的選項。',
@@ -1407,6 +1840,11 @@ body.ai-open .aifab { display: none; }
       'step5.tip1': '帶上身分證（或健保卡），進門要刷。',
       'step5.tip2': '比預約時間提前 15 分鐘到醫院，不要遲到。',
       'step5.tip3': '先去一樓分診台報名字，護士會告訴您去哪間診室。',
+      'step5.protectTitle': '到院那天的小提醒',
+      'step5.protect1': '戴好口罩',
+      'step5.protect2': '帶齊平時要吃的藥',
+      'step5.protect3': '摸了門把手要洗手',
+      'step5.protect4': '人多的地方少停留',
       'step5.again': '再掛一個號',
       'step5.finish': '好了，我知道了',
 
@@ -1478,6 +1916,11 @@ body.ai-open .aifab { display: none; }
       'step0.lead': 'Just tap step by step and I will book the appointment for you. Take your time.',
       'step0.cta': 'Book an appointment',
       'step0.ctaDesc': 'Tap here to start',
+      'ability.title': 'What this page does for you',
+      'ability.1': 'I listen: tell me what troubles you and I pick the right department.',
+      'ability.2': 'I do the steps: I tap every step of the booking for you.',
+      'ability.3': 'I keep you safe: submitting and paying always need your own nod.',
+      'ability.4': 'I read it out: every step can be read aloud, as often as you like.',
 
       'step1.title': 'Step 1 · What troubles you?',
       'step1.lead': 'Tap the option that best matches how you feel right now.',
@@ -1519,6 +1962,11 @@ body.ai-open .aifab { display: none; }
       'step5.tip1': 'Bring your ID card (or medical insurance card) — it is scanned at the entrance.',
       'step5.tip2': 'Arrive 15 minutes before your appointment time. Do not be late.',
       'step5.tip3': 'Go to the triage desk on the first floor first; the nurse will tell you which room.',
+      'step5.protectTitle': 'A few small reminders for the day you come',
+      'step5.protect1': 'Wear a face mask',
+      'step5.protect2': 'Bring your usual medicines',
+      'step5.protect3': 'Wash your hands often',
+      'step5.protect4': 'Do not stay in crowds',
       'step5.again': 'Book another one',
       'step5.finish': 'Got it, thank you',
 
@@ -1571,26 +2019,26 @@ body.ai-open .aifab { display: none; }
     }
   };
 
-  /* ---------------- 症状 → 科室 ---------------- */
+  /* 症状 → 科室（ico 为图标名，icon 为图标缺失时的文字兜底） */
   var SYMPTOMS = [
-    { id: 'head', icon: '晕', name: { zh: '头晕头痛', 'zh-Hant': '頭暈頭痛', en: 'Dizziness or headache' }, dept: 'neurology', alts: ['cardiology'] },
-    { id: 'chest', icon: '心', name: { zh: '心慌胸闷', 'zh-Hant': '心慌胸悶', en: 'Palpitations or chest tightness' }, dept: 'cardiology', alts: ['respiratory'] },
-    { id: 'fever', icon: '咳', name: { zh: '咳嗽发烧', 'zh-Hant': '咳嗽發燒', en: 'Cough or fever' }, dept: 'respiratory', alts: ['gp'] },
-    { id: 'belly', icon: '肚', name: { zh: '肚子痛', 'zh-Hant': '肚子痛', en: 'Stomach ache' }, dept: 'gastro', alts: ['surgery'] },
-    { id: 'leg', icon: '腿', name: { zh: '腿疼', 'zh-Hant': '腿疼', en: 'Leg pain' }, dept: 'orthopedics', alts: ['gp'] },
-    { id: 'eye', icon: '眼', name: { zh: '眼睛不舒服', 'zh-Hant': '眼睛不舒服', en: 'Eye discomfort' }, dept: 'ophthalmology', alts: [] },
-    { id: 'unsure', icon: '？', name: { zh: '不知道选什么', 'zh-Hant': '不知道選什麼', en: 'Not sure what to choose' }, dept: 'gp', alts: ['neurology'] }
+    { id: 'head', icon: '晕', ico: 'head', name: { zh: '头晕头痛', 'zh-Hant': '頭暈頭痛', en: 'Dizziness or headache' }, dept: 'neurology', alts: ['cardiology'] },
+    { id: 'chest', icon: '心', ico: 'heart-pulse', name: { zh: '心慌胸闷', 'zh-Hant': '心慌胸悶', en: 'Palpitations or chest tightness' }, dept: 'cardiology', alts: ['respiratory'] },
+    { id: 'fever', icon: '咳', ico: 'mask', name: { zh: '咳嗽发烧', 'zh-Hant': '咳嗽發燒', en: 'Cough or fever' }, dept: 'respiratory', alts: ['gp'] },
+    { id: 'belly', icon: '肚', ico: 'stomach', name: { zh: '肚子痛', 'zh-Hant': '肚子痛', en: 'Stomach ache' }, dept: 'gastro', alts: ['surgery'] },
+    { id: 'leg', icon: '腿', ico: 'bone', name: { zh: '腿疼', 'zh-Hant': '腿疼', en: 'Leg pain' }, dept: 'orthopedics', alts: ['gp'] },
+    { id: 'eye', icon: '眼', ico: 'eye', name: { zh: '眼睛不舒服', 'zh-Hant': '眼睛不舒服', en: 'Eye discomfort' }, dept: 'ophthalmology', alts: [] },
+    { id: 'unsure', icon: '？', ico: 'plus-circle', name: { zh: '不知道选什么', 'zh-Hant': '不知道選什麼', en: 'Not sure what to choose' }, dept: 'gp', alts: ['neurology'] }
   ];
 
   var DEPTS = {
-    neurology: { name: { zh: '神经内科', 'zh-Hant': '神經內科', en: 'Neurology' }, place: { zh: '门诊楼 2 层 · 3 号诊室', 'zh-Hant': '門診樓 2 層 · 3 號診室', en: 'Outpatient Bldg, Floor 2 · Room 3' } },
-    cardiology: { name: { zh: '心血管内科', 'zh-Hant': '心血管內科', en: 'Cardiology' }, place: { zh: '门诊楼 3 层 · 5 号诊室', 'zh-Hant': '門診樓 3 層 · 5 號診室', en: 'Outpatient Bldg, Floor 3 · Room 5' } },
-    respiratory: { name: { zh: '呼吸内科', 'zh-Hant': '呼吸內科', en: 'Respiratory Medicine' }, place: { zh: '门诊楼 2 层 · 8 号诊室', 'zh-Hant': '門診樓 2 層 · 8 號診室', en: 'Outpatient Bldg, Floor 2 · Room 8' } },
-    gastro: { name: { zh: '消化内科', 'zh-Hant': '消化內科', en: 'Gastroenterology' }, place: { zh: '门诊楼 4 层 · 2 号诊室', 'zh-Hant': '門診樓 4 層 · 2 號診室', en: 'Outpatient Bldg, Floor 4 · Room 2' } },
-    surgery: { name: { zh: '普通外科', 'zh-Hant': '普通外科', en: 'General Surgery' }, place: { zh: '门诊楼 4 层 · 6 号诊室', 'zh-Hant': '門診樓 4 層 · 6 號診室', en: 'Outpatient Bldg, Floor 4 · Room 6' } },
-    orthopedics: { name: { zh: '骨科', 'zh-Hant': '骨科', en: 'Orthopedics' }, place: { zh: '门诊楼 3 层 · 9 号诊室', 'zh-Hant': '門診樓 3 層 · 9 號診室', en: 'Outpatient Bldg, Floor 3 · Room 9' } },
-    ophthalmology: { name: { zh: '眼科', 'zh-Hant': '眼科', en: 'Ophthalmology' }, place: { zh: '门诊楼 5 层 · 1 号诊室', 'zh-Hant': '門診樓 5 層 · 1 號診室', en: 'Outpatient Bldg, Floor 5 · Room 1' } },
-    gp: { name: { zh: '全科医学科', 'zh-Hant': '全科醫學科', en: 'General Practice' }, place: { zh: '门诊楼 1 层 · 导诊台旁 2 号诊室', 'zh-Hant': '門診樓 1 層 · 導診台旁 2 號診室', en: 'Outpatient Bldg, Floor 1 · Room 2, next to triage' } }
+    neurology: { ico: 'dna', name: { zh: '神经内科', 'zh-Hant': '神經內科', en: 'Neurology' }, place: { zh: '门诊楼 2 层 · 3 号诊室', 'zh-Hant': '門診樓 2 層 · 3 號診室', en: 'Outpatient Bldg, Floor 2 · Room 3' } },
+    cardiology: { ico: 'heart-pulse', name: { zh: '心血管内科', 'zh-Hant': '心血管內科', en: 'Cardiology' }, place: { zh: '门诊楼 3 层 · 5 号诊室', 'zh-Hant': '門診樓 3 層 · 5 號診室', en: 'Outpatient Bldg, Floor 3 · Room 5' } },
+    respiratory: { ico: 'mask', name: { zh: '呼吸内科', 'zh-Hant': '呼吸內科', en: 'Respiratory Medicine' }, place: { zh: '门诊楼 2 层 · 8 号诊室', 'zh-Hant': '門診樓 2 層 · 8 號診室', en: 'Outpatient Bldg, Floor 2 · Room 8' } },
+    gastro: { ico: 'pill-bottle', name: { zh: '消化内科', 'zh-Hant': '消化內科', en: 'Gastroenterology' }, place: { zh: '门诊楼 4 层 · 2 号诊室', 'zh-Hant': '門診樓 4 層 · 2 號診室', en: 'Outpatient Bldg, Floor 4 · Room 2' } },
+    surgery: { ico: 'medkit', name: { zh: '普通外科', 'zh-Hant': '普通外科', en: 'General Surgery' }, place: { zh: '门诊楼 4 层 · 6 号诊室', 'zh-Hant': '門診樓 4 層 · 6 號診室', en: 'Outpatient Bldg, Floor 4 · Room 6' } },
+    orthopedics: { ico: 'bone', name: { zh: '骨科', 'zh-Hant': '骨科', en: 'Orthopedics' }, place: { zh: '门诊楼 3 层 · 9 号诊室', 'zh-Hant': '門診樓 3 層 · 9 號診室', en: 'Outpatient Bldg, Floor 3 · Room 9' } },
+    ophthalmology: { ico: 'eye', name: { zh: '眼科', 'zh-Hant': '眼科', en: 'Ophthalmology' }, place: { zh: '门诊楼 5 层 · 1 号诊室', 'zh-Hant': '門診樓 5 層 · 1 號診室', en: 'Outpatient Bldg, Floor 5 · Room 1' } },
+    gp: { ico: 'plus-circle', name: { zh: '全科医学科', 'zh-Hant': '全科醫學科', en: 'General Practice' }, place: { zh: '门诊楼 1 层 · 导诊台旁 2 号诊室', 'zh-Hant': '門診樓 1 層 · 導診台旁 2 號診室', en: 'Outpatient Bldg, Floor 1 · Room 2, next to triage' } }
   };
 
   var AVATAR_COLORS = ['#2f5d62', '#3f6b6f', '#4a6f60', '#55697a', '#6a5f4f', '#5d5a70'];
@@ -1651,10 +2099,10 @@ body.ai-open .aifab { display: none; }
   ];
 
   var PAYS = [
-    { id: 'medical', icon: '保', key: 'pay.medical', descKey: 'pay.medicalDesc' },
-    { id: 'wechat', icon: '微', key: 'pay.wechat', descKey: 'pay.wechatDesc' },
-    { id: 'alipay', icon: '支', key: 'pay.alipay', descKey: 'pay.alipayDesc' },
-    { id: 'hospital', icon: '院', key: 'pay.hospital', descKey: 'pay.hospitalDesc' }
+    { id: 'medical', icon: '保', ico: 'shield-cross', key: 'pay.medical', descKey: 'pay.medicalDesc' },
+    { id: 'wechat', icon: '微', ico: 'phone', key: 'pay.wechat', descKey: 'pay.wechatDesc' },
+    { id: 'alipay', icon: '支', ico: 'qr-code', key: 'pay.alipay', descKey: 'pay.alipayDesc' },
+    { id: 'hospital', icon: '院', ico: 'cash', key: 'pay.hospital', descKey: 'pay.hospitalDesc' }
   ];
 
   /* ---------------- 状态 ---------------- */
@@ -1676,6 +2124,17 @@ body.ai-open .aifab { display: none; }
   var autoSpeak = false; // 首次交互后才自动朗读，避免浏览器拦截
 
   /* ---------------- 工具 ---------------- */
+  /* 往容器里放一个内联 SVG 图标。
+     图标库没加载、或图标名不存在时返回 false，由调用方用文字兜底 —— 页面不会因此空掉。 */
+  function fillIcon(host, name) {
+    var lib = window.XiaoYuErIcons;
+    if (!host || !lib || !name) return false;
+    var el = lib.element(name);
+    if (!el) return false;
+    host.textContent = '';
+    host.appendChild(el);
+    return true;
+  }
   function $(sel) { return document.querySelector(sel); }
   function $$(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
 
@@ -1863,6 +2322,8 @@ body.ai-open .aifab { display: none; }
   function applyStaticI18n() {
     $$('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
     $$('[data-i18n-aria]').forEach(function (el) { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
+    /* 页面里写死的图标占位（顶栏院名、能力带、到院提醒等）在这里补成内联 SVG */
+    $$('[data-icon]').forEach(function (el) { fillIcon(el, el.getAttribute('data-icon')); });
     document.title = t('doc.title');
     document.documentElement.lang = HTML_LANG[state.lang] || 'zh-CN';
     document.documentElement.setAttribute('data-lang', state.lang);
@@ -1916,11 +2377,11 @@ body.ai-open .aifab { display: none; }
       av.setAttribute('aria-hidden', 'true');
       av.textContent = opts.avatarText || '';
       btn.appendChild(av);
-    } else if (opts.icon) {
+    } else if (opts.icon || opts.iconSvg) {
       var ic = document.createElement('span');
       ic.className = 'bigcard__icon';
       ic.setAttribute('aria-hidden', 'true');
-      ic.textContent = opts.icon;
+      if (!fillIcon(ic, opts.iconSvg)) ic.textContent = opts.icon || '';
       btn.appendChild(ic);
     }
 
@@ -1960,6 +2421,7 @@ body.ai-open .aifab { display: none; }
     SYMPTOMS.forEach(function (s) {
       box.appendChild(optionCard({
         icon: s.icon,
+        iconSvg: s.ico,
         title: pick(s.name),
         selected: state.symptom === s.id,
         action: 'symptom',
@@ -1975,10 +2437,15 @@ body.ai-open .aifab { display: none; }
     var result = $('#dept-result');
     if (state.dept) {
       result.hidden = false;
-      $('#dept-name').textContent = pick(DEPTS[state.dept].name);
+      /* 科室名前面带一个图标：老人不认字也认得出这是「哪个科」 */
+      var nameEl = $('#dept-name');
+      nameEl.textContent = '';
+      var deptName = pick(DEPTS[state.dept].name);
+      fillIcon(nameEl, DEPTS[state.dept].ico);
+      nameEl.appendChild(document.createTextNode(deptName));
       $('#dept-reason').textContent = state.deptPicked
-        ? t('step1.pickedDept', { dept: pick(DEPTS[state.dept].name) })
-        : t('step1.recommend', { symptom: pick(currentSymptom().name), dept: pick(DEPTS[state.dept].name) });
+        ? t('step1.pickedDept', { dept: deptName })
+        : t('step1.recommend', { symptom: pick(currentSymptom().name), dept: deptName });
       var altsBox = $('#dept-alts');
       altsBox.innerHTML = '';
       altsBox.hidden = true;
@@ -2001,6 +2468,7 @@ body.ai-open .aifab { display: none; }
     altsBox.appendChild(label);
     list.forEach(function (d) {
       altsBox.appendChild(optionCard({
+        iconSvg: DEPTS[d].ico,
         title: pick(DEPTS[d].name),
         selected: false,
         action: 'dept',
@@ -2033,7 +2501,7 @@ body.ai-open .aifab { display: none; }
     box.innerHTML = '';
     dateOptions().forEach(function (d) {
       box.appendChild(optionCard({
-        icon: (state.lang === 'en' ? d.label.charAt(0) : d.label.charAt(0)),
+        iconSvg: 'calendar',
         title: d.label,
         desc: d.text,
         selected: state.date === d.id,
@@ -2050,7 +2518,7 @@ body.ai-open .aifab { display: none; }
       var left = state.doctor ? slotLeft(state.doctor, state.date || 'd0', s.id) : 1;
       var off = left === 0;
       box.appendChild(optionCard({
-        icon: s.id === 'am' ? '上' : '下',
+        iconSvg: s.id === 'am' ? 'sun' : 'sunset',
         title: t(s.labelKey) + ' ' + t(s.timeKey),
         desc: off ? t('slot.full') : t('slot.left', { n: left }),
         off: off,
@@ -2150,6 +2618,7 @@ body.ai-open .aifab { display: none; }
     PAYS.forEach(function (p) {
       box.appendChild(optionCard({
         icon: p.icon,
+        iconSvg: p.ico,
         title: t(p.key),
         desc: t(p.descKey),
         selected: state.pay === p.id,
