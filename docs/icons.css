@@ -1,0 +1,59 @@
+@charset "UTF-8";
+/* 图标清单页（开发参考，不参与适老页运行时） */
+:root {
+  --bg: #f2f0ea;
+  --card: #ffffff;
+  --brand: #2f5d62;
+  --brand-soft: #e3edec;
+  --ink: #1f2b33;
+  --ink-2: #43535c;
+  --muted: #5e5c54;
+  --line: #d5d0c5;
+  --notice: #faf3e4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 2rem 1.6rem 3rem;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  line-height: 1.7;
+}
+h1 { font-size: 1.7rem; margin: 0 0 0.4rem; color: var(--brand); }
+h2 { font-size: 1.25rem; margin: 2rem 0 0.8rem; }
+.lead { max-width: 62rem; color: var(--ink-2); margin: 0 0 1rem; }
+code { background: #fff; border: 1px solid var(--line); border-radius: 5px; padding: 0.05rem 0.3rem; font-size: 0.92em; }
+.row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.9rem; }
+.cell {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.9rem 0.7rem;
+  text-align: center;
+}
+.big { width: 76px; height: 76px; margin: 0 auto 0.5rem; }
+.big svg { width: 100%; height: 100%; filter: drop-shadow(0 1px 1.5px rgba(47, 93, 98, 0.22)); }
+.name { font-size: 0.82rem; color: var(--muted); word-break: break-all; }
+table { border-collapse: collapse; width: 100%; max-width: 62rem; background: var(--card); }
+th, td { border: 1px solid var(--line); padding: 0.55rem 0.75rem; text-align: left; font-size: 0.95rem; vertical-align: top; }
+th { background: var(--notice); }
+.foot { max-width: 62rem; color: var(--muted); font-size: 0.92rem; margin-top: 1.6rem; }
+
+/* 尺寸与选中态演示 */
+.row--demo { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.demo-card {
+  display: flex; align-items: center; gap: 0.7rem;
+  border: 2px solid var(--line); border-radius: 14px; padding: 0.6rem 0.8rem;
+}
+.demo-card--on { background: var(--brand); border-color: #22474b; color: #fff; }
+.demo-ico {
+  flex: 0 0 auto; width: 3.4rem; height: 3.4rem;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--brand-soft);
+}
+.demo-ico svg { width: 2.2rem; height: 2.2rem; }
+.demo-ico--sm svg { width: 1.6rem; height: 1.6rem; }
+.demo-ico--lg svg { width: 2.8rem; height: 2.8rem; }
+.demo-card--on .demo-ico { background: #eef5f4; }
+.demo-label { font-size: 0.95rem; }

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>适老挂号页 · 图标清单</title>
+<link rel="stylesheet" href="icons.css" charset="utf-8">
+</head>
+<body>
+<h1>适老挂号页 · 图标清单</h1>
+<p class="lead">
+  共 29 个图标，全部为<strong>内联 SVG</strong>：不加载任何图片、离线可用、随字号缩放。
+  配色只用白（主体）、深青绿 <code>#2F5D62</code>（描边与点缀）、淡青 <code>#8FB3AE</code>、
+  很淡的青灰 <code>#E4EFED</code>、成功绿 <code>#3F6B52</code>。
+  形状多取自常见医疗物件，按页面配色重绘为同一套笔法。
+</p>
+
+<h2>一、与素材集对应的 13 件</h2>
+<div class="row" id="row-a"></div>
+
+<h2>二、页面补充的 16 个</h2>
+<div class="row" id="row-b"></div>
+
+<h2>三、尺寸与选中态</h2>
+<p class="lead">图标在卡片左侧、能力带、到院提醒里按容器缩放；卡片选中时图标底色由深青绿卡片改为浅青，白底图标不会「化掉」。</p>
+<div class="row row--demo">
+  <div class="cell"><div class="demo-card"><span class="demo-ico" data-demo="dna"></span><span class="demo-label">未选中</span></div></div>
+  <div class="cell cell--on"><div class="demo-card demo-card--on"><span class="demo-ico" data-demo="dna"></span><span class="demo-label">选中</span></div></div>
+  <div class="cell"><div class="demo-card"><span class="demo-ico demo-ico--sm" data-demo="heart-pulse"></span><span class="demo-label">小尺寸 2rem</span></div></div>
+  <div class="cell"><div class="demo-card"><span class="demo-ico demo-ico--lg" data-demo="clipboard-pulse"></span><span class="demo-label">大尺寸 2.8rem</span></div></div>
+</div>
+
+<h2>四、页面里的落点</h2>
+<table>
+<thead><tr><th>位置</th><th>图标</th></tr></thead>
+<tbody>
+<tr><td>顶栏院名前的院徽</td><td>hospital</td></tr>
+<tr><td>第 0 步主按钮</td><td>clipboard-pulse</td></tr>
+<tr><td>第 0 步「这一页会替您做什么」能力带（四个智能体）</td><td>stethoscope / clipboard-pulse / shield-cross / voice</td></tr>
+<tr><td>第 1 步症状卡片</td><td>head / heart-pulse / mask / stomach / bone / eye / plus-circle</td></tr>
+<tr><td>第 1 步科室推荐与备选</td><td>dna / heart-pulse / mask / pill-bottle / medkit / bone / eye / plus-circle</td></tr>
+<tr><td>第 3 步日期与上午 / 下午</td><td>calendar / sun / sunset</td></tr>
+<tr><td>第 4 步付款方式</td><td>shield-cross / phone / qr-code / cash</td></tr>
+<tr><td>第 5 步成功徽标与到院须知三条</td><td>check-badge / id-card / clock / triage</td></tr>
+<tr><td>第 5 步「到院那天的小提醒」</td><td>mask / pills / sanitizer / virus</td></tr>
+</tbody>
+</table>
+
+<p class="foot">图标库源码：<code>public/elder/icons.js</code>。新增图标只需在 <code>ICONS</code> 里加一条，
+页面用 <code>data-icon="名字"</code> 或 <code>fillIcon()</code> 取用；名字写错会退回文字兜底，页面不会空。
+自检 <code>npm run check:elder</code> 第 32–36 项会守住「零图片请求、覆盖度、每步图标位、配色不越界」。</p>
+
+<script src="../public/elder/icons.js" charset="utf-8"></script>
+<script>
+  var A = ['clipboard-pulse', 'dna', 'heart-pulse', 'mask', 'medkit', 'plus-circle',
+    'pill-bottle', 'pills', 'sanitizer', 'shield-cross', 'stethoscope', 'syringe', 'virus'];
+  var B = ['head', 'stomach', 'bone', 'eye', 'hospital', 'calendar', 'sun', 'sunset',
+    'id-card', 'clock', 'triage', 'phone', 'qr-code', 'cash', 'check-badge', 'voice'];
+  function fill(boxId, names) {
+    var box = document.getElementById(boxId);
+    names.forEach(function (n) {
+      var c = document.createElement('div');
+      c.className = 'cell';
+      c.innerHTML = '<div class="big">' + window.XiaoYuErIcons.svg(n) + '</div>' +
+        '<div class="name">' + n + '</div>';
+      box.appendChild(c);
+    });
+  }
+  fill('row-a', A);
+  fill('row-b', B);
+  Array.prototype.slice.call(document.querySelectorAll('[data-demo]')).forEach(function (el) {
+    el.innerHTML = window.XiaoYuErIcons.svg(el.getAttribute('data-demo'));
+  });
+</script>
+</body>
+</html>
