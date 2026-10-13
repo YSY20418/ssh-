@@ -29,7 +29,12 @@
   .warn { border-color:#f0c36d; background:#fffaf0; }
   .ok { border-color:#9fe1cb; background:#eafaf0; }
   .muted { color:var(--muted); font-size:13px; }
-  @media (max-width:860px){ nav{display:none} main{padding:20px} }
+  @media (max-width:860px){
+    nav{display:none}
+    main{padding:20px}
+    /* 窄屏下表格自己横向滚动，不让整页跟着溢出（整页溢出会把目录与正文一起推出屏幕） */
+    table{ display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  }
 </style>
 </head>
 <body>
@@ -78,7 +83,7 @@
 <li><strong>不敢点错</strong>：填错身份证、误触提交，后果不可撤销，于是很多老人干脆放弃线上服务。</li>
 <li><strong>现有"适老版"只是放大字号</strong>，交互范式没变，依然要求人去适应机器。</li>
 </ul>
-<div class="card warn"><strong>与
+<div class="card warn"><strong>与「把字放大」的适老改造不同</strong>：这里不要求老人去适应网页，而是让智能体在网页里替他把流程跑完 —— 老人只做两件事：说清楚想办什么、对不可撤销的操作点头。</div>
 
 <h2 id="arch">3 系统架构</h2>
 <pre>老人（语音 / 口语）
@@ -270,6 +275,14 @@ LLM_MODEL=qwen2.5:7b</pre>
 <div class="card ok"><strong>当前结果：10 个用例、94/94 项断言全部通过</strong>（<code>npm run eval</code>，报告见 <code>scripts/eval-report.md</code>）。<br />
 过程中评测抓出并修复了 3 个真实缺陷：① 动作步数上限过小导致高危授权门禁实际未生效；② 注入检测正则过窄，漏判"忽略你之前的所有指令"；③ 新增站点后"绕过授权"类话术未被拦截。这三条都是仅靠人工点页面很难发现的。</div>
 <p class="muted">备注：LLM-as-judge 与 AI 用例生成需要配置 <code>LLM_API_KEY</code>，未配置时自动降级为纯规则断言，评测依然可跑。</p>
+<h3>12.3 文档结构与编号自检</h3>
+<p>文档也是交付物的一部分，写坏了不会报错、只会"看着乱"。<code>npm run check:docs</code> 把这类问题变成可断言的：</p>
+<ul>
+<li><strong>标签闭合</strong>：逐标签入栈出栈，找出未闭合的 <code>&lt;div&gt;</code>／<code>&lt;strong&gt;</code>。一个容器没关，后面整节都会被吞进去——目录看起来的顺序就乱了；</li>
+<li><strong>章节编号连续</strong>：h2 编号必须 1、2、3… 依次递增，重号、跳号、倒序都会被点名；</li>
+<li><strong>目录锚点与顺序</strong>：侧边目录每个锚点都要能找到对应章节，且目录顺序必须与正文出现顺序一致；</li>
+<li><strong>Markdown 同级编号</strong>：逐级检查同级标题（含中文数字与 <code>X.Y</code> 子编号），重复编号直接报错。</li>
+</ul>
 
 <h2 id="score">13 实现要点</h2>
 <table>
@@ -299,6 +312,11 @@ LLM_MODEL=qwen2.5:7b</pre>
 <tr><td>2026-10-10</td><td>MCP 工具层</td><td>实现 <code>/api/mcp</code>（JSON-RPC 2.0，initialize / tools/list / tools/call），把能力清单直接暴露为标准 MCP 工具</td></tr>
 <tr><td>2026-10-10</td><td>零成本模型路由</td><td>支持多 OpenAI 兼容 Provider 预设；无 Key 也能完整演示，规则引擎兜底行为一致</td></tr>
 <tr><td>2026-10-10</td><td>UI 重构与演示保障</td><td>统一设计系统变量（色阶/圆角/阴影/焦点环/动效降级）；新增 <code>npm run demo</code> 一键演示；评测扩到两个站点，修复"绕过授权"拦截缺口，<strong>94/94 通过</strong></td></tr>
+<tr><td>2026-10-11</td><td>技术深度补强</td><td>能力语义检索（余弦 + 核心字 + 编辑距离三信号融合）纠正拼错的动作 id；自我反思把失败原因回灌提示词强制换策略</td></tr>
+<tr><td>2026-10-11</td><td>静态站点形态</td><td>引擎进浏览器（<code>lib/runtime/client.ts</code>），与服务端共用同一份 <code>runAgent</code>；MCP 协议核心抽到 <code>lib/mcp/core.ts</code> 两端共用；产物路径相对化</td></tr>
+<tr><td>2026-10-13</td><td>手机端乱码根治</td><td>外链 JS/CSS 没有编码声明会被手机内核按 GBK 解析 → 四层防护 + 单文件版 <code>standalone.html</code>（样式脚本全内联）</td></tr>
+<tr><td>2026-10-13</td><td>适老页视觉与图标体系</td><td>电脑优先双栏、窄屏等比兜底；29 个内联 SVG 图标（白主体 + 主色描边），零图片请求、离线可用、缺失自动退文字</td></tr>
+<tr><td>2026-10-14</td><td>文档结构与编号自检</td><td>修复未闭合标签吞掉整节、功能表编号错排、小节编号重复；新增 <code>npm run check:docs</code> 把"排版规矩"变成可断言的检查；顺带修掉窄屏表格导致的整页横向溢出</td></tr>
 </table>
 
 <h2 id="plan">15 里程碑</h2>
