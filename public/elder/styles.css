@@ -712,6 +712,19 @@ body::before {
   .brand__hospital-sub { display: none; }
   .brand__sep { display: none; }
   .wrap { padding: 1rem 0.9rem 1.6rem; }
+
+  /* 手机端顶栏压缩：固定高度每省 1 分，屏幕就多露出 1 分内容 —— 老人一屏能看见的更多 */
+  .topbar__inner { padding: 0.55rem 0.85rem 0.6rem; gap: 0.4rem; }
+  .brand { gap: 0.5rem; }
+  .brand__mark { width: 2.5rem; height: 2.5rem; font-size: 1.35rem; border-radius: 10px; }
+  .brand__text { line-height: 1.15; }
+  .brand__name { font-size: 1.22rem; }
+  .brand__sub { font-size: 0.76rem; letter-spacing: 0.16em; }
+  .brand__hospital { font-size: 1.06rem; }
+  .topbar__tools { width: 100%; justify-content: space-between; gap: 0.4rem; flex-wrap: nowrap; }
+  .toolgroup { padding: 0.2rem; gap: 0.2rem; }
+  .toolbtn { min-height: 2.65rem; min-width: 2.5rem; padding: 0 0.55rem; font-size: 1rem; border-radius: 8px; }
+  html[data-lang="en"] .toolbtn { padding: 0 0.4rem; font-size: 0.92rem; }
 }
 
 /* ---------- 打印：把预约单打成一张纸 ---------- */

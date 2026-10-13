@@ -20,6 +20,10 @@
       'a11y.skip': '跳到主要内容',
       'topbar.font': '调整字体大小',
       'topbar.fontReset': '标准',
+      'topbar.langGroup': '选择语言',
+      'lang.zh': '简体',
+      'lang.hant': '繁體',
+      'lang.en': '英文',
       'voice.listen': '听语音提示',
       'voice.stop': '停止朗读',
       'voice.unsupported': '这台设备暂时不能朗读，请让家人念给您听。',
@@ -128,6 +132,10 @@
       'a11y.skip': '跳到主要內容',
       'topbar.font': '調整字體大小',
       'topbar.fontReset': '標準',
+      'topbar.langGroup': '選擇語言',
+      'lang.zh': '簡體',
+      'lang.hant': '繁體',
+      'lang.en': '英文',
       'voice.listen': '聽語音提示',
       'voice.stop': '停止朗讀',
       'voice.unsupported': '這台設備暫時不能朗讀，請讓家人念給您聽。',
@@ -236,6 +244,10 @@
       'a11y.skip': 'Skip to main content',
       'topbar.font': 'Change text size',
       'topbar.fontReset': 'Reset',
+      'topbar.langGroup': 'Choose language',
+      'lang.zh': 'Simplified',
+      'lang.hant': 'Traditional',
+      'lang.en': 'English',
       'voice.listen': 'Listen to instructions',
       'voice.stop': 'Stop reading',
       'voice.unsupported': 'This device cannot read aloud. Please ask a family member to read it for you.',
@@ -597,7 +609,7 @@
       SYMPTOMS.forEach(function (s) { lines.push(pick(s.name)); });
       if (state.dept) lines.push(t('step1.recommend', { symptom: pick(currentSymptom().name), dept: pick(DEPTS[state.dept].name) }));
     } else if (state.step === 2) {
-      lines.push(t('step2.title'), t('step2.lead', { dept: pick(DEPTS[state.dept].name) }));
+      lines.push(t('step2.title'), t('step2.lead', { dept: state.dept ? pick(DEPTS[state.dept].name) : PLACEHOLDER }));
       (DOCTORS[state.dept] || []).forEach(function (d) { lines.push(pick(d.name) + '，' + pick(d.title) + '，' + pick(d.good)); });
     } else if (state.step === 3) {
       lines.push(t('step3.title'), t('step3.lead'));
@@ -610,8 +622,10 @@
     } else if (state.step === 4) {
       lines.push(t('step4.title'), t('step4.lead'));
       var p = currentPatient();
+      var dept4 = state.dept ? DEPTS[state.dept] : null;
+      var doc4 = currentDoctor();
       lines.push(t('summary.patient') + ' ' + pick(p.name) + '，' + t('patient.idCard') + ' ' + p.idCard);
-      lines.push(t('summary.dept') + ' ' + pick(DEPTS[state.dept].name) + '，' + t('summary.doctor') + ' ' + pick(currentDoctor().name) + '，' + t('summary.time') + ' ' + slotText());
+      lines.push(t('summary.dept') + ' ' + (dept4 ? pick(dept4.name) : PLACEHOLDER) + '，' + t('summary.doctor') + ' ' + (doc4 ? pick(doc4.name) : PLACEHOLDER) + '，' + t('summary.time') + ' ' + (slotText() || PLACEHOLDER));
       PAYS.forEach(function (pay) { lines.push(t(pay.key) + '，' + t(pay.descKey)); });
     } else if (state.step === 5) {
       lines.push(t('step5.title'), t('step5.lead'));
@@ -848,12 +862,15 @@
   function renderSummary() {
     var box = $('#summary');
     box.innerHTML = '';
+    /* 状态不全时也不能崩：缺的字段用占位符，保证付款方式等区块照常显示 */
+    var dept = state.dept ? DEPTS[state.dept] : null;
+    var doc = currentDoctor();
     var rows = [
-      [t('summary.dept'), pick(DEPTS[state.dept].name)],
-      [t('summary.doctor'), pick(currentDoctor().name) + ' · ' + pick(currentDoctor().title)],
-      [t('summary.time'), slotText()],
-      [t('ticket.place'), pick(DEPTS[state.dept].place)],
-      [t('summary.fee'), '¥' + currentDoctor().fee]
+      [t('summary.dept'), dept ? pick(dept.name) : PLACEHOLDER],
+      [t('summary.doctor'), doc ? (pick(doc.name) + ' · ' + pick(doc.title)) : PLACEHOLDER],
+      [t('summary.time'), slotText() || PLACEHOLDER],
+      [t('ticket.place'), dept ? pick(dept.place) : PLACEHOLDER],
+      [t('summary.fee'), doc ? ('¥' + doc.fee) : PLACEHOLDER]
     ];
     rows.forEach(function (r) {
       var row = document.createElement('div');
@@ -884,7 +901,7 @@
     if (state.dept) rows.push([t('aside.dept'), pick(DEPTS[state.dept].name)]);
     if (state.doctor) rows.push([t('aside.doctor'), pick(currentDoctor().name)]);
     if (state.date && state.slot) rows.push([t('aside.time'), slotText()]);
-    if (state.pay) rows.push([t('aside.pay'), t(currentPay().key)]);
+    if (state.pay) { var payItem = currentPay(); rows.push([t('aside.pay'), payItem ? t(payItem.key) : PLACEHOLDER]); }
 
     if (!rows.length) {
       var empty = document.createElement('p');
@@ -994,6 +1011,18 @@
     if (next && state.step < 5) next.classList.toggle('btn--ready', stepReady());
   }
 
+  var PLACEHOLDER = '—'; /* 字段缺失时的占位符，避免渲染整块崩掉 */
+
+  /* 单块渲染隔离：某一块数据缺失时，不让它拖垮整页渲染 */
+  function safeRender(fn) { try { fn(); } catch (e) { /* 忽略单块异常 */ } }
+
+  /* 底部操作栏高度：供悬浮按钮避让，避免遮住「需要帮助」等按钮 */
+  function syncActionbar() {
+    var bar = $('#actionbar');
+    var h = (bar && !bar.hidden) ? bar.offsetHeight : 0;
+    document.documentElement.style.setProperty('--actionbar-h', h + 'px');
+  }
+
   function renderStep() {
     for (var i = 0; i <= 5; i++) {
       var el = $('#step-' + i);
@@ -1010,16 +1039,17 @@
     nextLabel.textContent = state.step === 4 ? t('nav.nextSubmit') : t('nav.next');
     updateNextState();
 
-    if (state.step === 1) renderSymptoms();
-    if (state.step === 2) renderDoctors();
-    if (state.step === 3) { renderDates(); renderSlots(); }
-    if (state.step === 4) { renderPatients(); renderSummary(); renderPays(); }
-    if (state.step === 5) renderTicket();
+    if (state.step === 1) safeRender(renderSymptoms);
+    if (state.step === 2) safeRender(renderDoctors);
+    if (state.step === 3) { safeRender(renderDates); safeRender(renderSlots); }
+    if (state.step === 4) { safeRender(renderPatients); safeRender(renderSummary); safeRender(renderPays); }
+    if (state.step === 5) safeRender(renderTicket);
 
     renderStepbar();
     renderAside();
+    syncActionbar();
     window.scrollTo(0, 0);
-    if (autoSpeak) speak(stepVoice());
+    if (autoSpeak) { var voice = ''; try { voice = stepVoice(); } catch (e) { /* 播报文案异常不阻断渲染 */ } if (voice) speak(voice); }
     renderHooks.forEach(function (fn) { try { fn(); } catch (e) { /* 外部模块出错不影响主流程 */ } });
   }
 
@@ -1373,6 +1403,10 @@
     document.documentElement.style.setProperty('--topbar-h', el.offsetHeight + 'px');
   }
   window.addEventListener('resize', syncTopbar);
+  window.addEventListener('resize', syncActionbar);
+  if (typeof window.ResizeObserver === 'function') {
+    try { new window.ResizeObserver(syncActionbar).observe($('#actionbar')); } catch (e) { /* 忽略 */ }
+  }
   if (typeof window.ResizeObserver === 'function') {
     try { new window.ResizeObserver(syncTopbar).observe($('.topbar')); } catch (e) { /* 忽略 */ }
   }

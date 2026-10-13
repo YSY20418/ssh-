@@ -566,6 +566,54 @@ check('右栏摘要随选择更新', () => {
   return '未选时给引导，选完实时显示症状 / 科室 / 医生 / 时间 / 付款';
 });
 
+/* 收集页面上真正可见的文本（排除脚本与样式内容） */
+function visibleText() {
+  const parts = [];
+  window.document.querySelectorAll('body *').forEach((el) => {
+    if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'NOSCRIPT') return;
+    if (el.closest && el.closest('noscript')) return;
+    if (el.children.length === 0) parts.push(el.textContent || '');
+  });
+  return parts.join(' ');
+}
+
+check('中文界面里不出现英文单词', () => {
+  const bad = [];
+  ['zh', 'zh-Hant'].forEach((lang) => {
+    api.setLanguage(lang);
+    const words = visibleText().match(/[A-Za-z]{2,}/g) || [];
+    // 字号按钮的 A- / A+ 是符号，不计为英文单词
+    const real = [...new Set(words.filter((w) => w !== 'A'))];
+    if (real.length) bad.push(lang + ': ' + real.join(','));
+  });
+  api.setLanguage('zh');
+  assert(bad.length === 0, '界面出现英文：' + bad.join(' | '));
+  return '简体 / 繁体模式下界面无英文单词（语言切换器也一样）';
+});
+
+check('状态不全也能进第 4 步，付款方式照常显示', () => {
+  api.call('reset');
+  api.go(4); // 故意跳过前面所有步骤
+  const pay = window.document.querySelector('#pay-list');
+  assert(pay, '找不到付款方式容器');
+  assert(pay.children.length === 4, '付款方式应渲染 4 个卡片，实际 ' + pay.children.length);
+  const rows = window.document.querySelectorAll('#summary .summary__row');
+  assert(rows.length >= 4, '预约信息行缺失，实际 ' + rows.length);
+  const now = window.document.querySelector('#aside-now');
+  assert(now && /4/.test(now.textContent), '右栏未跟上当前步数：' + (now ? now.textContent : ''));
+  api.call('reset');
+  return '跳过前置步骤直接进第 4 步不报错，付款方式与信息区照常渲染';
+});
+
+check('悬浮按钮避让底部操作栏，不遮挡按钮', () => {
+  const js = readFileSync(path.join(ELDER, 'app.js'), 'utf8');
+  const css = readFileSync(path.join(ELDER, 'ai.css'), 'utf8');
+  assert(/syncActionbar/.test(js) && /--actionbar-h/.test(js), '缺少操作栏高度同步逻辑');
+  assert(/bottom:\s*calc\(var\(--actionbar-h/.test(css), '悬浮按钮未按操作栏高度避让');
+  assert(/body\[data-step="5"\]\s*\.aifab/.test(css), '成功页缺少悬浮按钮复位规则');
+  return '按 --actionbar-h 动态避让，窄屏不再压住「需要帮助」';
+});
+
 /* ---------- 输出 ---------- */
 const pass = results.filter((r) => r.ok).length;
 const fail = results.length - pass;

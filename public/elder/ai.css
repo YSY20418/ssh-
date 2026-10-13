@@ -42,7 +42,7 @@
 .aifab {
   position: fixed;
   right: 1rem;
-  bottom: calc(7.8rem + env(safe-area-inset-bottom));
+  bottom: calc(var(--actionbar-h, 7.8rem) + 1rem + env(safe-area-inset-bottom));
   z-index: 44;
   display: inline-flex;
   align-items: center;
@@ -71,7 +71,7 @@
   font-weight: 700;
 }
 body[data-step="5"] .aifab { bottom: calc(1.4rem + env(safe-area-inset-bottom)); }
-body.idle-on .aifab { bottom: calc(13.2rem + env(safe-area-inset-bottom)); }
+body.idle-on .aifab { bottom: calc(var(--actionbar-h, 7.8rem) + 5.6rem + env(safe-area-inset-bottom)); }
 body.ai-open .aifab { display: none; }
 
 /* ---------- 对话面板 ---------- */
