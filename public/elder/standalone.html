@@ -1052,6 +1052,53 @@ body.ai-open .aifab { display: none; }
 .chip:hover { border-color: var(--brand); color: var(--brand); }
 .chip:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
 
+/* 「用离线识别」：云端听不了时的正路。视觉上是次要按钮，但一样要够大够高，
+   老人一伸手就能点到；说明文字用暖色提示底，和页面其它提示区一套语言。 */
+.ai__offline {
+  margin-top: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--notice-line);
+  border-radius: var(--radius);
+  background: var(--notice);
+}
+.ai__offline[hidden] { display: none; }
+.ai__offlinebtn {
+  flex: 0 0 auto;
+  min-height: 3.6rem;
+  padding: 0.3rem 1.25rem;
+  border: 2px solid var(--brand);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--brand);
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai__offlinebtn:hover { background: var(--brand-soft); }
+.ai__offlinebtn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.ai__offlinebtn[disabled] { opacity: 0.72; cursor: default; }
+.ai__offlinenote {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--warn-ink);
+}
+
+/* 正在装配：整条提示转为成功色，明确"这是好事，等一下就好" */
+.ai__offline[data-state="loading"] { border-color: var(--ok); background: var(--ok-soft); }
+.ai__offline[data-state="loading"] .ai__offlinenote { color: var(--ok); }
+
+@media (max-width: 480px) {
+  .ai__offlinebtn { min-height: 3.2rem; font-size: 1.1rem; padding: 0.3rem 0.9rem; }
+  .ai__offlinenote { font-size: 1rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aifab, .ai__mic, .ai__ring { transition: none; animation: none; }
 }
@@ -3223,6 +3270,413 @@ body.ai-open .aifab { display: none; }
 </script>
 <script>
 /* ============================================================
+   小鱼兒 · 离线语音识别（浏览器内跑，数据不出本地）
+
+   为什么需要它：
+   浏览器自带的 SpeechRecognition 是把音频送到云端识别的，在国内网络下
+   基本连不上，老人点了麦克风会说"没反应"。这个模块把识别模型直接放进
+   浏览器（Whisper 的 ONNX 量化版），断网也能用，音频不离开设备。
+
+   三条硬约束（与主项目一致）：
+   1. 懒加载：只有用户主动点「用离线识别」才会去下载库与模型；
+      没下载、没加载成功、浏览器不支持，一律返回失败，由 ai.js 回落到
+      浏览器自带识别或「常说的话」点选 —— 页面永远不会卡死。
+   2. 零密钥：不需要任何账号与 Key；模型走公开的镜像站，国内可直连。
+   3. 纯 ES5 + 无构建：和页面其它脚本一样，双击文件就能跑。
+
+   对外接口（window.XiaoYuErSpeech）：
+     state()                       → idle | loading | ready | failed
+     ready()                       → 模型已加载好、可以听
+     cached()                      → 探测磁盘缓存里有没有模型（不下载）
+     prepare(onProgress)           → 下载 + 初始化，返回 Promise
+     listen(opts)                  → 录一段话并识别，返回 Promise<文本>
+                                      opts.language: 'zh'（默认）| 'en'
+                                      opts.onTick(阶段, 信息): listening / recognizing
+     stop()                        → 停止录音 / 中断识别
+     setModel('fast'|'best')      → 换模型（fast≈41MB / best≈77MB）
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var LIB_DEFAULT = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.5/dist/transformers.min.js';
+  /* 库的地址同样可以覆盖（?asrLib= / localStorage）：
+     内网部署或把整套识别夹带在 U 盘里时，可以指到自己人放的副本上 */
+  function libUrl() {
+    try {
+      var m = /[?&]asrLib=([^&]+)/i.exec(window.location.search);
+      if (m) return decodeURIComponent(m[1]);
+    } catch (e) { /* 忽略 */ }
+    try {
+      var s = window.localStorage && window.localStorage.getItem('xye.asr.lib');
+      if (s) return String(s);
+    } catch (e2) { /* 忽略 */ }
+    return LIB_DEFAULT;
+  }
+
+  /* 模型下载源，按顺序探测，谁先通就用谁 —— 
+     国内直连 huggingface.co 基本不通，所以镜像排第一；
+     镜像偶尔也会抽风，所以留官方源兜底。实测不可用时页面会自动降级，
+     老人在面板里还能看到现实可点的「常说的话」，不会卡住。 */
+  var HOSTS = [
+    { host: 'https://hf-mirror.com', label: '国内镜像' },
+    { host: 'https://huggingface.co', label: '官方源' }
+  ];
+  var MODELS = {
+    fast: { id: 'onnx-community/whisper-tiny', size: '约 41 MB' },
+    best: { id: 'onnx-community/whisper-base', size: '约 77 MB' }
+  };
+
+  var state = 'idle';
+  var lib = null;          // 动态加载进来的 transformers 库
+  var libPromise = null;
+  var asr = null;          // 语音识别管线
+  var asrPromise = null;
+  var currentKey = 'fast';
+  var host = null;         // 探测出来的可用模型源
+  var hostPromise = null;
+
+  /* 允许用 ?asrHost=... 或 localStorage 指定模型源：方便内网部署与离线夹带 */
+  function forcedHost() {
+    try {
+      var m = /[?&]asrHost=([^&]+)/i.exec(window.location.search);
+      if (m) return decodeURIComponent(m[1]).replace(/\/+$/, '');
+    } catch (e) { /* 忽略 */ }
+    try {
+      var s = window.localStorage && window.localStorage.getItem('xye.asr.host');
+      if (s) return String(s).replace(/\/+$/, '');
+    } catch (e2) { /* 忽略 */ }
+    return '';
+  }
+
+  function probe(h, ms) {
+    var url = h + '/' + modelId() + '/resolve/main/config.json';
+    var ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, ms || 8000);
+    return fetch(url, { method: 'GET', cache: 'force-cache', signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { clearTimeout(timer); return r && r.ok ? h : null; })
+      .catch(function () { clearTimeout(timer); return null; });
+  }
+
+  /* 顺序探测：任何一个源能返回 config.json 就认为可用 */
+  function pickHost() {
+    if (host) return Promise.resolve(host);
+    if (hostPromise) return hostPromise;
+    var forced = forcedHost();
+    var list = forced ? [forced] : HOSTS.map(function (x) { return x.host; });
+    hostPromise = list.reduce(function (chain, h) {
+      return chain.then(function (found) { return found || probe(h); });
+    }, Promise.resolve(null)).then(function (found) {
+      if (!found) throw new Error('模型源都连不上：' + list.join(' / '));
+      host = found;
+      return host;
+    }).catch(function (err) { hostPromise = null; throw err; });
+    return hostPromise;
+  }
+
+  /* 浏览器能不能用：要能录麦克风、能跑 WebAssembly */
+  function supported() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia &&
+      window.WebAssembly && (window.AudioContext || window.webkitAudioContext));
+  }
+
+  function pickKey() {
+    try {
+      var m = /[?&]asr=([a-z]+)/i.exec(window.location.search);
+      if (m && MODELS[m[1]]) return m[1];
+    } catch (e) { /* 忽略 */ }
+    try {
+      var saved = window.localStorage && window.localStorage.getItem('xye.asr.model');
+      if (saved && MODELS[saved]) return saved;
+    } catch (e2) { /* 忽略 */ }
+    return currentKey;
+  }
+
+  function setModel(key) {
+    if (!MODELS[key] || key === currentKey) return;
+    currentKey = key;
+    asr = null; asrPromise = null; state = 'idle';
+    try { if (window.localStorage) window.localStorage.setItem('xye.asr.model', key); } catch (e) { /* 忽略 */ }
+  }
+
+  function modelId() { return MODELS[currentKey].id; }
+  function modelSize() { return MODELS[currentKey].size; }
+
+  /* 磁盘缓存探测：命中说明之前下载过，第二次打开不用再下 */
+  function cached() {
+    if (!window.caches) return Promise.resolve(false);
+    var files = ['config.json', 'onnx/encoder_model_quantized.onnx', 'onnx/decoder_model_merged_quantized.onnx'];
+    var id = modelId();
+    var forced = forcedHost();
+    var list = forced ? [forced] : HOSTS.map(function (x) { return x.host; });
+    return Promise.all(list.map(function (h) {
+      return Promise.all(files.map(function (f) {
+        return window.caches.match(h + '/' + id + '/resolve/main/' + f)
+          .then(function (r) { return !!r; }).catch(function () { return false; });
+      })).then(function (rs) { return rs.every(Boolean); });
+    })).then(function (rs) {
+      return rs.some(Boolean);
+    }).catch(function () { return false; });
+  }
+
+  /* ---------------- 动态加载库 ----------------
+     注意：@huggingface/transformers 的浏览器构建是 ESM 包（内部用了 import.meta），
+     用普通 <script src> 加载会直接报 "Cannot use 'import.meta' outside a module"。
+     所以这里用动态 import() 把它当模块取回来 —— 经典脚本里也能用，
+     比 <script type="module"> 好在：失败了能被 catch 住，交给上层回落。 */
+  function loadLib(h, onProgress) {
+    if (lib) return Promise.resolve(lib);
+    if (libPromise) return libPromise;
+    var lu = libUrl();
+    libPromise = Promise.resolve().then(function () {
+      return import(lu);
+    }).then(function (mod) {
+      var L = (mod && mod.pipeline) ? mod : (mod && mod.default);
+      if (!L || typeof L.pipeline !== 'function') throw new Error('识别库加载了但没有 pipeline');
+      try {
+        L.env.allowLocalModels = false;
+        L.env.allowRemoteModels = true;
+        L.env.remoteHost = h;                               // 探测出来的可用模型源
+        L.env.remotePathTemplate = '{model}/resolve/{revision}/';
+        L.env.useBrowserCache = true;
+        // onnxruntime 的 wasm 默认从库自己的 CDN 取；换了库的地址就得跟着换目录，
+        // 否则内网部署时"库在本地、wasm 还往外网要"。
+        if (lu !== LIB_DEFAULT) L.env.backends.onnx.wasm.wasmPaths = lu.replace(/[^/]*$/, '');
+        // 页面没开 COOP/COEP，多线程 wasm 起不来，直接按单线程走，省一次无谓的等待
+        L.env.backends.onnx.wasm.numThreads = 1;
+      } catch (e) { /* 环境变量名变了也不致命 */ }
+      lib = L;
+      window.transformers = L;                              // 便于在控制台里排查
+      return L;
+    }).catch(function (err) { libPromise = null; throw err; });
+    return libPromise;
+  }
+
+  /* ---------------- 下载并初始化模型 ---------------- */
+  function prepare(onProgress) {
+    if (asr) { state = 'ready'; return Promise.resolve(true); }
+    if (asrPromise) return asrPromise;
+    if (!supported()) { state = 'failed'; return Promise.reject(new Error('这台设备不支持本地识别')); }
+    state = 'loading';
+    var last = 0;
+    asrPromise = pickHost().then(function (h) {
+      return loadLib(h, onProgress);
+    }).then(function (L) {
+      return L.pipeline('automatic-speech-recognition', modelId(), {
+        device: 'wasm',   // WebGPU 下 8 位量化不稳定，统一走 WASM：慢一点，但什么机器都能跑
+        dtype: 'q8',
+        progress_callback: function (p) {
+          if (typeof onProgress !== 'function') return;
+          if (p && p.status === 'progress' && typeof p.progress === 'number') {
+            var pct = Math.max(0, Math.min(100, Math.round(p.progress)));
+            if (pct >= last + 5 || pct === 100) { last = pct; onProgress(pct, p.file || ''); }
+          } else if (p && p.status === 'ready') {
+            onProgress(100, '');
+          }
+        }
+      });
+    }).then(function (pipe) {
+      asr = pipe;
+      state = 'ready';
+      return true;
+    }).catch(function (err) {
+      state = 'failed';
+      asrPromise = null;
+      throw err;
+    });
+    return asrPromise;
+  }
+
+  /* ---------------- 录音（自带静音自动停止） ---------------- */
+  function Recorder(opts) {
+    this.opts = opts || {};
+    this.chunks = [];
+    this.total = 0;
+    this.spoken = false;
+    this.quietMs = 0;
+    this.timer = null;
+    this.stopped = false;
+  }
+
+  Recorder.prototype.start = function () {
+    var self = this;
+    var o = self.opts;
+    var constraints = {
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+    };
+    return navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+      self.stream = stream;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      var ctx = new AC({ sampleRate: 16000 });     // Whisper 要 16kHz，让浏览器替我们重采样
+      self.ctx = ctx;
+      var src = ctx.createMediaStreamSource(stream);
+      var proc = ctx.createScriptProcessor(4096, 1, 1);
+      var mute = ctx.createGain();
+      mute.gain.value = 0;                          // 不把麦克风声音放出来（避免啸叫）
+      self.proc = proc;
+      self.mute = mute;
+
+      var frameMs = 4096 / 16000 * 1000;
+      var maxMs = o.maxMs || 12000;
+      var quietStopMs = o.quietMs || 1100;          // 说完停顿 1.1 秒就自动收尾
+      var noSpeechMs = o.noSpeechMs || 6000;        // 6 秒还没开口就不再等
+      var startedAt = Date.now();
+
+      if (typeof o.onTick === 'function') o.onTick('listening');
+
+      proc.onaudioprocess = function (ev) {
+        if (self.stopped) return;
+        var d = ev.inputBuffer.getChannelData(0);
+        var sum = 0;
+        for (var i = 0; i < d.length; i++) sum += d[i] * d[i];
+        var rms = Math.sqrt(sum / d.length);
+        self.chunks.push(new Float32Array(d));
+        self.total += d.length;
+
+        if (rms > 0.012) { self.spoken = true; self.quietMs = 0; }
+        else if (self.spoken) { self.quietMs += frameMs; }
+
+        var elapsed = Date.now() - startedAt;
+        if (typeof o.onTick === 'function') o.onTick('listening', { rms: rms, elapsed: elapsed });
+
+        if ((self.spoken && self.quietMs >= quietStopMs) || elapsed >= maxMs ||
+            (!self.spoken && elapsed >= noSpeechMs)) {
+          self.finish();
+        }
+      };
+
+      src.connect(proc);
+      proc.connect(mute);
+      mute.connect(ctx.destination);
+      self.onFinish = o.onFinish;
+      return true;
+    });
+  };
+
+  Recorder.prototype.samples = function () {
+    var out = new Float32Array(this.total);
+    var at = 0;
+    for (var i = 0; i < this.chunks.length; i++) { out.set(this.chunks[i], at); at += this.chunks[i].length; }
+    return out;
+  };
+
+  Recorder.prototype.release = function () {
+    try { if (this.proc) this.proc.onaudioprocess = null; } catch (e) { /* 忽略 */ }
+    try { if (this.proc) this.proc.disconnect(); } catch (e2) { /* 忽略 */ }
+    try { if (this.mute) this.mute.disconnect(); } catch (e3) { /* 忽略 */ }
+    try { if (this.ctx) this.ctx.close(); } catch (e4) { /* 忽略 */ }
+    try {
+      if (this.stream) this.stream.getTracks().forEach(function (t) { t.stop(); });
+    } catch (e5) { /* 忽略 */ }
+  };
+
+  Recorder.prototype.finish = function () {
+    if (this.stopped) return;
+    this.stopped = true;
+    var self = this;
+    var samples = self.samples();
+    var spoke = self.spoken;
+    self.release();
+    if (typeof self.onFinish === 'function') self.onFinish(spoke, samples);
+  };
+
+  Recorder.prototype.abort = function () {
+    if (this.stopped) return;
+    this.stopped = true;
+    this.release();
+  };
+
+  var active = null;
+
+  /* ---------------- 对外：听一句 ---------------- */
+  function listen(opts) {
+    var o = opts || {};
+    if (!asr) return Promise.reject(new Error('离线识别还没准备好'));
+    return new Promise(function (resolve, reject) {
+      var rec = new Recorder({
+        maxMs: o.maxMs, quietMs: o.quietMs, noSpeechMs: o.noSpeechMs,
+        onTick: o.onTick,
+        onFinish: function (spoke, samples) {
+          active = null;
+          if (!spoke) { resolve(''); return; }
+          if (typeof o.onTick === 'function') o.onTick('recognizing');
+          var seconds = samples.length / 16000;
+          if (seconds < 0.4) { resolve(''); return; }
+          try {
+            Promise.resolve(asr(samples, {
+              language: o.language || 'zh',   // 界面是英文时传 'en'，其余都按中文听
+              task: 'transcribe',
+              return_timestamps: false
+            }))
+              .then(function (out) { resolve(clean(out && out.text)); })
+              .catch(function (err) { reject(err); });
+          } catch (err) { reject(err); }
+        }
+      });
+      active = rec;
+      rec.start().catch(function (err) { active = null; reject(err); });
+    });
+  }
+
+  function stop() {
+    if (active) { active.abort(); active = null; return true; }
+    return false;
+  }
+
+  /* 小模型遇到环境音会"幻听"：静音听成客气话（"谢谢观看""字幕由…提供"），
+     或者反复吐同一个字。这些一律清掉，让上层按"没听到"处理，
+     绝不能把幻听当成老人说的话去点页面。 */
+  var JUNK = [
+    /^[\s。，、.!,]*$/,
+    /[谢謝](大家)?(观看|觀看|收看|收听|收聽)/,          // 简繁都要挡
+    /字幕(由|志願者|志愿者|組|组|by|：|:)/i,
+    /請?不吝(點|点)(贊|赞)/,
+    /^(點|点)(贊|赞)$/,
+    /^(訂閱|訂閲|订阅|轉發|转发|打賞|打赏|關注|关注)$/,
+    /^(音乐|音樂)$/i,
+    /^(字幕|subtitle|subtitles|music)$/i,
+    /^\[.*\]$/,
+    /^(.)\1{2,}$/                       // 同一个字重复三次以上，也是幻听
+  ];
+  var WRAP_L = /^[\s()[\]{}【】（）「」『』<>《》"'`]+/;
+  var WRAP_R = /[\s()[\]{}【】（）「」『』<>《》"'`]+$/;
+  function clean(text) {
+    if (!text) return '';
+    var raw = String(text).replace(/\s+/g, ' ').trim();
+    /* 模型爱给整句套括号："（音樂）""[BLANK_AUDIO]"。判幻听要连套壳一起判，
+       但返还给上层的仍是去掉套壳的正文。 */
+    var t = raw.replace(WRAP_L, '').replace(WRAP_R, '').trim();
+    if (!t) return '';
+    for (var i = 0; i < JUNK.length; i++) {
+      if (JUNK[i].test(raw) || JUNK[i].test(t)) return '';
+    }
+    return t;
+  }
+
+  window.XiaoYuErSpeech = {
+    version: '1.0.0',
+    supported: supported,
+    state: function () { return state; },
+    ready: function () { return !!asr; },
+    cached: cached,
+    prepare: prepare,
+    listen: listen,
+    stop: stop,
+    clean: clean,
+    setModel: setModel,
+    modelSize: modelSize,
+    modelName: function () { return currentKey === 'best' ? '标准' : '轻量'; },
+    source: function () { return host; },          // 实际用上的模型源
+    /* 自检用：不下载也能检查内部状态 */
+    _debug: function () {
+      return { state: state, key: currentKey, id: modelId(), lib: !!lib, asr: !!asr, host: host };
+    }
+  };
+
+  currentKey = pickKey();
+})();
+</script>
+<script>
+/* ============================================================
    小鱼兒 · 语音智能助手（挂在适老预约挂号页上的「代驾智能体」）
 
    设计原则（与主项目一致）：
@@ -3256,7 +3710,21 @@ body.ai-open .aifab { display: none; }
       'ai.unsupported': '这台设备听不了话。您可以直接点下面的话，一样能办。',
       'ai.denied': '没能用麦克风。请在浏览器里允许使用麦克风，或直接点下面的话。',
       'ai.noSpeech': '没听到声音，请离近一点再说一次。',
-      'ai.netErr': '网络不通，暂时听不了话。请直接点下面的话。',
+      'ai.netErr': '网络不通，暂时听不了话。请直接点下面的话，或者点「用离线识别」把它装进这台设备。',
+      'ai.startFail': '没能打开麦克风。请再点一次；还是不行，就点下面的话。',
+      'ai.silent': '没有听到声音。您离近一点，再说一次。',
+      'ai.noEngine': '这台设备现在听不了话。可以点「用离线识别」把识别装进设备里，也可以直接点下面的话。',
+      'ai.offlineBtn': '用离线识别',
+      'ai.offlineNote': '把识别装在设备里，不联网也能听，声音不出这台设备。第一次要下载一点点，装一次就行。',
+      'ai.offlineDown': '正在准备离线识别…{pct}%（装一次以后就不用再装）',
+      'ai.offlineOk': '离线识别装好了。以后不联网也能说话。',
+      'ai.offlineFail': '离线识别没装成，可能是网络不通。您可以直接点下面的话，一样能办。',
+      'ai.offlineReady': '离线识别已就绪',
+      'ai.offlineLoading': '正在装…',
+      'ai.offlinePreparing': '正在把离线识别装进这台设备（装过就不用再下载）…',
+      'ai.recording': '请说话…说完停一下就好',
+      'ai.recognizing': '正在认您说的话…',
+      'ai.offlineCached': '离线识别已装好（{size}），点麦克风就能用。',
       'ai.unknown': '没听明白。您可以这样说：',
       'ai.guard': '这句话我没有把握，先不动页面。请您再说一次，或点下面的话。',
       'ai.hello': '您好，我是小鱼兒。说一句「我要挂号」就开始，也可以点下面的话。',
@@ -3318,7 +3786,21 @@ body.ai-open .aifab { display: none; }
       'ai.unsupported': '這台設備聽不了話。您可以直接點下面的話，一樣能辦。',
       'ai.denied': '沒能用麥克風。請在瀏覽器裡允許使用麥克風，或直接點下面的話。',
       'ai.noSpeech': '沒聽到聲音，請離近一點再說一次。',
-      'ai.netErr': '網路不通，暫時聽不了話。請直接點下面的話。',
+      'ai.netErr': '網路不通，暫時聽不了話。請直接點下面的話，或者點「用離線識別」把它裝進這台設備。',
+      'ai.startFail': '沒能打開麥克風。請再點一次；還是不行，就點下面的話。',
+      'ai.silent': '沒有聽到聲音。您離近一點，再說一次。',
+      'ai.noEngine': '這台設備現在聽不了話。可以點「用離線識別」把識別裝進設備裡，也可以直接點下面的話。',
+      'ai.offlineBtn': '用離線識別',
+      'ai.offlineNote': '把識別裝在設備裡，不連網也能聽，聲音不出這台設備。第一次要下載一點點，裝一次就行。',
+      'ai.offlineDown': '正在準備離線識別…{pct}%（裝一次以後就不用再裝）',
+      'ai.offlineOk': '離線識別裝好了。以後不連網也能說話。',
+      'ai.offlineFail': '離線識別沒裝成，可能是網路不通。您可以直接點下面的話，一樣能辦。',
+      'ai.offlineReady': '離線識別已就緒',
+      'ai.offlineLoading': '正在裝…',
+      'ai.offlinePreparing': '正在把離線識別裝進這台設備（裝過就不用再下載）…',
+      'ai.recording': '請說話…說完停一下就好',
+      'ai.recognizing': '正在認您說的話…',
+      'ai.offlineCached': '離線識別已裝好（{size}），點麥克風就能用。',
       'ai.unknown': '沒聽明白。您可以這樣說：',
       'ai.guard': '這句話我沒有把握，先不動頁面。請您再說一次，或點下面的話。',
       'ai.hello': '您好，我是小鱼兒。說一句「我要掛號」就開始，也可以點下面的話。',
@@ -3380,7 +3862,21 @@ body.ai-open .aifab { display: none; }
       'ai.unsupported': 'This device cannot listen. Just tap one of the phrases below.',
       'ai.denied': 'Microphone blocked. Please allow it in the browser, or tap a phrase below.',
       'ai.noSpeech': 'I did not hear anything. Please come closer and try again.',
-      'ai.netErr': 'No network, so listening is off. Please tap a phrase below.',
+      'ai.netErr': 'No network, so cloud listening is off. Tap a phrase below, or tap "Offline recognition" to install it on this device.',
+      'ai.startFail': 'Could not open the microphone. Tap once more; if it still fails, just tap a phrase below.',
+      'ai.silent': 'Nothing was heard. Move a bit closer and say it again.',
+      'ai.noEngine': 'This device cannot listen right now. Tap "Offline recognition" to install it, or simply tap a phrase below.',
+      'ai.offlineBtn': 'Offline recognition',
+      'ai.offlineNote': 'Installs the recognizer on this device: works without network, and the audio never leaves it. One download, then it stays.',
+      'ai.offlineDown': 'Preparing offline recognition… {pct}% (one-time download)',
+      'ai.offlineOk': 'Offline recognition is ready. You can speak without network from now on.',
+      'ai.offlineFail': 'Offline recognition could not be installed (network?). You can just tap a phrase below.',
+      'ai.offlineReady': 'Offline recognition ready',
+      'ai.offlineLoading': 'Installing…',
+      'ai.offlinePreparing': 'Installing offline recognition on this device (no re-download next time)…',
+      'ai.recording': 'Please speak… then pause for a moment',
+      'ai.recognizing': 'Working out what you said…',
+      'ai.offlineCached': 'Offline recognition already installed ({size}) — just tap the microphone.',
       'ai.unknown': 'I did not catch that. You can say things like:',
       'ai.guard': 'I am not sure about that, so I will not touch the page. Please say it again.',
       'ai.hello': 'Hello, I am Xiao Yu Er. Say "book an appointment" to start, or tap a phrase below.',
@@ -3774,6 +4270,10 @@ body.ai-open .aifab { display: none; }
           '</button>' +
           '<button type="button" class="ai__cancel" id="ai-cancel" hidden></button>' +
         '</div>' +
+        '<div class="ai__offline" id="ai-offline-box" hidden>' +
+          '<button type="button" class="ai__offlinebtn" id="ai-offline"></button>' +
+          '<p class="ai__offlinenote" id="ai-offline-note"></p>' +
+        '</div>' +
         '<p class="ai__chiplabel" id="ai-chiplabel"></p>' +
         '<div class="ai__chips" id="ai-chips"></div>' +
       '</div>' +
@@ -3792,6 +4292,9 @@ body.ai-open .aifab { display: none; }
   var statusEl = document.getElementById('ai-status');
   var chipsBox = document.getElementById('ai-chips');
   var fab = document.getElementById('aifab');
+  var offBox = document.getElementById('ai-offline-box');
+  var offBtn = document.getElementById('ai-offline');
+  var offNote = document.getElementById('ai-offline-note');
 
   function bubble(who, text) {
     if (!text) return;
@@ -3836,13 +4339,65 @@ body.ai-open .aifab { display: none; }
     document.getElementById('aifab-text').textContent = T('ai.fab');
     document.getElementById('ai-close').textContent = T('ai.close');
     cancelBtn.textContent = T('ai.stopListen');
-    if (listening) { micLabel.textContent = T('ai.listening'); setStatus(T('ai.listening')); }
-    else { micLabel.textContent = T('ai.talk'); if (!statusEl.textContent) setStatus(T('ai.sub')); }
-    if (!SR) mic.hidden = true;
+    if (listening) { micLabel.textContent = T('ai.stopListen'); }
+    else { micLabel.textContent = T('ai.talk'); }
+    /* 麦克风按钮任何时候都不藏起来：老人找不到按钮 = 等于没有这个功能。
+       本机识别用不了时，它会引导到「用离线识别」或下面的话。 */
+    mic.disabled = false;
+    mic.removeAttribute('aria-disabled');
+    renderOffline();
+  }
+
+  /* 「用离线识别」入口：本机识别还能装、或还没装好时出现。
+     云端识别失败会把它强制摆出来（offlineHint）—— 这正是老人最需要的那一步。 */
+  var offlineHint = false;
+  function renderOffline() {
+    if (!offBox) return;
+    var OS = offline();
+    var can = !!(OS && OS.supported());
+    var st = OS ? String(OS.state()) : '';
+    /* 已经装好就收起引导 —— 麦克风直接能用，不必再占地方 */
+    var show = can && st !== 'ready' && !(OS && OS.ready());
+    offBox.hidden = !show;
+    if (!show) return;
+    offBox.setAttribute('data-state', st === 'loading' ? 'loading' : 'idle');
+    if (st === 'loading') {
+      offBtn.textContent = T('ai.offlineLoading');
+      offBtn.disabled = true;
+    } else {
+      offBtn.textContent = T('ai.offlineBtn');
+      offBtn.disabled = false;
+    }
+    offNote.textContent = T('ai.offlineNote');
+  }
+
+  /* 之前装过离线识别的话，这次打开就不用再下载了：
+     静默从本机缓存把它装配起来，老人第二次来点麦克风就直接能听。 */
+  var cacheProbed = false;
+  function autoLoadOffline() {
+    var OS = offline();
+    if (!OS || !OS.supported() || OS.ready() || OS.state() === 'loading' || cacheProbed) {
+      return Promise.resolve(false);
+    }
+    cacheProbed = true;
+    return Promise.resolve(OS.cached()).then(function (hit) {
+      if (!hit || OS.ready()) return false;
+      setStatus(T('ai.offlinePreparing'));
+      renderOffline();
+      return OS.prepare(function (pct) { setStatus(T('ai.offlineDown', { pct: pct })); }).then(function () {
+        offlineHint = false;
+        say('ai.offlineOk');
+        micLabel.textContent = T('ai.talk');
+        return true;
+      });
+    }).catch(function () { return false; /* 没装过 / 探测失败：等老人自己点「用离线识别」 */ })
+      .then(function (r) { renderOffline(); return r; });
   }
 
   var greeted = false;
-  function open() {
+  /* autostart：点悬浮按钮就直接开始听 —— 老人的预期是"点一下就开始说"，
+     而不是"点一下、再点一下、再说"。 */
+  function open(autostart) {
     panel.hidden = false;
     document.body.classList.add('ai-open');
     renderTexts();
@@ -3853,19 +4408,25 @@ body.ai-open .aifab { display: none; }
       X.speak(T('ai.hello'));
     }
     setStatus(T('ai.sub'));
-    if (SR) { try { mic.focus(); } catch (e) {} }
-    else { bubble('ai', T('ai.unsupported')); var c = chipsBox.querySelector('.chip'); if (c) c.focus(); }
+    if (autostart) {
+      /* 这台设备要是装过离线识别，先把它从本机缓存装配好再开始听 ——
+         不然老人会碰上"第一次点了没反应、第二次才行"，那正是最劝退的体验。 */
+      autoLoadOffline().then(function () { startListen(); });
+    } else {
+      autoLoadOffline();
+      try { mic.focus(); } catch (e) { /* 忽略 */ }
+    }
   }
   function close() {
     stopListen();
     panel.hidden = true;
     document.body.classList.remove('ai-open');
   }
-  function toggle() { if (panel.hidden) open(); else close(); }
+  function toggle() { if (panel.hidden) open(true); else close(); }
 
-  fab.addEventListener('click', open);
+  fab.addEventListener('click', function () { open(true); });
   var inlineOpen = document.getElementById('ai-inline-open');
-  if (inlineOpen) inlineOpen.addEventListener('click', open);
+  if (inlineOpen) inlineOpen.addEventListener('click', function () { open(true); });
   document.getElementById('ai-close').addEventListener('click', close);
   panel.addEventListener('click', function (ev) {
     var el = ev.target;
@@ -3881,10 +4442,48 @@ body.ai-open .aifab { display: none; }
     else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
   });
 
-  /* ---------------- 语音识别 ---------------- */
+  /* ---------------- 语音识别（两条链路，谁可用用谁） ----------------
+     ① 离线引擎 window.XiaoYuErSpeech：模型装在浏览器里，断网也能听，
+        声音不出设备。装过一次就一直在。
+     ② 浏览器自带 SpeechRecognition：把音频送到云端识别，国内网络
+        基本连不上，所以它只是「备用」。
+     两条都不可用 → 说清楚为什么，并把注意力引到「常说的话」点选上。
+
+     老人的体验底线：点了必须有回应。所以每个出口都会给一句明确的话，
+     并且有一个「迟迟没结果」的上限计时，绝不让页面静默地杵在那里。
+     listening: false | 'cloud' | 'offline' */
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   var SPEECH_LANG = { zh: 'zh-CN', 'zh-Hant': 'zh-TW', en: 'en-US' };
   var rec = null, listening = false, lastEngine = 'rule', planner = null;
+  var watchdog = null, offlineRun = 0;
+
+  function offline() { return window.XiaoYuErSpeech || null; }
+
+  function micIdle() {
+    if (mic) mic.setAttribute('data-state', 'off');
+    if (cancelBtn) cancelBtn.hidden = true;
+    if (micLabel) micLabel.textContent = T('ai.talk');
+  }
+  function focusChip() {
+    var c = chipsBox.querySelector('.chip');
+    if (c) { try { c.focus(); } catch (e) { /* 忽略 */ } }
+  }
+  function clearWatchdog() { if (watchdog) { clearTimeout(watchdog); watchdog = null; } }
+  /* 兜底计时：开始听之后一直没结果，就明确告诉老人，而不是干等 */
+  function armWatchdog(ms) {
+    clearWatchdog();
+    watchdog = setTimeout(function () {
+      watchdog = null;
+      if (!listening) return;
+      var was = listening;
+      stopListen();
+      setStatus(T('ai.silent'));
+      bubble('ai', T('ai.silent'));
+      if (was === 'cloud') { offlineHint = true; renderOffline(); }
+      focusChip();
+    }, ms);
+  }
+  function say(key) { setStatus(T(key)); bubble('ai', T(key)); }
 
   function ensureRec() {
     if (rec || !SR) return rec;
@@ -3892,7 +4491,7 @@ body.ai-open .aifab { display: none; }
     rec.continuous = false;
     rec.interimResults = true;
     rec.maxAlternatives = 3;
-    rec.onstart = function () { /* 等结果 */ };
+    rec.onstart = function () { armWatchdog(15000); };
     rec.onresult = function (ev) {
       var finals = [], interims = [];
       for (var i = ev.resultIndex; i < ev.results.length; i++) {
@@ -3902,7 +4501,7 @@ body.ai-open .aifab { display: none; }
           else interims.push(r[j].transcript);
         }
       }
-      if (interims.length) setStatus(T('ai.hear') + interims[0]);
+      if (interims.length) { clearWatchdog(); setStatus(T('ai.hear') + interims[0]); }
       if (!finals.length) return;
       /* 识别引擎给的多个候选里，挑「最说得通」的那个再执行 */
       var best = null;
@@ -3921,42 +4520,152 @@ body.ai-open .aifab { display: none; }
         : code === 'no-speech' ? 'ai.noSpeech'
         : code === 'network' ? 'ai.netErr' : '';
       listening = false;
-      mic.setAttribute('data-state', 'off');
-      cancelBtn.hidden = true;
-      micLabel.textContent = T('ai.talk');
-      if (key) { setStatus(T(key)); bubble('ai', T(key)); }
+      clearWatchdog();
+      micIdle();
+      /* 云端这条路走不通时，把「用离线识别」摆到老人眼前 */
+      if (code === 'network' || code === 'not-allowed' || code === 'service-not-allowed' ||
+          code === 'audio-capture') { offlineHint = true; renderOffline(); }
+      if (key) { say(key); focusChip(); }
     };
     rec.onend = function () {
       if (!listening) return;
+      clearWatchdog();
+      var quiet = !statusEl.textContent || statusEl.textContent.indexOf(T('ai.hear')) === 0;
       listening = false;
-      mic.setAttribute('data-state', 'off');
-      cancelBtn.hidden = true;
-      micLabel.textContent = T('ai.talk');
-      if (!statusEl.textContent || statusEl.textContent.indexOf(T('ai.hear')) === 0) setStatus(T('ai.sub'));
+      micIdle();
+      /* 开始听了却什么都没回来：这正是不明所以的"点了没反应"，说清楚 */
+      if (quiet) { say('ai.silent'); focusChip(); }
     };
     return rec;
   }
 
-  function startListen() {
-    if (!SR) { setStatus(T('ai.unsupported')); bubble('ai', T('ai.unsupported')); return; }
+  /* ---------------- 链路②：本机离线识别 ---------------- */
+  function startOfflineListen() {
+    var OS = offline();
+    if (!OS || !OS.ready()) return false;
     X.stopSpeak();
+    clearWatchdog();
+    var my = ++offlineRun;
+    listening = 'offline';
+    mic.setAttribute('data-state', 'on');
+    cancelBtn.hidden = false;
+    micLabel.textContent = T('ai.listening');
+    setStatus(T('ai.recording'));
+    var lang = X.getState().lang;
+    Promise.resolve(OS.listen({
+      language: lang === 'en' ? 'en' : 'zh',
+      onTick: function (phase) {
+        if (my !== offlineRun) return;
+        if (phase === 'listening') setStatus(T('ai.recording'));
+        else if (phase === 'recognizing') setStatus(T('ai.recognizing'));
+      }
+    })).then(function (text) {
+      if (my !== offlineRun) return;
+      listening = false;
+      clearWatchdog();
+      micIdle();
+      if (!text) { say('ai.silent'); focusChip(); return; }
+      hear(text);
+    }).catch(function () {
+      if (my !== offlineRun) return;
+      listening = false;
+      clearWatchdog();
+      micIdle();
+      say('ai.startFail');
+      focusChip();
+    });
+    armWatchdog(25000);
+    return true;
+  }
+
+  /* ---------------- 链路①：浏览器自带（云端）识别 ---------------- */
+  function startListen() {
+    if (listening) return;
+    X.stopSpeak();
+    var OS = offline();
+    /* 离线引擎已就绪 → 优先用它：不联网也能听，声音也不送出去 */
+    if (OS && OS.ready()) { startOfflineListen(); return; }
+    if (!SR) {
+      var canInstall = !!(OS && OS.supported());
+      say(canInstall ? 'ai.noEngine' : 'ai.unsupported');
+      offlineHint = canInstall;
+      renderOffline();
+      focusChip();
+      return;
+    }
     var r = ensureRec();
     if (!r) return;
-    r.lang = SPEECH_LANG[X.getState().lang] || 'zh-CN';
-    listening = true;
+    rec.lang = SPEECH_LANG[X.getState().lang] || 'zh-CN';
+    listening = 'cloud';
     mic.setAttribute('data-state', 'on');
     cancelBtn.hidden = false;
     micLabel.textContent = T('ai.listening');
     setStatus(T('ai.listening'));
-    try { r.start(); } catch (e) { /* 已经在听，忽略 */ }
+    try {
+      r.start();
+    } catch (e) {
+      /* 有的浏览器 start() 会直接抛：不能装作没事 */
+      listening = false;
+      clearWatchdog();
+      micIdle();
+      say('ai.startFail');
+      offlineHint = true;
+      renderOffline();
+      focusChip();
+      return;
+    }
+    armWatchdog(12000);
   }
+
   function stopListen() {
+    var was = listening;
     listening = false;
-    if (mic) mic.setAttribute('data-state', 'off');
-    if (cancelBtn) cancelBtn.hidden = true;
-    if (micLabel) micLabel.textContent = T('ai.talk');
-    try { if (rec) rec.abort(); } catch (e) { /* 忽略 */ }
+    offlineRun++;                 // 让正在等待的那次离线识别结果失效
+    clearWatchdog();
+    micIdle();
+    /* 主动停下就走回待办提示，别让"正在听您说…"挂在那里骗人 */
+    if (was) setStatus(T('ai.sub'));
+    if (was === 'offline') {
+      var OS = offline();
+      if (OS) { try { OS.stop(); } catch (e) { /* 忽略 */ } }
+    } else if (was) {
+      try { if (rec) rec.abort(); } catch (e2) { /* 忽略 */ }
+    }
   }
+
+  /* ---------------- 「用离线识别」：下载并装配 ---------------- */
+  function prepareOffline() {
+    var OS = offline();
+    if (!OS || !OS.supported()) return Promise.reject(new Error('不支持'));
+    if (OS.ready()) return Promise.resolve(true);
+    offBtn.disabled = true;
+    offBtn.textContent = T('ai.offlineLoading');
+    setStatus(T('ai.offlineDown', { pct: 0 }));
+    bubble('ai', T('ai.offlineNote'));
+    return Promise.resolve(OS.prepare(function (pct) {
+      setStatus(T('ai.offlineDown', { pct: pct }));
+      offBtn.textContent = T('ai.offlineLoading') + ' ' + pct + '%';
+    })).then(function () {
+      offlineHint = false;
+      say('ai.offlineOk');
+      X.speak(T('ai.offlineOk'));
+      renderTexts();
+      startOfflineListen();
+      return true;
+    }).catch(function (err) {
+      say('ai.offlineFail');
+      focusChip();
+      offBtn.disabled = false;
+      offBtn.textContent = T('ai.offlineBtn');
+      throw err;
+    });
+  }
+
+  if (offBtn) offBtn.addEventListener('click', function () {
+    /* 云端还在听的时候点「用离线识别」也要有反应：先停掉，再装 */
+    if (listening) stopListen();
+    prepareOffline().catch(function () { /* 已提示过，不抛到控制台 */ });
+  });
 
   mic.addEventListener('click', function () { if (listening) stopListen(); else startListen(); });
   cancelBtn.addEventListener('click', stopListen);
@@ -3997,6 +4706,16 @@ body.ai-open .aifab { display: none; }
     return (known ? Promise.resolve(known) : resolve(text)).then(function (u) {
       bubble('me', text);
       if (!u || u.intent === 'empty') { bubble('ai', T('ai.noSpeech')); return u; }
+      /* 一两个字的"识别结果"基本是环境音被听成了「好」「嗯」这种。
+         这不是老人说的话，既不该拿去执行，也不该回"没听明白"——
+         那会让老人以为自己说错了。直接按"没听到"请他再说一次。 */
+      var bare = String(text || '').replace(/[\s，。、！？,.!?]/g, '');
+      if (u.intent === 'unknown' && bare.length <= 2) {
+        bubble('ai', T('ai.silent'));
+        setStatus(T('ai.silent'));
+        renderChips();
+        return u;
+      }
       var lines = runActions(u.actions || []);
       if (u.reply && !lines.length) lines.push(u.reply);
       var reply = lines.filter(Boolean).join('。');
@@ -4024,20 +4743,28 @@ body.ai-open .aifab { display: none; }
   X.setLanguage(X.getState().lang); // 触发一次重绘，把助手注册进来的文案刷到页面上
 
   window.XiaoYuErAI = {
-    version: '1.0.0',
+    version: '1.1.0',
     supported: !!SR,
     open: open,
     close: close,
     toggle: toggle,
     startListen: startListen,
     stopListen: stopListen,
-    isListening: function () { return listening; },
+    isListening: function () { return !!listening; },
+    /* 两条识别链路的状态，供界面提示与自检使用 */
+    engine: function () { return lastEngine; },
+    listenPath: function () { return listening || 'idle'; },
+    offline: {
+      loaded: function () { return !!offline(); },
+      supported: function () { var OS = offline(); return !!(OS && OS.supported()); },
+      ready: function () { var OS = offline(); return !!(OS && OS.ready()); },
+      prepare: prepareOffline
+    },
     /* 把一句话当成「听到的话」灌进来：自检与后续接大模型都走这里 */
     say: hear,
     understand: understand,
     chipList: chipList,
-    setPlanner: setPlanner,
-    engine: function () { return lastEngine; }
+    setPlanner: setPlanner
   };
 })();
 </script>

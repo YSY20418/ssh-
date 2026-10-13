@@ -470,7 +470,7 @@ check('编码声明齐全（手机端不乱码的前提）', () => {
     const head = readFileSync(path.join(ELDER, f), 'latin1').slice(0, 20);
     assert(/@charset\s+["']UTF-8["']/i.test(head), `${f} 首行缺 @charset "UTF-8";`);
   }
-  for (const f of ['icons.js', 'app.js', 'ai.js']) {
+  for (const f of ['icons.js', 'app.js', 'speech.js', 'ai.js']) {
     const b = readFileSync(path.join(ELDER, f));
     assert(b[0] === 0xef && b[1] === 0xbb && b[2] === 0xbf, `${f} 缺 UTF-8 BOM（外链脚本只能靠它兜底）`);
   }
@@ -496,6 +496,7 @@ await checkAsync('单文件版可用（样式脚本全内联，手机端最稳�
   await new Promise((r) => setTimeout(r, 400));
   assert(d.window.XiaoYuEr, '内联后主程序没跑起来');
   assert(d.window.XiaoYuErAI, '内联后语音助手没跑起来');
+  assert(d.window.XiaoYuErSpeech, '内联后离线语音模块没跑起来（单文件版会听不了话）');
   assert(d.window.XiaoYuErIcons && d.window.document.querySelectorAll('svg.ico').length > 10,
     '内联后图标库没生效（单文件版会缺图）');
   assert(/挂号|预约/.test(d.window.document.title), '标题中文异常：' + d.window.document.title);
@@ -692,6 +693,126 @@ check('图标配色不越界（只用页面主色，没有高饱和纯绿）', (
   assert(extra.length === 0, '图标里出现了清单外的颜色：' + extra.join('、'));
   assert(colors.includes('#2f5d62'), '图标没有使用页面主色');
   return colors.join(' ') + ' —— 与页面三主色同一套色';
+});
+
+/* ---------- 语音：两条链路 + 绝不静默 ---------- */
+/* 下面的检查会临时替换 window.XiaoYuErSpeech 来模拟各种环境，先留一份真的备用 */
+const REAL_SPEECH = dom.window.XiaoYuErSpeech;
+
+check('离线语音模块已接入页面，接口齐全', () => {
+  const html = readFileSync(PAGE, 'utf8');
+  assert(/<script[^>]+src="speech\.js"/.test(html), '页面没有引入 speech.js，离线识别等于不存在');
+  assert(html.indexOf('speech.js') < html.indexOf('ai.js'), 'speech.js 必须在 ai.js 之前加载，否则助手拿不到它');
+  const w = dom.window;
+  assert(w.XiaoYuErSpeech, 'speech.js 加载了但没挂上 window.XiaoYuErSpeech');
+  for (const k of ['supported', 'state', 'ready', 'cached', 'prepare', 'listen', 'stop', 'setModel']) {
+    assert(typeof w.XiaoYuErSpeech[k] === 'function', '离线模块缺接口：' + k);
+  }
+  assert(typeof w.XiaoYuErAI.offline.prepare === 'function', '助手没有把离线安装暴露出来');
+  return 'speech.js 先于 ai.js 加载 · 9 个能力接口 · 助手可调用';
+});
+
+await checkAsync('云端识别不通就走本机离线；两条都不通也必须开口说话', async () => {
+  const w = dom.window, doc = w.document;
+  const status = () => doc.getElementById('ai-status').textContent;
+  const AI = w.XiaoYuErAI;
+  AI.open(false);
+
+  /* ① 环境里一条识别链路都没有：点麦克风必须给出明确文字 —— 
+     这正是"点了之后没有任何反应"的反面 */
+  w.XiaoYuErSpeech = undefined;
+  try { delete w.SpeechRecognition; } catch (e) { /* 忽略 */ }
+  try { delete w.webkitSpeechRecognition; } catch (e) { /* 忽略 */ }
+  doc.getElementById('ai-status').textContent = '';
+  AI.stopListen();
+  AI.startListen();
+  const said = status().trim();
+  assert(said.length > 0, '没有任何识别引擎时点麦克风，页面一句话都没说（老人只会觉得坏了）');
+  assert(!/^正在听/.test(said), '明明没有识别引擎，却还显示"正在听您说"——这是假象');
+
+  /* ② 本机离线引擎就绪：麦克风应改走本机，不再依赖网络 */
+  let usedOffline = false;
+  w.XiaoYuErSpeech = {
+    supported: () => true, state: () => 'ready', ready: () => true,
+    cached: () => Promise.resolve(true), prepare: () => Promise.resolve(true),
+    listen: () => { usedOffline = true; return Promise.resolve('我要挂号'); },
+    stop: () => true, setModel: () => {}, modelSize: () => '约 41 MB'
+  };
+  AI.startListen();
+  await new Promise((r) => setTimeout(r, 80));
+  assert(usedOffline, '离线引擎已就绪，麦克风却没有走本机识别');
+  assert(/我要挂号/.test(doc.getElementById('ai-log').textContent), '本机识别到的整句话没有进入对话');
+  AI.stopListen();
+  await new Promise((r) => setTimeout(r, 30));
+  return `无引擎时提示「${said}」· 离线就绪后自动改走本机识别`;
+});
+
+await checkAsync('离线识别装不上时，失败有话说且不影响挂号主流程', async () => {
+  const w = dom.window, doc = w.document;
+  assert(doc.getElementById('ai-offline-box') && doc.getElementById('ai-offline'),
+    '面板里没有「用离线识别」入口，云端失败时老人无处可去');
+  w.XiaoYuErSpeech = {
+    supported: () => true, state: () => 'failed', ready: () => false,
+    cached: () => Promise.resolve(false),
+    prepare: () => Promise.reject(new Error('下载失败')),
+    listen: () => Promise.resolve(''), stop: () => true, setModel: () => {}, modelSize: () => '约 41 MB'
+  };
+  w.XiaoYuErAI.open(false);
+  assert(doc.getElementById('ai-offline-box').hidden === false, '云端不可用时，没有把「用离线识别」摆出来');
+
+  let rejected = false;
+  doc.getElementById('ai-status').textContent = '';
+  try { await w.XiaoYuErAI.offline.prepare(); } catch (e) { rejected = true; }
+  assert(rejected, '离线准备失败却没有把失败抛出来，调用方无法回退');
+  const log = doc.getElementById('ai-log').textContent;
+  assert(/没装成/.test(log) || /没装成/.test(doc.getElementById('ai-status').textContent),
+    '离线安装失败后，没有告诉老人"没装成、还能点下面的话"');
+  assert(doc.getElementById('ai-chips').children.length > 0, '失败后应保留「常说的话」点选，实际没有');
+  assert(doc.querySelector('#symptom-list') !== null, '语音出问题不应影响挂号主流程');
+  return '失败有明确提示，且主流程与点选兜底都还在';
+});
+
+await checkAsync('环境音被听成一两个字时，不当成老人说的话', async () => {
+  const doc = dom.window.document;
+  const log = doc.getElementById('ai-log');
+  const before = log.children.length;
+  await dom.window.XiaoYuErAI.say('好');
+  const added = Array.from(log.children).slice(before).map((e) => e.textContent);
+  assert(added.length > 0, '把这句话灌进来后什么都没发生');
+  assert(!added.some((t) => /没听明白/.test(t)),
+    '把一两个字的幻听回成「没听明白」——老人会以为自己说错了');
+  assert(added.some((t) => /没有听到声音|没听到/.test(t)),
+    '一两个字的幻听应回答「没有听到声音，请再说一次」，实际：' + added.join(' / '));
+  assert(doc.getElementById('ai-status').textContent.trim().length > 0, '幻听后状态栏是空的');
+  assert(added.every((t) => !/挂号|科室|医生/.test(t)), '幻听竟然触发了业务动作');
+  return '「好」这类幻听 → 只回「' + added.filter((t) => /没有听到声音/.test(t))[0] + '」，不执行任何动作';
+});
+
+check('环境音幻听被清掉，正常的话原样保留', () => {
+  const OS = REAL_SPEECH;
+  const junk = ['（音樂）', '[BLANK_AUDIO]', '音乐', '謝謝大家觀看', '谢谢观看', '字幕由志愿者提供', '好好好好'];
+  junk.forEach((t) => assert(OS.clean(t) === '', '幻听没被清掉：「' + t + '」→「' + OS.clean(t) + '」'));
+  const keep = { '我要挂号': '我要挂号', '我想挂个内科的号': '我想挂个内科的号', '（我要挂号）': '我要挂号' };
+  Object.keys(keep).forEach((t) => assert(OS.clean(t) === keep[t],
+    '正常的话被改坏了：「' + t + '」→「' + OS.clean(t) + '」'));
+  return junk.length + ' 种幻听清空 · ' + Object.keys(keep).length + ' 句正常话原样保留（含去括号）';
+});
+
+check('离线识别只连公开镜像：零密钥、录音不出浏览器', () => {
+  const js = readFileSync(path.join(ELDER, 'speech.js'), 'utf8');
+  const hosts = [...new Set((js.match(/https?:\/\/[a-z0-9.-]+/gi) || [])
+    .map((u) => u.replace(/^https?:\/\//i, '').toLowerCase()))];
+  const allowed = ['cdn.jsdelivr.net', 'hf-mirror.com', 'huggingface.co'];
+  const extra = hosts.filter((h) => !allowed.includes(h));
+  assert(extra.length === 0, '离线模块出现了清单外的外发地址：' + extra.join('、'));
+  assert(hosts.includes('hf-mirror.com'), '模型没有走国内可达的镜像站');
+  assert(!/api[_-]?key|bearer|secret|access[_-]?token/i.test(js), '离线模块里出现了密钥类字样');
+  assert(!/XMLHttpRequest|FormData/.test(js), '离线模块不应自己往外发数据');
+  // 只允许把音频喂给本机的识别管线，不允许出现"上传/发送音频"的动作
+  assert(/asr\(samples/.test(js), '音频没有送进本机识别管线');
+  assert(!/upload|sendAudio/i.test(js), '离线模块里出现了"上传音频"之类的动作');
+  assert(/o\.language/.test(js), '识别语言应可跟随界面在中文 / 英文之间切换');
+  return '只连 ' + hosts.join(' + ') + ' · 无密钥 · 录音仅在浏览器内处理';
 });
 
 /* ---------- 输出 ---------- */

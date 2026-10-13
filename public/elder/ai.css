@@ -223,6 +223,53 @@ body.ai-open .aifab { display: none; }
 .chip:hover { border-color: var(--brand); color: var(--brand); }
 .chip:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
 
+/* 「用离线识别」：云端听不了时的正路。视觉上是次要按钮，但一样要够大够高，
+   老人一伸手就能点到；说明文字用暖色提示底，和页面其它提示区一套语言。 */
+.ai__offline {
+  margin-top: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--notice-line);
+  border-radius: var(--radius);
+  background: var(--notice);
+}
+.ai__offline[hidden] { display: none; }
+.ai__offlinebtn {
+  flex: 0 0 auto;
+  min-height: 3.6rem;
+  padding: 0.3rem 1.25rem;
+  border: 2px solid var(--brand);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--brand);
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai__offlinebtn:hover { background: var(--brand-soft); }
+.ai__offlinebtn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.ai__offlinebtn[disabled] { opacity: 0.72; cursor: default; }
+.ai__offlinenote {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--warn-ink);
+}
+
+/* 正在装配：整条提示转为成功色，明确"这是好事，等一下就好" */
+.ai__offline[data-state="loading"] { border-color: var(--ok); background: var(--ok-soft); }
+.ai__offline[data-state="loading"] .ai__offlinenote { color: var(--ok); }
+
+@media (max-width: 480px) {
+  .ai__offlinebtn { min-height: 3.2rem; font-size: 1.1rem; padding: 0.3rem 0.9rem; }
+  .ai__offlinenote { font-size: 1rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aifab, .ai__mic, .ai__ring { transition: none; animation: none; }
 }
