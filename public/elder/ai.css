@@ -1,0 +1,228 @@
+@charset "UTF-8";
+/* ============================================================
+   小鱼兒 · 语音智能助手（ai.js 配套样式）
+   沿用主页面的配色与适老尺寸：大按钮、大字号、圆角、高对比。
+   ============================================================ */
+
+/* ---------- 页面内的入口卡片 ---------- */
+.ai-inline { margin: 1.6rem 0 0; }
+.ai-inline__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 1.1rem 1.2rem;
+  border: 2px dashed var(--brand);
+  border-radius: var(--radius);
+  background: var(--brand-soft);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.25rem;
+  text-align: left;
+  cursor: pointer;
+}
+.ai-inline__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.ai-inline__mark {
+  flex: 0 0 auto;
+  width: 3.2rem; height: 3.2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.ai-inline__main { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 auto; }
+.ai-inline__title { font-size: 1.3rem; font-weight: 700; color: var(--brand); }
+.ai-inline__desc { font-size: 1.05rem; color: var(--ink-2); line-height: 1.55; }
+.ai-inline__go { font-size: 1.8rem; color: var(--brand); }
+
+/* ---------- 悬浮按钮 ---------- */
+.aifab {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(7.8rem + env(safe-area-inset-bottom));
+  z-index: 44;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 4.2rem;
+  padding: 0.5rem 1.1rem 0.5rem 0.5rem;
+  border: 2px solid var(--brand-dark);
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(34, 48, 58, 0.22);
+}
+.aifab:active { transform: scale(0.98); }
+.aifab:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.aifab__mark {
+  width: 3rem; height: 3rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--brand);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+body[data-step="5"] .aifab { bottom: calc(1.4rem + env(safe-area-inset-bottom)); }
+body.idle-on .aifab { bottom: calc(13.2rem + env(safe-area-inset-bottom)); }
+body.ai-open .aifab { display: none; }
+
+/* ---------- 对话面板 ---------- */
+.ai { position: fixed; inset: 0; z-index: 45; display: flex; align-items: flex-end; justify-content: center; }
+.ai[hidden] { display: none; }
+.ai__mask { position: absolute; inset: 0; background: rgba(34, 48, 58, 0.45); }
+.ai__box {
+  position: relative;
+  width: min(640px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 1rem 1.1rem calc(1rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 30px rgba(34, 48, 58, 0.25);
+  overflow: hidden;
+}
+@media (min-width: 700px) {
+  .ai { align-items: center; }
+  .ai__box { border-radius: var(--radius-lg); max-height: 82vh; }
+}
+
+.ai__head { display: flex; align-items: center; gap: 0.8rem; }
+.ai__mark {
+  flex: 0 0 auto;
+  width: 3.2rem; height: 3.2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.ai__headtext { flex: 1 1 auto; min-width: 0; }
+.ai__title { font-size: 1.3rem; margin: 0; font-weight: 700; }
+.ai__status {
+  margin: 0.1rem 0 0;
+  font-size: 1.05rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+  min-height: 1.5rem;
+}
+.ai__x {
+  flex: 0 0 auto;
+  min-height: 2.8rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.ai__log {
+  margin: 0.8rem 0;
+  padding: 0.7rem 0.8rem;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  max-height: 30vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.ai__bubble {
+  max-width: 88%;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 1.15rem;
+  line-height: 1.65;
+  word-break: break-word;
+}
+.ai__bubble--ai {
+  align-self: flex-start;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-bottom-left-radius: 4px;
+}
+.ai__bubble--me {
+  align-self: flex-end;
+  background: var(--notice);
+  border: 1px solid var(--notice-line);
+  color: var(--warn-ink);
+  border-bottom-right-radius: 4px;
+}
+
+.ai__row { display: flex; gap: 0.7rem; }
+.ai__mic {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 4.4rem;
+  border: 2px solid var(--brand-dark);
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai__mic:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.ai__mic[data-state="on"] { background: var(--brand-dark); }
+.ai__ring {
+  width: 1.3rem; height: 1.3rem;
+  border-radius: 50%;
+  background: #fff;
+  display: inline-block;
+}
+.ai__mic[data-state="on"] .ai__ring { animation: aiPulse 1.2s ease-out infinite; }
+@keyframes aiPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); }
+  100% { box-shadow: 0 0 0 1.2rem rgba(255, 255, 255, 0); }
+}
+.ai__cancel {
+  flex: 0 0 auto;
+  min-height: 4.4rem;
+  padding: 0 1.1rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai__cancel[hidden] { display: none; }
+
+.ai__chiplabel { margin: 0.9rem 0 0.4rem; font-size: 1.05rem; color: var(--muted); }
+.ai__chips { display: flex; flex-wrap: wrap; gap: 0.55rem; overflow-y: auto; max-height: 22vh; }
+.chip {
+  min-height: 3.4rem;
+  padding: 0.4rem 1rem;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--brand); color: var(--brand); }
+.chip:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aifab, .ai__mic, .ai__ring { transition: none; animation: none; }
+}

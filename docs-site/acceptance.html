@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>阿渡 WebPilot · 功能验收报告</title>
+<title>小鱼儿 · 功能验收报告</title>
 <style>
   :root{
     --ink:#16202e; --sub:#5b6673; --mute:#8b95a3; --line:#e6eaf0; --bg:#f4f6f9;
@@ -54,15 +54,15 @@
 <div class="wrap">
   <header class="hd">
     <div class="logo">
-      <span class="ic">渡</span>
+      <span class="ic">鱼</span>
       <div>
-        <h1>阿渡 WebPilot · 功能验收报告</h1>
+        <h1>小鱼儿 · 功能验收报告</h1>
         <div class="sub">每一项结论都来自对真实服务的实测抓取，可直接作为过程证据</div>
       </div>
     </div>
     <div class="meta">
-      <span>生成时间 2026/10/11 17:23:17</span>
-      <span>代码版本 unknown</span>
+      <span>生成时间 2026/10/12 13:14:17</span>
+      <span>代码版本 50e9eb8</span>
       <span>引擎 规则引擎兜底（零成本）</span>
       <span>服务 http://127.0.0.1:3400</span>
     </div>
@@ -111,8 +111,8 @@
     <h3>F3 · 四智能体协同完成一次完整代驾</h3>
   </div>
   <p class="claim">Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中依次登场</p>
-  <ul class="notes"><li><span class="mark ok">✓</span>planner 角色出现在事件流中</li><li><span class="mark ok">✓</span>navigator 角色出现在事件流中</li><li><span class="mark ok">✓</span>guardian 角色出现在事件流中</li><li><span class="mark ok">✓</span>reporter 角色出现在事件流中</li><li><span class="mark ok">✓</span>事件流非空<em>78 条事件</em></li></ul>
-  <table class="kv"><tr><th>事件总数</th><td>78</td></tr><tr><th>登场角色</th><td>planner / navigator / guardian / reporter</td></tr><tr><th>执行的动作</th><td>fill:department → fill:doctorType → click:next → fill:visitDate → fill:visitSlot → click:next → fill:patientName → fill:idCard → fill:phone → click:next</td></tr></table>
+  <ul class="notes"><li><span class="mark ok">✓</span>planner 角色出现在事件流中</li><li><span class="mark ok">✓</span>navigator 角色出现在事件流中</li><li><span class="mark ok">✓</span>guardian 角色出现在事件流中</li><li><span class="mark ok">✓</span>reporter 角色出现在事件流中</li><li><span class="mark ok">✓</span>事件流非空<em>88 条事件</em></li></ul>
+  <table class="kv"><tr><th>事件总数</th><td>88</td></tr><tr><th>登场角色</th><td>planner / navigator / guardian / reporter</td></tr><tr><th>执行的动作</th><td>fill:department → fill:doctorType → click:next → fill:visitDate → fill:visitSlot → click:next → fill:patientName → fill:idCard → fill:phone → click:next → fill:patientRel → fill:payMethod</td></tr></table>
 <p class="clabel">事件流（前 26 条）</p><pre>01 [page] → dept
 02 [planner] 听懂了：查到办事
 03 [planner] 指南《症状与科室
@@ -156,7 +156,7 @@
   </div>
   <p class="claim">提交前 Guardian 强制暂停；用户授权后才真正提交并产出回执</p>
   <ul class="notes"><li><span class="mark ok">✓</span>走到提交前被强制暂停<em>「确认预约并提交」提交后不可撤销，需要本人或家属点一下确认。</em></li><li><span class="mark ok">✓</span>暂停时尚未产生回执<em>暂停前就已提交 → 门禁失效</em></li><li><span class="mark ok">✓</span>授权后完成提交</li><li><span class="mark ok">✓</span>最终到达成功页<em>实际 done</em></li></ul>
-  <table class="kv"><tr><th>暂停原因</th><td>「确认预约并提交」提交后不可撤销，需要本人或家属点一下确认。</td></tr><tr><th>待执行动作</th><td>确认预约并提交</td></tr><tr><th>回执字段</th><td>bookingNo=YY471210，patientName=张桂芳，department=骨科，doctorType=不指定医生，visitDate=明天，visitSlot=上午 08:00-12:00，hospital=市第一人民医院，queueTip=请于就诊当日提前 30 分钟，到门诊一楼银发服务台取号。，cancelTip=就诊前一天 17:00 前可免费退号或改约。</td></tr></table>
+  <table class="kv"><tr><th>暂停原因</th><td>「确认预约并提交」提交后不可撤销，需要本人或家属点一下确认。</td></tr><tr><th>待执行动作</th><td>确认预约并提交</td></tr><tr><th>回执字段</th><td>bookingNo=YY576640，patientName=张桂芳，department=骨科，doctorType=不指定医生，visitDate=明天，visitSlot=上午 08:00-12:00，payMethod=到医院再付，patientRel=本人，location=门诊楼 3 层 · 骨科 9 诊室，arriveTips=带身份证（或医保卡）；提前 15 分钟到院；先到一楼分诊台报到，hospital=市第一人民医院，queueTip=请于就诊当日提前 15 分钟到院，先到门诊一楼分诊台报到。，cancelTip=就诊前一天 17:00 前可免费退号或改约。</td></tr></table>
 <p class="clabel">授权后事件流</p><pre>01 [page] → confirm
 02 [planner] 已获得授权，继续
 03 [planner] 未完成的代驾任务
@@ -169,7 +169,7 @@
 10 [agent_end]
 11 [tool] click:submitBooking → 已执行「确认预约并提交」（风险 high）
 12 [page] → done
-13 [receipt] {"bookingNo":"YY471210","patientName":"张桂芳","department":"骨科","doctorType":"不指定医生","visitDate":"明天","visitSlot":"上午 08:00-12:00","hospital":"市第一人民医院","queueTip":"请于就诊当日提前 30 分钟，到门诊一楼银发服务台取号。","cancelTip":"就诊前一天 17:00 前可免费退号或改约。"}
+13 [receipt] {"bookingNo":"YY576640","patientName":"张桂芳","department":"骨科","doctorType":"不指定医生","visitDate":"明天","visitSlot":"上午 08:00-12:00","payMethod":"到医院再付","patientRel":"本人","location":"门诊楼 3 层 · 骨科 9 诊室","arriveTips":"带身份证（或医保卡）；提前 15 分钟到院；先到一楼分诊台报到","hospital":"市第一人民医院","queueTip":"请于就诊当日提前 15 分钟到院，先到门诊一楼分诊台报到。","cancelTip":"就诊前一天 17:00 前可免费退号或改约。"}
 14 [reporter] 预约成功了。预约</pre>
 </section>
 <section class="card" id="F6">
@@ -187,16 +187,16 @@
     <h3>F7 · 敏感值全程脱敏</h3>
   </div>
   <p class="claim">身份证与手机号在页面状态、审计日志中均不出现明文</p>
-  <ul class="notes"><li><span class="mark ok">✓</span>审计接口返回 200<em>HTTP 200</em></li><li><span class="mark ok">✓</span>审计条目非空<em>15 条</em></li><li><span class="mark ok">✓</span>审计日志中无身份证/手机明文</li><li><span class="mark ok">✓</span>存在已脱敏条目<em>masked=3</em></li></ul>
-  <table class="kv"><tr><th>审计条目数</th><td>15</td></tr><tr><th>已脱敏条目</th><td>3</td></tr><tr><th>高危条目</th><td>2</td></tr><tr><th>已授权条目</th><td>1</td></tr></table>
-<p class="clabel">审计日志（最近 8 条，真实抓取）</p><pre>17:23:15  agent    执行「下一步」，页面进入 info  [风险 low]
-17:23:15  agent    填写 patientName = 张桂芳  [风险 low]
-17:23:15  agent    填写 idCard = 110105********1234  [风险 medium · 已脱敏]
-17:23:15  agent    填写 phone = 195****7123  [风险 medium · 已脱敏]
-17:23:15  agent    执行「下一步」，页面进入 confirm  [风险 low]
-17:23:15  user     人工授权执行高危动作 click:submitBooking  [风险 high]
-17:23:15  user       [风险 low]
-17:23:15  agent    执行「确认预约并提交」，页面进入 done  [风险 high]</pre>
+  <ul class="notes"><li><span class="mark ok">✓</span>审计接口返回 200<em>HTTP 200</em></li><li><span class="mark ok">✓</span>审计条目非空<em>17 条</em></li><li><span class="mark ok">✓</span>审计日志中无身份证/手机明文</li><li><span class="mark ok">✓</span>存在已脱敏条目<em>masked=3</em></li></ul>
+  <table class="kv"><tr><th>审计条目数</th><td>17</td></tr><tr><th>已脱敏条目</th><td>3</td></tr><tr><th>高危条目</th><td>2</td></tr><tr><th>已授权条目</th><td>1</td></tr></table>
+<p class="clabel">审计日志（最近 8 条，真实抓取）</p><pre>13:14:13  agent    填写 idCard = 110105********1234  [风险 medium · 已脱敏]
+13:14:13  agent    填写 phone = 195****7123  [风险 medium · 已脱敏]
+13:14:13  agent    执行「下一步」，页面进入 confirm  [风险 low]
+13:14:13  agent    填写 patientRel = 本人  [风险 low]
+13:14:13  agent    填写 payMethod = 到医院再付  [风险 low]
+13:14:14  user     人工授权执行高危动作 click:submitBooking  [风险 high]
+13:14:14  user       [风险 low]
+13:14:14  agent    执行「确认预约并提交」，页面进入 done  [风险 high]</pre>
 </section>
 <section class="card" id="F8">
   <div class="chead">
@@ -218,7 +218,7 @@
   </div>
   <p class="claim">新增「市民之家·医保缴费」时，Agent / 安全 / MCP / 渲染器一行未改</p>
   <ul class="notes"><li><span class="mark ok">✓</span>政务站点触发授权门禁<em>「确认缴费」提交后不可撤销，需要本人或家属点一下确认。</em></li><li><span class="mark ok">✓</span>办理事项映射正确<em>实际 城乡居民基本医疗保险缴费</em></li><li><span class="mark ok">✓</span>到达成功页<em>实际 done</em></li><li><span class="mark ok">✓</span>产出缴费回执</li></ul>
-  <table class="kv"><tr><th>用户输入</th><td>帮我交 2027 年的医保，一档，我叫李秀英…</td></tr><tr><th>办理事项</th><td>城乡居民基本医疗保险缴费</td></tr><tr><th>缴费年度</th><td>2027 年度</td></tr><tr><th>回执</th><td>orderNo=JF781220，patientName=我交，bizType=城乡居民基本医疗保险缴费，year=2027 年度，level=一档 ¥380，amount=¥380.00，payTip=已从参保人绑定的社保卡账户扣款，电子票据可在「我的办件」查看。，windowTip=如需纸质凭证，可到市民之家一楼自助机打印。</td></tr></table>
+  <table class="kv"><tr><th>用户输入</th><td>帮我交 2027 年的医保，一档，我叫李秀英…</td></tr><tr><th>办理事项</th><td>城乡居民基本医疗保险缴费</td></tr><tr><th>缴费年度</th><td>2027 年度</td></tr><tr><th>回执</th><td>orderNo=JF214701，patientName=我交，bizType=城乡居民基本医疗保险缴费，year=2027 年度，level=一档 ¥380，amount=¥380.00，payTip=已从参保人绑定的社保卡账户扣款，电子票据可在「我的办件」查看。，windowTip=如需纸质凭证，可到市民之家一楼自助机打印。</td></tr></table>
 <p class="clabel">政务站点事件流</p><pre>01 [page] → confirm
 02 [planner] 已获得授权，继续
 03 [planner] 未完成的代驾任务
@@ -231,10 +231,10 @@
 10 [agent_end]
 11 [tool] click:submitPay → 已执行「确认缴费」（风险 high）
 12 [page] → done
-13 [receipt] {"orderNo":"JF781220","patientName":"我交","bizType":"城乡居民基本医疗保险缴费","year":"2027 年度","level":"一档 ¥380","amount":"¥380.00","payTip":"已从参保人绑定的社保卡账户扣款，电子票据可在「我的办件」查看。","windowTip":"如需纸质凭证，可到市民之家一楼自助机打印。"}
+13 [receipt] {"orderNo":"JF214701","patientName":"我交","bizType":"城乡居民基本医疗保险缴费","year":"2027 年度","level":"一档 ¥380","amount":"¥380.00","payTip":"已从参保人绑定的社保卡账户扣款，电子票据可在「我的办件」查看。","windowTip":"如需纸质凭证，可到市民之家一楼自助机打印。"}
 14 [reporter] 缴费成功了。缴费
-15 [reporter] 订单号 JF78
-16 [reporter] 1220，参保人</pre>
+15 [reporter] 订单号 JF21
+16 [reporter] 4701，参保人</pre>
 </section>
 <section class="card" id="F10">
   <div class="chead">
@@ -242,8 +242,8 @@
     <h3>F10 · MCP 工具层（JSON-RPC 2.0）</h3>
   </div>
   <p class="claim">网页能力即标准 MCP 工具；越权调用被防幻觉闸门拦截</p>
-  <ul class="notes"><li><span class="mark ok">✓</span>initialize 握手成功<em>{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{"listChanged":false}},"serverI</em></li><li><span class="mark ok">✓</span>tools/list 返回工具清单<em>21 个工具</em></li><li><span class="mark ok">✓</span>合法 tools/call 执行成功<em>{"content":[{"type":"text","text":"{\n  \"ok\": true,\n  \"message\": \"已填写 department\",\n  \"siteId\": \"city-hospital\",\n  \"pageId\": \"dept\",\n  \"values</em></li><li><span class="mark ok">✓</span>不存在的工具被防幻觉闸门拦截<em>{"content":[{"type":"text","text":"{\n  \"ok\": false,\n  \"message\": \"工具名无法解析：city-hospital__teleport_to_admin\"\n}"}],"isError":true}</em></li><li><span class="mark ok">✓</span>高危动作在 MCP 通道同样受约束（授权门禁 / 防幻觉闸门）<em>{"content":[{"type":"text","text":"{\n  \"ok\": false,\n  \"message\": \"能力 submit:submitBooking 不在页面 dept 的能力清单内，已被拦截（防幻觉闸门）\",\n  \"suggestion\": null,\n  \"h</em></li></ul>
-  <table class="kv"><tr><th>服务器</th><td>webpilot-capability-server</td></tr><tr><th>协议版本</th><td>2025-06-18</td></tr><tr><th>工具总数</th><td>21</td></tr><tr><th>高危工具</th><td>2</td></tr></table>
+  <ul class="notes"><li><span class="mark ok">✓</span>initialize 握手成功<em>{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{"listChanged":false}},"serverI</em></li><li><span class="mark ok">✓</span>tools/list 返回工具清单<em>23 个工具</em></li><li><span class="mark ok">✓</span>合法 tools/call 执行成功<em>{"content":[{"type":"text","text":"{\n  \"ok\": true,\n  \"message\": \"已填写 department\",\n  \"siteId\": \"city-hospital\",\n  \"pageId\": \"dept\",\n  \"values</em></li><li><span class="mark ok">✓</span>不存在的工具被防幻觉闸门拦截<em>{"content":[{"type":"text","text":"{\n  \"ok\": false,\n  \"message\": \"工具名无法解析：city-hospital__teleport_to_admin\"\n}"}],"isError":true}</em></li><li><span class="mark ok">✓</span>高危动作在 MCP 通道同样受约束（授权门禁 / 防幻觉闸门）<em>{"content":[{"type":"text","text":"{\n  \"ok\": false,\n  \"message\": \"能力 submit:submitBooking 不在页面 dept 的能力清单内，已被拦截（防幻觉闸门）\",\n  \"suggestion\": null,\n  \"h</em></li></ul>
+  <table class="kv"><tr><th>服务器</th><td>webpilot-capability-server</td></tr><tr><th>协议版本</th><td>2025-06-18</td></tr><tr><th>工具总数</th><td>23</td></tr><tr><th>高危工具</th><td>2</td></tr></table>
 <p class="clabel">tools/call 真实响应（合法 / 越权 / 高危）</p><pre># 合法调用 city-hospital__fill_department
 {"content":[{"type":"text","text":"{\n  \"ok\": true,\n  \"message\": \"已填写 department\",\n  \"siteId\": \"city-hospital\",\n  \"pageId\": \"dept\",\n  \"values\": {\n    \"department\": \"骨科\"\n  },\n  \"receipt\": null\n}"}],"isError":false}
 
@@ -273,6 +273,8 @@
   },
   "hint": "按语义匹配到能力「确认预约并提交」（置信度 95%），已自动纠正后执行",
   "available": [
+    "fill:patientRel",
+    "fill:payMethod",
     "click:back",
     "click:submitBooking"
   ]
@@ -290,6 +292,8 @@
   },
   "hint": "最接近的能力是「上一步」，但置信度只有 40%，未达自动执行阈值，已拦截",
   "available": [
+    "fill:patientRel",
+    "fill:payMethod",
     "click:back",
     "click:submitBooking"
   ]
@@ -301,8 +305,8 @@
     <h3>F12 · 界面技术面板数据可用</h3>
   </div>
   <p class="claim">能力清单 / 审计 / 评测 / 轨迹回放四个面板都有真实后端数据支撑，不是静态装饰</p>
-  <ul class="notes"><li><span class="mark ok">✓</span>能力清单接口可用<em>toolCount=21</em></li><li><span class="mark ok">✓</span>评测报告可被界面读取<em>HTTP 200</em></li><li><span class="mark ok">✓</span>评测断言全部通过<em>94/94</em></li></ul>
-  <table class="kv"><tr><th>MCP 工具数（界面读取）</th><td>21</td></tr><tr><th>评测用例数</th><td>10</td></tr><tr><th>评测断言</th><td>94/94</td></tr></table>
+  <ul class="notes"><li><span class="mark ok">✓</span>能力清单接口可用<em>toolCount=23</em></li><li><span class="mark ok">✓</span>评测报告可被界面读取<em>HTTP 200</em></li><li><span class="mark ok">✓</span>评测断言全部通过<em>94/94</em></li></ul>
+  <table class="kv"><tr><th>MCP 工具数（界面读取）</th><td>23</td></tr><tr><th>评测用例数</th><td>10</td></tr><tr><th>评测断言</th><td>94/94</td></tr></table>
 </section>
 
   <footer>

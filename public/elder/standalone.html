@@ -1,0 +1,3529 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<!-- 单文件版：样式与脚本已内联，可单独上传或传到手机直接打开 -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F5D62">
+<meta name="description" content="小鱼兒 · 面向高龄老人的预约挂号服务，全程只需点选，可语音朗读、可对它说话让它代办，可调大字体。">
+<title>小鱼兒 · 预约挂号</title>
+<style>
+/* ============================================================
+   小鱼兒 · 预约挂号（适老版）
+   配色：背景暖米白 #F2F0EA / 卡片纯白 / 主色深青绿 #2F5D62 /
+        提示区淡米黄 #FAF3E4。不使用高饱和纯黄纯红。
+   字号：正文 19.5px 起、标题 29px 起，可整体放大缩小。
+   自适应：电脑优先 —— ≥1024px 左流程 + 右常驻摘要双栏；
+           窄屏自动收成单列，等比缩放兜底。
+   ============================================================ */
+
+:root {
+  --bg: #f2f0ea;
+  --card: #ffffff;
+  --brand: #2f5d62;
+  --brand-dark: #22474b;
+  --brand-soft: #e3edec;
+  --notice: #faf3e4;
+  --notice-line: #e6dcc0;
+  --ink: #1f2b33;          /* 正文主色，与白底对比度 > 12:1 */
+  --ink-2: #43535c;        /* 次要文字，加深以提升可读性 */
+  --muted: #5e5c54;        /* 辅助说明，加深后仍保持柔和 */
+  --line: #d5d0c5;
+  --off-bg: #e9e5dc;       /* 约满 / 不可用 */
+  --off-ink: #7a766c;
+  --ok: #3f6b52;
+  --ok-soft: #e8f1ea;
+  --warn-ink: #7d5426;
+  --radius: 16px;
+  --radius-sm: 12px;
+  --radius-lg: 22px;
+  --tap: 64px;             /* 按钮最小高度 */
+  --fs: 1;                 /* 字体缩放系数，由按钮控制 */
+  --shell: 1160px;         /* 宽屏内容总宽 */
+  --shadow: 0 2px 8px rgba(31, 43, 51, 0.07);
+  --shadow-lift: 0 10px 28px rgba(31, 43, 51, 0.13);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  font-size: calc(17px * var(--fs));
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Source Han Sans SC",
+               "Noto Sans CJK SC", "Heiti SC", system-ui, sans-serif;
+  font-size: 1.15rem;         /* ≈19.5px */
+  line-height: 1.75;
+  padding-bottom: 8.5rem;     /* 让底部固定栏不遮内容 */
+}
+
+/* 医院氛围背景：纯内联 SVG 绘制的抽象图形（楼宇轮廓 + 十字 + 心电线），
+   不含任何文字与真实医院标识，透明度极低，不影响正文对比度 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 1200px auto;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='760' viewBox='0 0 1200 760'><g fill='%232f5d62'><path opacity='.55' d='M0 640 L0 470 L92 470 L92 402 L198 402 L198 470 L300 470 L300 522 L418 522 L418 430 L520 430 L520 522 L642 522 L642 452 L760 452 L760 522 L880 522 L880 480 L1000 480 L1000 542 L1200 542 L1200 640 Z'/><path opacity='.32' d='M150 128 h58 v-58 h48 v58 h58 v48 h-58 v58 h-48 v-58 h-58 z'/><path opacity='.26' d='M905 206 h42 v-42 h34 v42 h42 v34 h-42 v42 h-34 v-42 h-42 z'/><path opacity='.22' fill='none' stroke='%232f5d62' stroke-width='7' d='M0 706 h250 l28-72 l38 142 l44-192 l38 118 l30-4 h296 l30-58 l34 88 l38-28 h312'/></g></svg>");
+}
+
+/* 背景之上的所有内容需要抬升一层 */
+.topbar, .stepbar, .wrap, .actionbar, .idlebar, .modal, .aifab, .ai { position: relative; z-index: 1; }
+.topbar { z-index: 30; }
+.stepbar { z-index: 29; }
+.actionbar { z-index: 40; }
+.idlebar { z-index: 41; }
+.modal { z-index: 50; }
+
+/* ---------- 通用排版 ---------- */
+.title {
+  font-size: 1.75rem;         /* ≈29px */
+  line-height: 1.4;
+  font-weight: 700;
+  margin: 0.2rem 0 0.5rem;
+  letter-spacing: 0.01em;
+}
+.title--success { color: var(--ok); }
+
+.subtitle {
+  font-size: 1.3rem;          /* ≈22px */
+  font-weight: 700;
+  margin: 1.6rem 0 0.7rem;
+  color: var(--ink);
+}
+
+.lead {
+  font-size: 1.2rem;          /* ≈20px */
+  color: var(--ink-2);
+  margin: 0 0 1.2rem;
+}
+
+.hint {
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin: 0.8rem 0 0;
+}
+
+/* 电脑优先：宽屏给主内容包一张「纸」，让层次更清楚 */
+.wrap {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 1.2rem 1.1rem 2rem;
+}
+.shell { display: grid; gap: 1.1rem; grid-template-columns: 1fr; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  background: #fff;
+  color: var(--brand);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  z-index: 60;
+}
+.skip-link:focus { left: 1rem; top: 1rem; outline: 3px solid var(--brand); }
+
+.sr-live {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- 顶部 ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+/* 顶部一条主色渐变，增加层次与「医疗机构」的观感 */
+.topbar::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-dark), var(--brand) 45%, #528f93);
+}
+.topbar__inner {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0.8rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 0.7rem; }
+.brand__mark {
+  width: 3rem; height: 3rem;
+  display: grid; place-items: center;
+  background: var(--brand);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: 1.6rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(47, 93, 98, 0.28);
+}
+.brand__text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand__name { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.04em; }
+.brand__sub { font-size: 0.85rem; color: var(--muted); letter-spacing: 0.25em; }
+
+/* 虚构院名（不指向任何现实医院） */
+.brand__sep {
+  width: 1px;
+  align-self: stretch;
+  min-height: 2.4rem;
+  background: var(--line);
+  margin: 0 0.2rem;
+}
+.brand__text--hospital { border-left: 0; }
+.brand__hospital {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: 0.02em;
+}
+.brand__hospital-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.topbar__tools { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.toolgroup {
+  display: flex;
+  gap: 0.35rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+}
+.toolbtn {
+  min-height: 2.9rem;
+  min-width: 3.2rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 1.05rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.toolbtn[aria-pressed="true"] {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ---------- 步骤条（跟着顶栏吸顶，走过的步骤可以点回去改） ---------- */
+.stepbar {
+  background: var(--bg);
+  position: sticky;
+  top: var(--topbar-h, 6.2rem);
+  z-index: 29;
+  border-bottom: 1px solid var(--line);
+}
+.stepbar__list {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0.7rem 1.1rem;
+  list-style: none;
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+}
+.stepbar__item {
+  flex: 1 0 auto;
+  display: flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.stepbar__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0.3rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 1rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.stepbar__btn:disabled { cursor: default; }
+.stepbar__btn:not(:disabled):hover { background: var(--brand-soft); }
+.stepbar__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: -2px; }
+.stepbar__no {
+  width: 1.6rem; height: 1.6rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--off-bg);
+  color: var(--off-ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.stepbar__item[data-state="active"] {
+  border-color: var(--brand);
+  border-width: 2px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 700;
+}
+.stepbar__item[data-state="active"] .stepbar__no { background: var(--brand); color: #fff; }
+.stepbar__item[data-state="done"] { color: var(--ok); border-color: var(--ok-soft); }
+.stepbar__item[data-state="done"] .stepbar__no { background: var(--ok); color: #fff; }
+
+/* ---------- 卡片 / 网格 ---------- */
+.grid { display: grid; gap: 0.9rem; grid-template-columns: 1fr; }
+
+.bigcard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 1.15rem 1.2rem;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.25rem;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.bigcard:hover { box-shadow: var(--shadow-lift); }
+.bigcard:active { transform: scale(0.985); }
+.bigcard:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+
+/* 选中态：主色底 + 深描边 + 投影，老人一眼能看出选了哪个 */
+.bigcard[aria-pressed="true"] {
+  background: var(--brand);
+  border-color: var(--brand-dark);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(47, 93, 98, 0.28);
+}
+.bigcard[aria-pressed="true"] .bigcard__desc,
+.bigcard[aria-pressed="true"] .bigcard__meta { color: #eaf3f2; }
+
+.bigcard__icon {
+  flex: 0 0 auto;
+  width: 3.4rem; height: 3.4rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.bigcard[aria-pressed="true"] .bigcard__icon { background: #fff; color: var(--brand); }
+
+.bigcard__main { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 auto; }
+.bigcard__title { font-size: 1.3rem; font-weight: 700; line-height: 1.4; }
+.bigcard__desc { font-size: 1.05rem; color: var(--ink-2); line-height: 1.55; }
+.bigcard__meta { font-size: 1rem; color: var(--muted); }
+.bigcard__check {
+  flex: 0 0 auto;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: transparent;
+}
+.bigcard[aria-pressed="true"] .bigcard__check { color: #fff; }
+
+.bigcard--start {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  font-size: 1.4rem;
+  min-height: 6rem;
+}
+.bigcard--start .bigcard__icon { background: var(--brand); color: #fff; }
+
+/* 不可用（约满） */
+.bigcard--off {
+  background: var(--off-bg);
+  border-color: var(--off-bg);
+  color: var(--off-ink);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.bigcard--off .bigcard__icon { background: #d8d3c8; color: var(--off-ink); }
+.bigcard--off .bigcard__desc { color: var(--off-ink); }
+.bigcard--off:active { transform: none; }
+
+/* 医生头像（用姓氏首字生成，不依赖图片，离线可用） */
+.avatar {
+  flex: 0 0 auto;
+  width: 4.2rem; height: 4.2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--brand);
+}
+.bigcard[aria-pressed="true"] .avatar { box-shadow: 0 0 0 3px #fff; }
+
+/* ---------- 语音条 ---------- */
+.voicebar {
+  display: flex;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.btn--voice {
+  flex: 1 1 auto;
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.btn--voice:hover { background: #d6e6e5; }
+.btn__icon--brand { background: var(--brand); }
+/* 正在朗读：按钮变成「停止朗读」的样子，老人一眼看得出 */
+.btn--voice[data-speaking="1"] { background: var(--brand); color: #fff; }
+.btn--voice[data-speaking="1"] .btn__icon--brand { background: #fff; color: var(--brand); }
+
+.footnote {
+  margin: 2rem 0 0;
+  font-size: 0.95rem;
+  color: #79766d;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ---------- 提示区 / 结果区 ---------- */
+.notice {
+  background: var(--notice);
+  border: 1px solid var(--notice-line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  margin: 0 0 1.2rem;
+}
+.notice--result { background: var(--card); border-color: var(--brand); border-width: 2px; }
+.notice--tips { margin-top: 1.4rem; }
+.notice__label { font-size: 1.05rem; color: var(--warn-ink); margin: 0 0 0.2rem; font-weight: 700; }
+.notice__strong {
+  font-size: 1.55rem; font-weight: 700; color: var(--brand);
+  margin: 0.1rem 0 0.3rem;
+}
+.notice__text { font-size: 1.15rem; color: var(--ink-2); margin: 0; line-height: 1.7; }
+.notice__row { margin-top: 0.8rem; display: flex; gap: 0.7rem; flex-wrap: wrap; }
+
+/* ---------- 摘要表 ---------- */
+.summary {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.4rem 1.2rem;
+  margin: 0;
+}
+.summary__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.summary__row:last-child { border-bottom: 0; }
+.summary__k { color: var(--muted); font-size: 1.05rem; flex: 0 0 auto; }
+.summary__v { font-size: 1.2rem; font-weight: 700; text-align: right; }
+
+/* ---------- 成功页 ---------- */
+.success { text-align: center; padding: 0.5rem 0 0.3rem; }
+.success__badge {
+  width: 5rem; height: 5rem;
+  margin: 0 auto 0.7rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--ok-soft);
+  color: var(--ok);
+  font-size: 2.6rem;
+  font-weight: 700;
+}
+.ticket {
+  background: var(--card);
+  border: 2px solid var(--ok);
+  border-radius: var(--radius-lg);
+  padding: 1.2rem 1.3rem;
+  margin-top: 1rem;
+}
+.ticket__hospital {
+  margin: 0 0 0.2rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: 0.02em;
+}
+.ticket__no {
+  font-size: 2.1rem; font-weight: 700; color: var(--ok);
+  letter-spacing: 0.04em;
+}
+.ticket__label { font-size: 1rem; color: var(--muted); }
+
+.tips { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.55rem; }
+.tips__item {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  font-size: 1.2rem; color: var(--ink); line-height: 1.6;
+}
+.tips__no {
+  flex: 0 0 auto;
+  width: 1.9rem; height: 1.9rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 0.15rem;
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--tap);
+  padding: 0.7rem 1.3rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+.btn:active { transform: scale(0.985); }
+.btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.btn--primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn--primary:hover { background: var(--brand-dark); }
+.btn--primary:disabled,
+.btn:disabled {
+  background: var(--off-bg);
+  border-color: var(--off-bg);
+  color: var(--off-ink);
+  cursor: not-allowed;
+}
+.btn--help { background: var(--notice); border-color: var(--notice-line); color: var(--warn-ink); }
+.btn--sm { min-height: 3.2rem; padding: 0.35rem 1rem; font-size: 1.1rem; }
+/* 必选项做完了，「下一步」轻轻呼吸一下，告诉老人可以点了 */
+.btn--ready { animation: readyPulse 2s ease-in-out infinite; }
+@keyframes readyPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.20); }
+  50% { box-shadow: 0 0 0 8px rgba(47, 93, 98, 0.05); }
+}
+.btn__arrow { font-size: 1.4rem; line-height: 1; }
+.btn__icon {
+  width: 1.7rem; height: 1.7rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--warn-ink);
+  color: #fff;
+  font-size: 1.15rem;
+}
+
+/* ---------- 宽屏右栏：您已经选好的 ---------- */
+.aside { display: none; }
+
+/* ---------- 底部固定栏 ---------- */
+.actionbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 40;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -2px 12px rgba(34, 48, 58, 0.10);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.actionbar__inner {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0.8rem 1.1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 0.7rem;
+}
+
+/* ---------- 空闲关怀条 ---------- */
+.idlebar {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: calc(7.6rem + env(safe-area-inset-bottom));
+  z-index: 41;
+  background: var(--notice);
+  border-top: 1px solid var(--notice-line);
+  box-shadow: 0 -2px 10px rgba(34, 48, 58, 0.08);
+  padding: 0.8rem 1.1rem;
+}
+.idlebar[hidden] { display: none; }
+.idlebar__text {
+  max-width: var(--shell);
+  margin: 0 auto 0.5rem;
+  font-size: 1.15rem;
+  color: var(--warn-ink);
+}
+.idlebar__row { max-width: var(--shell); margin: 0 auto; display: flex; gap: 0.7rem; }
+
+/* ---------- 弹窗 ---------- */
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 1rem; }
+.modal[hidden] { display: none; }
+.modal__mask { position: absolute; inset: 0; background: rgba(31, 43, 51, 0.5); }
+.modal__box {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.4rem 1.2rem;
+  box-shadow: 0 14px 48px rgba(31, 43, 51, 0.32);
+}
+.modal__title { font-size: 1.5rem; margin: 0 0 0.6rem; }
+.modal__body { font-size: 1.15rem; color: var(--ink-2); }
+.modal__body ul { margin: 0.5rem 0 0; padding-left: 1.3rem; }
+.modal__body li { margin: 0.35rem 0; line-height: 1.7; }
+.modal__actions { display: grid; gap: 0.7rem; margin-top: 1.2rem; }
+
+.noscript {
+  background: var(--notice);
+  border: 1px solid var(--notice-line);
+  padding: 1rem 1.2rem;
+  margin: 1rem;
+  border-radius: var(--radius);
+  font-size: 1.15rem;
+}
+
+/* ---------- 无障碍与动效 ---------- */
+:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+@media (prefers-contrast: more) {
+  :root { --ink: #101a1f; --line: #8d8a80; --muted: #4b4942; }
+}
+
+/* ============================================================
+   自适应：电脑优先
+   ============================================================ */
+
+/* 平板及以上：选项可以并排，弹窗按钮并排 */
+@media (min-width: 700px) {
+  .grid--2 { grid-template-columns: 1fr 1fr; }
+  .grid--3 { grid-template-columns: repeat(3, 1fr); }
+  .modal__actions { grid-template-columns: 1fr 1fr; }
+}
+
+/* 电脑：主内容包一张白纸 + 右侧常驻摘要栏 */
+@media (min-width: 1024px) {
+  body { font-size: 1.2rem; padding-bottom: 9.5rem; }
+
+  .wrap { padding: 1.6rem 1.4rem 2.4rem; }
+  .shell {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+    gap: 1.4rem;
+  }
+
+  .flow {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 1.6rem 1.8rem 1.8rem;
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* 电脑端选项卡片更舒展 */
+  .grid { gap: 1rem; }
+  .grid--4 { grid-template-columns: repeat(4, 1fr); }
+  .bigcard { padding: 1.3rem 1.35rem; }
+
+  .aside {
+    display: block;
+    position: sticky;
+    top: calc(var(--topbar-h, 6.2rem) + 4.6rem);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem 1.3rem;
+    box-shadow: var(--shadow);
+  }
+  .aside__title {
+    margin: 0 0 0.2rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--brand);
+  }
+  .aside__now {
+    margin: 0 0 0.8rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .aside__empty {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .aside__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .aside__row:first-child { border-top: 0; }
+  .aside__k { font-size: 0.95rem; color: var(--muted); }
+  .aside__v { font-size: 1.15rem; font-weight: 700; color: var(--ink); line-height: 1.5; }
+
+  .actionbar__inner { padding: 0.9rem 1.4rem; }
+  .voicebar { max-width: 32rem; }
+}
+
+/* 超宽屏：右侧摘要栏再宽一点，整体不拉伸变形 */
+@media (min-width: 1440px) {
+  :root { --shell: 1240px; }
+  .shell { grid-template-columns: minmax(0, 1fr) 340px; }
+}
+
+/* 窄屏（手机）：等比缩放兜底 —— 单列、按钮满宽、底部三键改两行 */
+@media (max-width: 480px) {
+  .actionbar__inner { grid-template-columns: 1fr 1fr; }
+  #btn-next { grid-column: span 2; }
+  .brand__hospital-sub { display: none; }
+  .brand__sep { display: none; }
+  .wrap { padding: 1rem 0.9rem 1.6rem; }
+}
+
+/* ---------- 打印：把预约单打成一张纸 ---------- */
+@media print {
+  body::before { display: none !important; }
+  .topbar, .stepbar, .actionbar, .voicebar, .idlebar,
+  .aifab, .ai, .ai-inline, #modal, .skip-link { display: none !important; }
+  body { padding: 0; background: #fff; }
+  .wrap { max-width: none; }
+  .shell { grid-template-columns: 1fr; }
+  .flow { background: #fff; border: 0; box-shadow: none; padding: 0; }
+  .ticket { border-color: #000; }
+  .step { display: block !important; }
+}
+</style>
+<style>
+/* ============================================================
+   小鱼兒 · 语音智能助手（ai.js 配套样式）
+   沿用主页面的配色与适老尺寸：大按钮、大字号、圆角、高对比。
+   ============================================================ */
+
+/* ---------- 页面内的入口卡片 ---------- */
+.ai-inline { margin: 1.6rem 0 0; }
+.ai-inline__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 1.1rem 1.2rem;
+  border: 2px dashed var(--brand);
+  border-radius: var(--radius);
+  background: var(--brand-soft);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.25rem;
+  text-align: left;
+  cursor: pointer;
+}
+.ai-inline__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.ai-inline__mark {
+  flex: 0 0 auto;
+  width: 3.2rem; height: 3.2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.ai-inline__main { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 auto; }
+.ai-inline__title { font-size: 1.3rem; font-weight: 700; color: var(--brand); }
+.ai-inline__desc { font-size: 1.05rem; color: var(--ink-2); line-height: 1.55; }
+.ai-inline__go { font-size: 1.8rem; color: var(--brand); }
+
+/* ---------- 悬浮按钮 ---------- */
+.aifab {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(7.8rem + env(safe-area-inset-bottom));
+  z-index: 44;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 4.2rem;
+  padding: 0.5rem 1.1rem 0.5rem 0.5rem;
+  border: 2px solid var(--brand-dark);
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(34, 48, 58, 0.22);
+}
+.aifab:active { transform: scale(0.98); }
+.aifab:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.aifab__mark {
+  width: 3rem; height: 3rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--brand);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+body[data-step="5"] .aifab { bottom: calc(1.4rem + env(safe-area-inset-bottom)); }
+body.idle-on .aifab { bottom: calc(13.2rem + env(safe-area-inset-bottom)); }
+body.ai-open .aifab { display: none; }
+
+/* ---------- 对话面板 ---------- */
+.ai { position: fixed; inset: 0; z-index: 45; display: flex; align-items: flex-end; justify-content: center; }
+.ai[hidden] { display: none; }
+.ai__mask { position: absolute; inset: 0; background: rgba(34, 48, 58, 0.45); }
+.ai__box {
+  position: relative;
+  width: min(640px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 1rem 1.1rem calc(1rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 30px rgba(34, 48, 58, 0.25);
+  overflow: hidden;
+}
+@media (min-width: 700px) {
+  .ai { align-items: center; }
+  .ai__box { border-radius: var(--radius-lg); max-height: 82vh; }
+}
+
+.ai__head { display: flex; align-items: center; gap: 0.8rem; }
+.ai__mark {
+  flex: 0 0 auto;
+  width: 3.2rem; height: 3.2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.ai__headtext { flex: 1 1 auto; min-width: 0; }
+.ai__title { font-size: 1.3rem; margin: 0; font-weight: 700; }
+.ai__status {
+  margin: 0.1rem 0 0;
+  font-size: 1.05rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+  min-height: 1.5rem;
+}
+.ai__x {
+  flex: 0 0 auto;
+  min-height: 2.8rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.ai__log {
+  margin: 0.8rem 0;
+  padding: 0.7rem 0.8rem;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  max-height: 30vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.ai__bubble {
+  max-width: 88%;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 1.15rem;
+  line-height: 1.65;
+  word-break: break-word;
+}
+.ai__bubble--ai {
+  align-self: flex-start;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-bottom-left-radius: 4px;
+}
+.ai__bubble--me {
+  align-self: flex-end;
+  background: var(--notice);
+  border: 1px solid var(--notice-line);
+  color: var(--warn-ink);
+  border-bottom-right-radius: 4px;
+}
+
+.ai__row { display: flex; gap: 0.7rem; }
+.ai__mic {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 4.4rem;
+  border: 2px solid var(--brand-dark);
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai__mic:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.ai__mic[data-state="on"] { background: var(--brand-dark); }
+.ai__ring {
+  width: 1.3rem; height: 1.3rem;
+  border-radius: 50%;
+  background: #fff;
+  display: inline-block;
+}
+.ai__mic[data-state="on"] .ai__ring { animation: aiPulse 1.2s ease-out infinite; }
+@keyframes aiPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); }
+  100% { box-shadow: 0 0 0 1.2rem rgba(255, 255, 255, 0); }
+}
+.ai__cancel {
+  flex: 0 0 auto;
+  min-height: 4.4rem;
+  padding: 0 1.1rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai__cancel[hidden] { display: none; }
+
+.ai__chiplabel { margin: 0.9rem 0 0.4rem; font-size: 1.05rem; color: var(--muted); }
+.ai__chips { display: flex; flex-wrap: wrap; gap: 0.55rem; overflow-y: auto; max-height: 22vh; }
+.chip {
+  min-height: 3.4rem;
+  padding: 0.4rem 1rem;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--brand); color: var(--brand); }
+.chip:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aifab, .ai__mic, .ai__ring { transition: none; animation: none; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#step-root" data-i18n="a11y.skip">跳到主要内容</a>
+
+<!-- ============ 顶部：品牌 + 语言 + 字体缩放 ============ -->
+<header class="topbar">
+  <div class="topbar__inner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">鱼</span>
+      <span class="brand__text">
+        <span class="brand__name">小鱼兒</span>
+        <span class="brand__sub">網頁代駕</span>
+      </span>
+      <span class="brand__sep" aria-hidden="true"></span>
+      <span class="brand__text brand__text--hospital">
+        <span class="brand__hospital" data-i18n="brand.hospital"></span>
+        <span class="brand__hospital-sub" data-i18n="brand.hospitalSub"></span>
+      </span>
+    </div>
+
+    <div class="topbar__tools">
+      <div class="toolgroup" role="group" data-i18n-aria="topbar.font" aria-label="调整字体大小">
+        <button type="button" class="toolbtn" id="font-minus" aria-label="把字调小">
+          <span aria-hidden="true">A-</span>
+        </button>
+        <button type="button" class="toolbtn" id="font-reset" aria-label="恢复默认字体大小">
+          <span aria-hidden="true" data-i18n="topbar.fontReset">标准</span>
+        </button>
+        <button type="button" class="toolbtn" id="font-plus" aria-label="把字调大">
+          <span aria-hidden="true">A+</span>
+        </button>
+      </div>
+
+      <div class="toolgroup" role="group" aria-label="选择语言">
+        <button type="button" class="toolbtn" data-lang-btn="zh" aria-pressed="true">简体</button>
+        <button type="button" class="toolbtn" data-lang-btn="zh-Hant" aria-pressed="false">繁體</button>
+        <button type="button" class="toolbtn" data-lang-btn="en" aria-pressed="false">English</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 步骤指示 ============ -->
+<nav class="stepbar" aria-label="挂号步骤">
+  <ol class="stepbar__list" id="stepbar"></ol>
+</nav>
+
+<!-- ============ 主内容：每一步只做一件事 ============ -->
+<main class="wrap" id="step-root" tabindex="-1">
+<div class="shell">
+<div class="flow">
+
+  <!-- 语音：每一步都可以把屏幕上的话念出来 -->
+  <div class="voicebar">
+    <button type="button" class="btn btn--voice" id="btn-speak">
+      <span class="btn__icon btn__icon--brand" aria-hidden="true">听</span>
+      <span data-i18n="voice.listen"></span>
+    </button>
+    <button type="button" class="btn btn--ghost" id="btn-stop">
+      <span data-i18n="voice.stop"></span>
+    </button>
+  </div>
+
+  <!-- 第 0 步：开始 -->
+  <section class="step" id="step-0" hidden>
+    <div class="notice" role="note">
+      <p class="notice__text" data-i18n="step0.notice"></p>
+    </div>
+    <h1 class="title" data-i18n="step0.title"></h1>
+    <p class="lead" data-i18n="step0.lead"></p>
+    <button type="button" class="bigcard bigcard--start" data-action="start">
+      <span class="bigcard__icon" aria-hidden="true">✓</span>
+      <span class="bigcard__main">
+        <span class="bigcard__title" data-i18n="step0.cta"></span>
+        <span class="bigcard__desc" data-i18n="step0.ctaDesc"></span>
+      </span>
+    </button>
+  </section>
+
+  <!-- 第 1 步：选症状 -->
+  <section class="step" id="step-1" hidden>
+    <h1 class="title" data-i18n="step1.title"></h1>
+    <p class="lead" data-i18n="step1.lead"></p>
+    <div class="grid" id="symptom-list" role="group" data-i18n-aria="step1.group" aria-label="哪里不舒服"></div>
+
+    <div class="notice notice--result" id="dept-result" hidden>
+      <p class="notice__label" data-i18n="step1.recommendLabel"></p>
+      <p class="notice__strong" id="dept-name"></p>
+      <p class="notice__text" id="dept-reason"></p>
+      <div class="notice__row">
+        <button type="button" class="btn btn--ghost" id="dept-change">
+          <span data-i18n="step1.changeDept"></span>
+        </button>
+      </div>
+      <div class="notice__row" id="dept-alts" hidden></div>
+    </div>
+  </section>
+
+  <!-- 第 2 步：选医生 -->
+  <section class="step" id="step-2" hidden>
+    <h1 class="title" data-i18n="step2.title"></h1>
+    <p class="lead" id="step2-lead"></p>
+    <div class="grid" id="doctor-list" role="group" aria-label="选择医生"></div>
+  </section>
+
+  <!-- 第 3 步：选时间 -->
+  <section class="step" id="step-3" hidden>
+    <h1 class="title" data-i18n="step3.title"></h1>
+    <p class="lead" data-i18n="step3.lead"></p>
+
+    <h2 class="subtitle" data-i18n="step3.dateTitle"></h2>
+    <div class="grid grid--3" id="date-list" role="group" aria-label="选择日期"></div>
+
+    <h2 class="subtitle" data-i18n="step3.slotTitle"></h2>
+    <div class="grid grid--2" id="slot-list" role="group" aria-label="选择时段"></div>
+    <p class="hint" data-i18n="step3.fullHint"></p>
+  </section>
+
+  <!-- 第 4 步：核对 + 付款方式 -->
+  <section class="step" id="step-4" hidden>
+    <h1 class="title" data-i18n="step4.title"></h1>
+    <p class="lead" data-i18n="step4.lead"></p>
+
+    <h2 class="subtitle" data-i18n="step4.patientTitle"></h2>
+    <div class="grid" id="patient-list" role="group" aria-label="选择就诊人"></div>
+
+    <h2 class="subtitle" data-i18n="step4.summaryTitle"></h2>
+    <dl class="summary" id="summary"></dl>
+
+    <h2 class="subtitle" data-i18n="step4.payTitle"></h2>
+    <div class="grid grid--2" id="pay-list" role="group" aria-label="选择付款方式"></div>
+  </section>
+
+  <!-- 第 5 步：预约成功 -->
+  <section class="step" id="step-5" hidden>
+    <div class="success">
+      <div class="success__badge" aria-hidden="true">✓</div>
+      <h1 class="title title--success" data-i18n="step5.title"></h1>
+      <p class="lead" data-i18n="step5.lead"></p>
+    </div>
+
+    <div class="ticket" id="ticket"></div>
+
+    <div class="notice notice--tips">
+      <p class="notice__label" data-i18n="step5.tipsLabel"></p>
+      <ul class="tips">
+        <li class="tips__item"><span class="tips__no" aria-hidden="true">1</span><span data-i18n="step5.tip1"></span></li>
+        <li class="tips__item"><span class="tips__no" aria-hidden="true">2</span><span data-i18n="step5.tip2"></span></li>
+        <li class="tips__item"><span class="tips__no" aria-hidden="true">3</span><span data-i18n="step5.tip3"></span></li>
+      </ul>
+    </div>
+
+    <div class="grid grid--2">
+      <button type="button" class="btn btn--ghost" data-action="restart">
+        <span data-i18n="step5.again"></span>
+      </button>
+      <button type="button" class="btn btn--primary" data-action="done">
+        <span data-i18n="step5.finish"></span>
+      </button>
+    </div>
+  </section>
+
+  <p class="footnote" data-i18n="foot.agent"></p>
+
+  <!-- 语音助手：点右下角的「小鱼兒」，对它说话就能办 -->
+  <div class="ai-inline" id="ai-inline">
+    <button type="button" class="ai-inline__btn" id="ai-inline-open">
+      <span class="ai-inline__mark" aria-hidden="true">鱼</span>
+      <span class="ai-inline__main">
+        <span class="ai-inline__title" data-i18n="ai.inlineTitle"></span>
+        <span class="ai-inline__desc" data-i18n="ai.inlineDesc"></span>
+      </span>
+      <span class="ai-inline__go" aria-hidden="true">›</span>
+    </button>
+  </div>
+
+</div><!-- /.flow -->
+
+<!-- 宽屏右栏：随时能看到自己选到哪了（窄屏自动隐藏） -->
+<aside class="aside" id="aside" aria-label="您已经选好的">
+  <p class="aside__title" data-i18n="aside.title"></p>
+  <p class="aside__now" id="aside-now"></p>
+  <div class="aside__list" id="aside-list"></div>
+</aside>
+
+</div><!-- /.shell -->
+</main>
+
+<!-- ============ 空闲关怀：老人停住不动时轻轻提示一句 ============ -->
+<div class="idlebar" id="idlebar" hidden>
+  <p class="idlebar__text" data-i18n="idle.text"></p>
+  <div class="idlebar__row">
+    <button type="button" class="btn btn--help btn--sm" id="idlebar-help">
+      <span data-i18n="nav.help"></span>
+    </button>
+    <button type="button" class="btn btn--ghost btn--sm" id="idlebar-close">
+      <span data-i18n="idle.close"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ============ 底部固定操作栏 ============ -->
+<footer class="actionbar" id="actionbar">
+  <div class="actionbar__inner">
+    <button type="button" class="btn btn--ghost" id="btn-prev">
+      <span class="btn__arrow" aria-hidden="true">←</span>
+      <span data-i18n="nav.prev"></span>
+    </button>
+    <button type="button" class="btn btn--help" id="btn-help">
+      <span class="btn__icon" aria-hidden="true">?</span>
+      <span data-i18n="nav.help"></span>
+    </button>
+    <button type="button" class="btn btn--primary" id="btn-next">
+      <span data-i18n="nav.next"></span>
+      <span class="btn__arrow" aria-hidden="true">→</span>
+    </button>
+  </div>
+</footer>
+
+<!-- ============ 弹窗（确认 / 帮助） ============ -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__mask" data-close="1"></div>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 class="modal__title" id="modal-title"></h2>
+    <div class="modal__body" id="modal-body"></div>
+    <div class="modal__actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<!-- 语音朗读状态（无障碍播报，屏幕可见一句简短提示） -->
+<div class="sr-live" id="live" role="status" aria-live="polite"></div>
+
+<noscript>
+  <div class="noscript">本页需要浏览器开启 JavaScript 才能使用；若无法开启，请到医院一楼服务台由工作人员协助挂号。</div>
+</noscript>
+
+<script>
+/* ============================================================
+   小鱼兒 · 预约挂号（适老版）交互逻辑
+   - 全程点选，没有任何键盘输入
+   - 每一步只做一件事
+   - 三语（简体 / 繁體 / English）文案与语音同步切换
+   - 字体整体缩放，记住老人的选择
+   - 对外声明「能力清单」，后续可由智能体代驾执行
+   ============================================================ */
+(function () {
+  'use strict';
+
+  /* ---------------- 语言 ---------------- */
+  var LANGS = ['zh', 'zh-Hant', 'en'];
+  var SPEECH_LANG = { zh: 'zh-CN', 'zh-Hant': 'zh-TW', en: 'en-US' };
+  var HTML_LANG = { zh: 'zh-CN', 'zh-Hant': 'zh-TW', en: 'en' };
+
+  var I18N = {
+    zh: {
+      'doc.title': '小鱼兒 · 预约挂号',
+      'a11y.skip': '跳到主要内容',
+      'topbar.font': '调整字体大小',
+      'topbar.fontReset': '标准',
+      'voice.listen': '听语音提示',
+      'voice.stop': '停止朗读',
+      'voice.unsupported': '这台设备暂时不能朗读，请让家人念给您听。',
+      'stepbar.0': '开始', 'stepbar.1': '选症状', 'stepbar.2': '选医生',
+      'stepbar.3': '选时间', 'stepbar.4': '核对付款', 'stepbar.5': '预约成功',
+
+      'step0.notice': '这里是给 65 岁以上老人准备的挂号服务。全程只用手指点，不用打字。',
+      'step0.title': '您好，我是小鱼兒',
+      'step0.lead': '您只要一步一步点，就能把号挂好。不急，慢慢来。',
+      'step0.cta': '我要预约挂号',
+      'step0.ctaDesc': '点一下，开始挂号',
+
+      'step1.title': '第 1 步 · 您哪里不舒服？',
+      'step1.lead': '请点一个最像您现在感觉的选项。',
+      'step1.group': '哪里不舒服',
+      'step1.recommendLabel': '我帮您推荐这个科室',
+      'step1.recommend': '您选了「{symptom}」，建议挂 {dept}。',
+      'step1.changeDept': '我想换个科室',
+      'step1.pickedDept': '已改挂 {dept}。',
+      'step1.altsLabel': '也可以选：',
+
+      'step2.title': '第 2 步 · 选一位医生',
+      'step2.lead': '科室：{dept}。点一位医生，看看他的照片和擅长。',
+
+      'step3.title': '第 3 步 · 选就诊时间',
+      'step3.lead': '日期和上午下午都要选，两个都点了才能下一步。',
+      'step3.dateTitle': '选哪一天',
+      'step3.slotTitle': '选上午还是下午',
+      'step3.fullHint': '灰色表示这个时间已经约满了，请点别的时间。',
+
+      'step4.title': '第 4 步 · 核对信息，选怎么付钱',
+      'step4.lead': '请看清下面的信息，再点一种付款方式。',
+      'step4.patientTitle': '谁去看病',
+      'brand.hospital': '示范市人民医院',
+      'brand.hospitalSub': '门诊预约 · 为 65 岁以上长者服务',
+      'aside.title': '您已经选好的',
+      'aside.empty': '还没选。跟着上面的步骤，一步一步来就行。',
+      'aside.symptom': '不舒服',
+      'aside.dept': '科室',
+      'aside.doctor': '医生',
+      'aside.time': '时间',
+      'aside.pay': '付款',
+      'aside.now': '第 {n} 步 / 共 5 步',
+      'step4.summaryTitle': '预约信息',
+      'step4.payTitle': '怎么付挂号费',
+
+      'step5.title': '预约成功啦',
+      'step5.lead': '已经帮您挂好了。下面这张单子请记好，也可以让家人拍个照。',
+      'step5.tipsLabel': '来医院那天请记住三件事',
+      'step5.tip1': '带上身份证（或医保卡），进门要刷。',
+      'step5.tip2': '比预约时间提前 15 分钟到医院，不要迟到。',
+      'step5.tip3': '先去一楼分诊台报名字，护士会告诉您去哪间诊室。',
+      'step5.again': '再挂一个号',
+      'step5.finish': '好了，我知道了',
+
+      'nav.prev': '上一步', 'nav.help': '需要帮助', 'nav.next': '下一步', 'nav.nextSubmit': '确认预约',
+
+      'summary.dept': '科室', 'summary.doctor': '医生', 'summary.time': '就诊时间',
+      'summary.patient': '就诊人', 'summary.pay': '付款方式', 'summary.fee': '挂号费',
+      'ticket.no': '取号', 'ticket.place': '就诊地点',
+
+      'slot.am': '上午', 'slot.amTime': '8:00 — 12:00',
+      'slot.pm': '下午', 'slot.pmTime': '14:00 — 17:30',
+      'slot.left': '还剩 {n} 个号', 'slot.full': '已约满',
+
+      'date.today': '今天', 'date.tomorrow': '明天', 'date.dayAfter': '后天',
+      'date.fmt': '{label} · {md} · 周{week}',
+      'date.fmtEn': '{label} · {md}',
+
+      'patient.self': '本人', 'patient.spouse': '老伴', 'patient.family': '家人陪同',
+      'patient.age': '{age} 岁', 'patient.idCard': '身份证', 'patient.phone': '手机号',
+
+      'pay.medical': '医保卡', 'pay.medicalDesc': '先刷医保卡报销，剩下的钱再付。',
+      'pay.wechat': '微信', 'pay.wechatDesc': '用手机扫二维码付，可以请家人帮忙。',
+      'pay.alipay': '支付宝', 'pay.alipayDesc': '用手机扫二维码付，可以请家人帮忙。',
+      'pay.hospital': '到医院再付', 'pay.hospitalDesc': '先看病，看完在收费窗口付钱。',
+
+      'dialog.needTitle': '还差一点点',
+      'dialog.needSymptom': '请先点一个「哪里不舒服」。',
+      'dialog.needDoctor': '请先点一位医生。',
+      'dialog.needDate': '请先点一个日期。',
+      'dialog.needSlot': '请先点「上午」或「下午」。',
+      'dialog.needPay': '请先点一种付款方式。',
+      'dialog.slotFull': '这个时间已经约满了，请换一个。',
+      'dialog.ok': '我知道了',
+
+      'dialog.confirmTitle': '请再看一眼，确认后就不能改了',
+      'dialog.confirmBody': '挂 {dept} · {doctor} · {time}，就诊人 {patient}，{pay}。',
+      'dialog.confirmYes': '确认预约',
+      'dialog.confirmNo': '再看看',
+
+      'dialog.helpTitle': '需要帮助？可以这样',
+      'dialog.help1': '叫家里人过来帮您点一下。',
+      'dialog.help2': '到医院一楼服务台，穿制服的工作人员会帮您挂号。',
+      'dialog.help3': '让护士站帮您打电话给家人。',
+      'dialog.helpSpeak': '再把这段话念一遍',
+      'dialog.close': '关闭',
+
+      'foot.agent': '本页每一步都声明为标准能力，点右下角「小鱼兒」，对它说一句话就能替您办。',
+      'idle.text': '您停了一会儿，需要帮忙吗？',
+      'idle.close': '我在看',
+    },
+
+    'zh-Hant': {
+      'doc.title': '小鱼兒 · 預約掛號',
+      'a11y.skip': '跳到主要內容',
+      'topbar.font': '調整字體大小',
+      'topbar.fontReset': '標準',
+      'voice.listen': '聽語音提示',
+      'voice.stop': '停止朗讀',
+      'voice.unsupported': '這台設備暫時不能朗讀，請讓家人念給您聽。',
+      'stepbar.0': '開始', 'stepbar.1': '選症狀', 'stepbar.2': '選醫生',
+      'stepbar.3': '選時間', 'stepbar.4': '核對付款', 'stepbar.5': '預約成功',
+
+      'step0.notice': '這裡是給 65 歲以上長者準備的掛號服務。全程只用手指點，不用打字。',
+      'step0.title': '您好，我是小鱼兒',
+      'step0.lead': '您只要一步一步點，就能把號掛好。不急，慢慢來。',
+      'step0.cta': '我要預約掛號',
+      'step0.ctaDesc': '點一下，開始掛號',
+
+      'step1.title': '第 1 步 · 您哪裡不舒服？',
+      'step1.lead': '請點一個最像您現在感覺的選項。',
+      'step1.group': '哪裡不舒服',
+      'step1.recommendLabel': '我幫您推薦這個科別',
+      'step1.recommend': '您選了「{symptom}」，建議掛 {dept}。',
+      'step1.changeDept': '我想換個科別',
+      'step1.pickedDept': '已改掛 {dept}。',
+      'step1.altsLabel': '也可以選：',
+
+      'step2.title': '第 2 步 · 選一位醫生',
+      'step2.lead': '科別：{dept}。點一位醫生，看看他的照片和專長。',
+
+      'step3.title': '第 3 步 · 選就診時間',
+      'step3.lead': '日期和上午下午都要選，兩個都點了才能下一步。',
+      'step3.dateTitle': '選哪一天',
+      'step3.slotTitle': '選上午還是下午',
+      'step3.fullHint': '灰色表示這個時間已經約滿了，請點別的時間。',
+
+      'step4.title': '第 4 步 · 核對資料，選怎麼付錢',
+      'step4.lead': '請看清下面的資料，再點一種付款方式。',
+      'step4.patientTitle': '誰去看病',
+      'brand.hospital': '示範市人民醫院',
+      'brand.hospitalSub': '門診預約 · 為 65 歲以上長者服務',
+      'aside.title': '您已經選好的',
+      'aside.empty': '還沒選。跟著上面的步驟，一步一步來就行。',
+      'aside.symptom': '不舒服',
+      'aside.dept': '科別',
+      'aside.doctor': '醫師',
+      'aside.time': '時間',
+      'aside.pay': '付款',
+      'aside.now': '第 {n} 步 / 共 5 步',
+      'step4.summaryTitle': '預約資料',
+      'step4.payTitle': '怎麼付掛號費',
+
+      'step5.title': '預約成功囉',
+      'step5.lead': '已經幫您掛好了。下面這張單子請記好，也可以讓家人拍個照。',
+      'step5.tipsLabel': '來醫院那天請記住三件事',
+      'step5.tip1': '帶上身分證（或健保卡），進門要刷。',
+      'step5.tip2': '比預約時間提前 15 分鐘到醫院，不要遲到。',
+      'step5.tip3': '先去一樓分診台報名字，護士會告訴您去哪間診室。',
+      'step5.again': '再掛一個號',
+      'step5.finish': '好了，我知道了',
+
+      'nav.prev': '上一步', 'nav.help': '需要幫助', 'nav.next': '下一步', 'nav.nextSubmit': '確認預約',
+
+      'summary.dept': '科別', 'summary.doctor': '醫生', 'summary.time': '就診時間',
+      'summary.patient': '就診人', 'summary.pay': '付款方式', 'summary.fee': '掛號費',
+      'ticket.no': '取號', 'ticket.place': '就診地點',
+
+      'slot.am': '上午', 'slot.amTime': '8:00 — 12:00',
+      'slot.pm': '下午', 'slot.pmTime': '14:00 — 17:30',
+      'slot.left': '還剩 {n} 個號', 'slot.full': '已約滿',
+
+      'date.today': '今天', 'date.tomorrow': '明天', 'date.dayAfter': '後天',
+      'date.fmt': '{label} · {md} · 週{week}',
+      'date.fmtEn': '{label} · {md}',
+
+      'patient.self': '本人', 'patient.spouse': '老伴', 'patient.family': '家人陪同',
+      'patient.age': '{age} 歲', 'patient.idCard': '身分證', 'patient.phone': '手機號',
+
+      'pay.medical': '健保卡', 'pay.medicalDesc': '先刷健保卡補助，剩下的錢再付。',
+      'pay.wechat': '微信', 'pay.wechatDesc': '用手機掃條碼付款，可以請家人幫忙。',
+      'pay.alipay': '支付寶', 'pay.alipayDesc': '用手機掃條碼付款，可以請家人幫忙。',
+      'pay.hospital': '到醫院再付', 'pay.hospitalDesc': '先看診，看完在收費窗口付錢。',
+
+      'dialog.needTitle': '還差一點點',
+      'dialog.needSymptom': '請先點一個「哪裡不舒服」。',
+      'dialog.needDoctor': '請先點一位醫生。',
+      'dialog.needDate': '請先點一個日期。',
+      'dialog.needSlot': '請先點「上午」或「下午」。',
+      'dialog.needPay': '請先點一種付款方式。',
+      'dialog.slotFull': '這個時間已經約滿了，請換一個。',
+      'dialog.ok': '我知道了',
+
+      'dialog.confirmTitle': '請再看一眼，確認後就不能改了',
+      'dialog.confirmBody': '掛 {dept} · {doctor} · {time}，就診人 {patient}，{pay}。',
+      'dialog.confirmYes': '確認預約',
+      'dialog.confirmNo': '再看看',
+
+      'dialog.helpTitle': '需要幫助？可以這樣',
+      'dialog.help1': '叫家裡人過來幫您點一下。',
+      'dialog.help2': '到醫院一樓服務台，穿制服的工作人員會幫您掛號。',
+      'dialog.help3': '請護理站幫您打電話給家人。',
+      'dialog.helpSpeak': '再把這段話念一遍',
+      'dialog.close': '關閉',
+
+      'foot.agent': '本頁每一步都宣告為標準能力，點右下角「小鱼兒」，對它說一句話就能替您辦。',
+      'idle.text': '您停了一會兒，需要幫忙嗎？',
+      'idle.close': '我在看',
+    },
+
+    en: {
+      'doc.title': 'Xiao Yu Er · Book an Appointment',
+      'a11y.skip': 'Skip to main content',
+      'topbar.font': 'Change text size',
+      'topbar.fontReset': 'Reset',
+      'voice.listen': 'Listen to instructions',
+      'voice.stop': 'Stop reading',
+      'voice.unsupported': 'This device cannot read aloud. Please ask a family member to read it for you.',
+      'stepbar.0': 'Start', 'stepbar.1': 'Symptoms', 'stepbar.2': 'Doctor',
+      'stepbar.3': 'Time', 'stepbar.4': 'Confirm & Pay', 'stepbar.5': 'Done',
+
+      'step0.notice': 'This booking service is designed for people aged 65 and over. Tap only — no typing needed.',
+      'step0.title': 'Hello, I am Xiao Yu Er',
+      'step0.lead': 'Just tap step by step and I will book the appointment for you. Take your time.',
+      'step0.cta': 'Book an appointment',
+      'step0.ctaDesc': 'Tap here to start',
+
+      'step1.title': 'Step 1 · What troubles you?',
+      'step1.lead': 'Tap the option that best matches how you feel right now.',
+      'step1.group': 'What troubles you',
+      'step1.recommendLabel': 'I suggest this department',
+      'step1.recommend': 'You chose "{symptom}". I suggest {dept}.',
+      'step1.changeDept': 'Choose another department',
+      'step1.pickedDept': 'Changed to {dept}.',
+      'step1.altsLabel': 'You may also choose:',
+
+      'step2.title': 'Step 2 · Choose a doctor',
+      'step2.lead': 'Department: {dept}. Tap a doctor to see the photo and specialty.',
+
+      'step3.title': 'Step 3 · Choose a time',
+      'step3.lead': 'Please tap both a date and morning or afternoon.',
+      'step3.dateTitle': 'Which day',
+      'step3.slotTitle': 'Morning or afternoon',
+      'step3.fullHint': 'Grey means fully booked. Please pick another time.',
+
+      'step4.title': 'Step 4 · Check details and payment',
+      'step4.lead': 'Please check the details below, then tap how you want to pay.',
+      'step4.patientTitle': 'Who is the patient',
+      'brand.hospital': 'Shifan Municipal People’s Hospital',
+      'brand.hospitalSub': 'Outpatient booking · for seniors aged 65 and above',
+      'aside.title': 'What you have chosen',
+      'aside.empty': 'Nothing yet. Just follow the steps above, one at a time.',
+      'aside.symptom': 'Problem',
+      'aside.dept': 'Department',
+      'aside.doctor': 'Doctor',
+      'aside.time': 'Time',
+      'aside.pay': 'Payment',
+      'aside.now': 'Step {n} of 5',
+      'step4.summaryTitle': 'Appointment details',
+      'step4.payTitle': 'How to pay the registration fee',
+
+      'step5.title': 'Your appointment is booked',
+      'step5.lead': 'Everything is done. Please keep this slip, or ask a family member to take a photo.',
+      'step5.tipsLabel': 'Please remember three things on the day',
+      'step5.tip1': 'Bring your ID card (or medical insurance card) — it is scanned at the entrance.',
+      'step5.tip2': 'Arrive 15 minutes before your appointment time. Do not be late.',
+      'step5.tip3': 'Go to the triage desk on the first floor first; the nurse will tell you which room.',
+      'step5.again': 'Book another one',
+      'step5.finish': 'Got it, thank you',
+
+      'nav.prev': 'Back', 'nav.help': 'Help', 'nav.next': 'Next', 'nav.nextSubmit': 'Confirm booking',
+
+      'summary.dept': 'Department', 'summary.doctor': 'Doctor', 'summary.time': 'Time',
+      'summary.patient': 'Patient', 'summary.pay': 'Payment', 'summary.fee': 'Fee',
+      'ticket.no': 'Queue number', 'ticket.place': 'Location',
+
+      'slot.am': 'Morning', 'slot.amTime': '8:00 a.m. — 12:00 p.m.',
+      'slot.pm': 'Afternoon', 'slot.pmTime': '2:00 p.m. — 5:30 p.m.',
+      'slot.left': '{n} slots left', 'slot.full': 'Fully booked',
+
+      'date.today': 'Today', 'date.tomorrow': 'Tomorrow', 'date.dayAfter': 'Day after tomorrow',
+      'date.fmt': '{label} · {md}',
+      'date.fmtEn': '{label} · {md}',
+
+      'patient.self': 'Myself', 'patient.spouse': 'My spouse', 'patient.family': 'With family',
+      'patient.age': 'Age {age}', 'patient.idCard': 'ID number', 'patient.phone': 'Phone',
+
+      'pay.medical': 'Medical insurance card', 'pay.medicalDesc': 'The card pays its part first; you pay the rest.',
+      'pay.wechat': 'WeChat Pay', 'pay.wechatDesc': 'Scan the code on a phone. Family can help.',
+      'pay.alipay': 'Alipay', 'pay.alipayDesc': 'Scan the code on a phone. Family can help.',
+      'pay.hospital': 'Pay at hospital', 'pay.hospitalDesc': 'See the doctor first, pay at the counter after.',
+
+      'dialog.needTitle': 'One more step to go',
+      'dialog.needSymptom': 'Please tap what troubles you first.',
+      'dialog.needDoctor': 'Please tap a doctor first.',
+      'dialog.needDate': 'Please tap a date first.',
+      'dialog.needSlot': 'Please tap Morning or Afternoon first.',
+      'dialog.needPay': 'Please tap a payment method first.',
+      'dialog.slotFull': 'This time is fully booked. Please choose another.',
+      'dialog.ok': 'I see',
+
+      'dialog.confirmTitle': 'Please check once more — it cannot be changed after this',
+      'dialog.confirmBody': '{dept} · {doctor} · {time}, patient {patient}, pay by {pay}.',
+      'dialog.confirmYes': 'Confirm booking',
+      'dialog.confirmNo': 'Let me check again',
+
+      'dialog.helpTitle': 'Need help? Try this',
+      'dialog.help1': 'Ask a family member to tap for you.',
+      'dialog.help2': 'Go to the service desk on the first floor; staff in uniform will help you.',
+      'dialog.help3': 'Ask the nurse station to call your family for you.',
+      'dialog.helpSpeak': 'Read this again',
+      'dialog.close': 'Close',
+
+      'foot.agent': 'Every step here is a declared capability. Tap Xiao Yu Er at the corner and just say what you need.',
+      'idle.text': 'You have paused for a while. Do you need help?',
+      'idle.close': 'I am fine',
+    }
+  };
+
+  /* ---------------- 症状 → 科室 ---------------- */
+  var SYMPTOMS = [
+    { id: 'head', icon: '晕', name: { zh: '头晕头痛', 'zh-Hant': '頭暈頭痛', en: 'Dizziness or headache' }, dept: 'neurology', alts: ['cardiology'] },
+    { id: 'chest', icon: '心', name: { zh: '心慌胸闷', 'zh-Hant': '心慌胸悶', en: 'Palpitations or chest tightness' }, dept: 'cardiology', alts: ['respiratory'] },
+    { id: 'fever', icon: '咳', name: { zh: '咳嗽发烧', 'zh-Hant': '咳嗽發燒', en: 'Cough or fever' }, dept: 'respiratory', alts: ['gp'] },
+    { id: 'belly', icon: '肚', name: { zh: '肚子痛', 'zh-Hant': '肚子痛', en: 'Stomach ache' }, dept: 'gastro', alts: ['surgery'] },
+    { id: 'leg', icon: '腿', name: { zh: '腿疼', 'zh-Hant': '腿疼', en: 'Leg pain' }, dept: 'orthopedics', alts: ['gp'] },
+    { id: 'eye', icon: '眼', name: { zh: '眼睛不舒服', 'zh-Hant': '眼睛不舒服', en: 'Eye discomfort' }, dept: 'ophthalmology', alts: [] },
+    { id: 'unsure', icon: '？', name: { zh: '不知道选什么', 'zh-Hant': '不知道選什麼', en: 'Not sure what to choose' }, dept: 'gp', alts: ['neurology'] }
+  ];
+
+  var DEPTS = {
+    neurology: { name: { zh: '神经内科', 'zh-Hant': '神經內科', en: 'Neurology' }, place: { zh: '门诊楼 2 层 · 3 号诊室', 'zh-Hant': '門診樓 2 層 · 3 號診室', en: 'Outpatient Bldg, Floor 2 · Room 3' } },
+    cardiology: { name: { zh: '心血管内科', 'zh-Hant': '心血管內科', en: 'Cardiology' }, place: { zh: '门诊楼 3 层 · 5 号诊室', 'zh-Hant': '門診樓 3 層 · 5 號診室', en: 'Outpatient Bldg, Floor 3 · Room 5' } },
+    respiratory: { name: { zh: '呼吸内科', 'zh-Hant': '呼吸內科', en: 'Respiratory Medicine' }, place: { zh: '门诊楼 2 层 · 8 号诊室', 'zh-Hant': '門診樓 2 層 · 8 號診室', en: 'Outpatient Bldg, Floor 2 · Room 8' } },
+    gastro: { name: { zh: '消化内科', 'zh-Hant': '消化內科', en: 'Gastroenterology' }, place: { zh: '门诊楼 4 层 · 2 号诊室', 'zh-Hant': '門診樓 4 層 · 2 號診室', en: 'Outpatient Bldg, Floor 4 · Room 2' } },
+    surgery: { name: { zh: '普通外科', 'zh-Hant': '普通外科', en: 'General Surgery' }, place: { zh: '门诊楼 4 层 · 6 号诊室', 'zh-Hant': '門診樓 4 層 · 6 號診室', en: 'Outpatient Bldg, Floor 4 · Room 6' } },
+    orthopedics: { name: { zh: '骨科', 'zh-Hant': '骨科', en: 'Orthopedics' }, place: { zh: '门诊楼 3 层 · 9 号诊室', 'zh-Hant': '門診樓 3 層 · 9 號診室', en: 'Outpatient Bldg, Floor 3 · Room 9' } },
+    ophthalmology: { name: { zh: '眼科', 'zh-Hant': '眼科', en: 'Ophthalmology' }, place: { zh: '门诊楼 5 层 · 1 号诊室', 'zh-Hant': '門診樓 5 層 · 1 號診室', en: 'Outpatient Bldg, Floor 5 · Room 1' } },
+    gp: { name: { zh: '全科医学科', 'zh-Hant': '全科醫學科', en: 'General Practice' }, place: { zh: '门诊楼 1 层 · 导诊台旁 2 号诊室', 'zh-Hant': '門診樓 1 層 · 導診台旁 2 號診室', en: 'Outpatient Bldg, Floor 1 · Room 2, next to triage' } }
+  };
+
+  var AVATAR_COLORS = ['#2f5d62', '#3f6b6f', '#4a6f60', '#55697a', '#6a5f4f', '#5d5a70'];
+
+  var DOCTORS = {
+    neurology: [
+      { id: 'n1', name: { zh: '陈志明', 'zh-Hant': '陳志明', en: 'Chen Zhiming' }, title: { zh: '主任医师', 'zh-Hant': '主任醫師', en: 'Chief Physician' }, good: { zh: '头晕、头痛、脑血管病', 'zh-Hant': '頭暈、頭痛、腦血管病', en: 'Dizziness, headache, stroke' }, fee: 30 },
+      { id: 'n2', name: { zh: '李文娟', 'zh-Hant': '李文娟', en: 'Li Wenjuan' }, title: { zh: '副主任医师', 'zh-Hant': '副主任醫師', en: 'Associate Chief' }, good: { zh: '偏头痛、失眠', 'zh-Hant': '偏頭痛、失眠', en: 'Migraine, insomnia' }, fee: 20 },
+      { id: 'n3', name: { zh: '王国庆', 'zh-Hant': '王國慶', en: 'Wang Guoqing' }, title: { zh: '主治医师', 'zh-Hant': '主治醫師', en: 'Attending' }, good: { zh: '眩晕、耳鸣', 'zh-Hant': '眩暈、耳鳴', en: 'Vertigo, tinnitus' }, fee: 15 }
+    ],
+    cardiology: [
+      { id: 'c1', name: { zh: '刘国栋', 'zh-Hant': '劉國棟', en: 'Liu Guodong' }, title: { zh: '主任医师', 'zh-Hant': '主任醫師', en: 'Chief Physician' }, good: { zh: '高血压、冠心病', 'zh-Hant': '高血壓、冠心病', en: 'Hypertension, coronary disease' }, fee: 30 },
+      { id: 'c2', name: { zh: '赵秀兰', 'zh-Hant': '趙秀蘭', en: 'Zhao Xiulan' }, title: { zh: '副主任医师', 'zh-Hant': '副主任醫師', en: 'Associate Chief' }, good: { zh: '心律失常、心慌', 'zh-Hant': '心律失常、心慌', en: 'Arrhythmia, palpitations' }, fee: 20 },
+      { id: 'c3', name: { zh: '孙立新', 'zh-Hant': '孫立新', en: 'Sun Lixin' }, title: { zh: '主治医师', 'zh-Hant': '主治醫師', en: 'Attending' }, good: { zh: '心衰、胸闷', 'zh-Hant': '心衰、胸悶', en: 'Heart failure, chest tightness' }, fee: 15 }
+    ],
+    respiratory: [
+      { id: 'r1', name: { zh: '周慧敏', 'zh-Hant': '周慧敏', en: 'Zhou Huimin' }, title: { zh: '主任医师', 'zh-Hant': '主任醫師', en: 'Chief Physician' }, good: { zh: '慢性咳嗽、哮喘', 'zh-Hant': '慢性咳嗽、哮喘', en: 'Chronic cough, asthma' }, fee: 30 },
+      { id: 'r2', name: { zh: '吴建华', 'zh-Hant': '吳建華', en: 'Wu Jianhua' }, title: { zh: '副主任医师', 'zh-Hant': '副主任醫師', en: 'Associate Chief' }, good: { zh: '肺炎、发烧', 'zh-Hant': '肺炎、發燒', en: 'Pneumonia, fever' }, fee: 20 },
+      { id: 'r3', name: { zh: '郑雅芳', 'zh-Hant': '鄭雅芳', en: 'Zheng Yafang' }, title: { zh: '主治医师', 'zh-Hant': '主治醫師', en: 'Attending' }, good: { zh: '支气管炎、久咳', 'zh-Hant': '支氣管炎、久咳', en: 'Bronchitis, long cough' }, fee: 15 }
+    ],
+    gastro: [
+      { id: 'g1', name: { zh: '黄志强', 'zh-Hant': '黃志強', en: 'Huang Zhiqiang' }, title: { zh: '主任医师', 'zh-Hant': '主任醫師', en: 'Chief Physician' }, good: { zh: '胃痛、腹痛', 'zh-Hant': '胃痛、腹痛', en: 'Stomach and belly pain' }, fee: 30 },
+      { id: 'g2', name: { zh: '林美玲', 'zh-Hant': '林美玲', en: 'Lin Meiling' }, title: { zh: '副主任医师', 'zh-Hant': '副主任醫師', en: 'Associate Chief' }, good: { zh: '腹泻、胃炎', 'zh-Hant': '腹瀉、胃炎', en: 'Diarrhea, gastritis' }, fee: 20 },
+      { id: 'g3', name: { zh: '何国平', 'zh-Hant': '何國平', en: 'He Guoping' }, title: { zh: '主治医师', 'zh-Hant': '主治醫師', en: 'Attending' }, good: { zh: '消化不良、肝胆', 'zh-Hant': '消化不良、肝膽', en: 'Indigestion, liver & gallbladder' }, fee: 15 }
+    ],
+    surgery: [
+      { id: 's1', name: { zh: '罗建安', 'zh-Hant': '羅建安', en: 'Luo Jianan' }, title: { zh: '主任医师', 'zh-Hant': '主任醫師', en: 'Chief Physician' }, good: { zh: '急腹症、疝气', 'zh-Hant': '急腹症、疝氣', en: 'Acute abdomen, hernia' }, fee: 30 },
+      { id: 's2', name: { zh: '邱明辉', 'zh-Hant': '邱明輝', en: 'Qiu Minghui' }, title: { zh: '副主任医师', 'zh-Hant': '副主任醫師', en: 'Associate Chief' }, good: { zh: '腹痛、阑尾炎', 'zh-Hant': '腹痛、闌尾炎', en: 'Belly pain, appendicitis' }, fee: 20 },
+      { id: 's3', name: { zh: '范少华', 'zh-Hant': '范少華', en: 'Fan Shaohua' }, title: { zh: '主治医师', 'zh-Hant': '主治醫師', en: 'Attending' }, good: { zh: '外伤、换药', 'zh-Hant': '外傷、換藥', en: 'Wounds, dressing change' }, fee: 15 }
+    ],
+    orthopedics: [
+      { id: 'o1', name: { zh: '梁国伟', 'zh-Hant': '梁國偉', en: 'Liang Guowei' }, title: { zh: '主任医师', 'zh-Hant': '主任醫師', en: 'Chief Physician' }, good: { zh: '膝关节痛、腰腿痛', 'zh-Hant': '膝關節痛、腰腿痛', en: 'Knee and leg pain' }, fee: 30 },
+      { id: 'o2', name: { zh: '徐凤英', 'zh-Hant': '徐鳳英', en: 'Xu Fengying' }, title: { zh: '副主任医师', 'zh-Hant': '副主任醫師', en: 'Associate Chief' }, good: { zh: '骨质疏松、腿疼', 'zh-Hant': '骨質疏鬆、腿疼', en: 'Osteoporosis, leg pain' }, fee: 20 },
+      { id: 'o3', name: { zh: '曾国强', 'zh-Hant': '曾國強', en: 'Zeng Guoqiang' }, title: { zh: '主治医师', 'zh-Hant': '主治醫師', en: 'Attending' }, good: { zh: '关节扭伤、颈肩痛', 'zh-Hant': '關節扭傷、頸肩痛', en: 'Sprains, neck & shoulder pain' }, fee: 15 }
+    ],
+    ophthalmology: [
+      { id: 'e1', name: { zh: '罗建明', 'zh-Hant': '羅建明', en: 'Luo Jianming' }, title: { zh: '主任医师', 'zh-Hant': '主任醫師', en: 'Chief Physician' }, good: { zh: '白内障、视力模糊', 'zh-Hant': '白內障、視力模糊', en: 'Cataract, blurred vision' }, fee: 30 },
+      { id: 'e2', name: { zh: '范丽华', 'zh-Hant': '范麗華', en: 'Fan Lihua' }, title: { zh: '副主任医师', 'zh-Hant': '副主任醫師', en: 'Associate Chief' }, good: { zh: '眼干、眼痒', 'zh-Hant': '眼乾、眼癢', en: 'Dry and itchy eyes' }, fee: 20 },
+      { id: 'e3', name: { zh: '叶文杰', 'zh-Hant': '葉文傑', en: 'Ye Wenjie' }, title: { zh: '主治医师', 'zh-Hant': '主治醫師', en: 'Attending' }, good: { zh: '眼底病、青光眼', 'zh-Hant': '眼底病、青光眼', en: 'Retina, glaucoma' }, fee: 15 }
+    ],
+    gp: [
+      { id: 'p1', name: { zh: '许平安', 'zh-Hant': '許平安', en: 'Xu Pingan' }, title: { zh: '主任医师', 'zh-Hant': '主任醫師', en: 'Chief Physician' }, good: { zh: '常见病、老年病', 'zh-Hant': '常見病、老年病', en: 'Common and geriatric illness' }, fee: 30 },
+      { id: 'p2', name: { zh: '苏慧珍', 'zh-Hant': '蘇慧珍', en: 'Su Huizhen' }, title: { zh: '副主任医师', 'zh-Hant': '副主任醫師', en: 'Associate Chief' }, good: { zh: '健康咨询、慢病', 'zh-Hant': '健康諮詢、慢病', en: 'Health advice, chronic disease' }, fee: 20 },
+      { id: 'p3', name: { zh: '邓永康', 'zh-Hant': '鄧永康', en: 'Deng Yongkang' }, title: { zh: '主治医师', 'zh-Hant': '主治醫師', en: 'Attending' }, good: { zh: '初步分诊、转诊', 'zh-Hant': '初步分診、轉診', en: 'First triage, referral' }, fee: 15 }
+    ]
+  };
+
+  var SLOTS = [
+    { id: 'am', labelKey: 'slot.am', timeKey: 'slot.amTime' },
+    { id: 'pm', labelKey: 'slot.pm', timeKey: 'slot.pmTime' }
+  ];
+
+  /* 就诊人：虚构演示数据，身份证与手机号一律脱敏 */
+  var PATIENTS = [
+    { id: 'self', relKey: 'patient.self', name: { zh: '张桂英', 'zh-Hant': '張桂英', en: 'Zhang Guiying' }, sex: { zh: '女', 'zh-Hant': '女', en: 'F' }, age: 72, idCard: '4401**********1234', phone: '138****5678' },
+    { id: 'spouse', relKey: 'patient.spouse', name: { zh: '李国强', 'zh-Hant': '李國強', en: 'Li Guoqiang' }, sex: { zh: '男', 'zh-Hant': '男', en: 'M' }, age: 75, idCard: '4401**********0871', phone: '139****2460' },
+    { id: 'family', relKey: 'patient.family', name: { zh: '张小明', 'zh-Hant': '張小明', en: 'Zhang Xiaoming' }, sex: { zh: '男', 'zh-Hant': '男', en: 'M' }, age: 41, idCard: '4401**********3355', phone: '135****8899' }
+  ];
+
+  var PAYS = [
+    { id: 'medical', icon: '保', key: 'pay.medical', descKey: 'pay.medicalDesc' },
+    { id: 'wechat', icon: '微', key: 'pay.wechat', descKey: 'pay.wechatDesc' },
+    { id: 'alipay', icon: '支', key: 'pay.alipay', descKey: 'pay.alipayDesc' },
+    { id: 'hospital', icon: '院', key: 'pay.hospital', descKey: 'pay.hospitalDesc' }
+  ];
+
+  /* ---------------- 状态 ---------------- */
+  var state = {
+    step: 0,
+    lang: 'zh',
+    font: 1,
+    symptom: null,
+    dept: null,
+    deptPicked: false,
+    doctor: null,
+    date: null,
+    slot: null,
+    patient: 'self',
+    pay: null,
+    ticketNo: null
+  };
+
+  var autoSpeak = false; // 首次交互后才自动朗读，避免浏览器拦截
+
+  /* ---------------- 工具 ---------------- */
+  function $(sel) { return document.querySelector(sel); }
+  function $$(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+
+  function t(key, vars) {
+    var dict = I18N[state.lang] || I18N.zh;
+    var raw = dict[key] != null ? dict[key] : (I18N.zh[key] != null ? I18N.zh[key] : key);
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        raw = raw.split('{' + k + '}').join(vars[k]);
+      });
+    }
+    return raw;
+  }
+  function pick(obj) {
+    if (obj == null) return '';
+    if (typeof obj === 'string') return obj;
+    return obj[state.lang] != null ? obj[state.lang] : obj.zh;
+  }
+  function fmtTpl(key, vars) { return t(key, vars); }
+
+  /* ---------------- 扩展点 ----------------
+     外部模块（如语音助手）可以：
+       1) 注册自己的三语文案 registerI18n
+       2) 订阅重绘 onRender
+     主程序的翻译表与渲染时机保持唯一来源，避免文案漂移。 */
+  var renderHooks = [];
+  function registerI18n(extra) {
+    LANGS.forEach(function (l) {
+      if (!extra[l]) return;
+      Object.keys(extra[l]).forEach(function (k) { I18N[l][k] = extra[l][k]; });
+    });
+  }
+  function onRender(fn) { if (typeof fn === 'function') renderHooks.push(fn); }
+
+  function colorOf(id) {
+    var h = 0;
+    for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 9973;
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
+  }
+  function initialOf(person) {
+    var n = pick(person.name);
+    return n.charAt(0);
+  }
+
+  /* 号源：确定性伪随机，保证同一医生同一天至少有一个时段可选 */
+  function hash(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return h;
+  }
+  function slotLeft(doctorId, dateId, slotId) {
+    var n = hash(doctorId + '|' + dateId + '|' + slotId) % 13;
+    var other = hash(doctorId + '|' + dateId + '|' + (slotId === 'am' ? 'pm' : 'am')) % 13;
+    if (n === 0 && other === 0) n = 4;
+    return n;
+  }
+
+  function dateOptions() {
+    var now = new Date();
+    var weekZh = ['日', '一', '二', '三', '四', '五', '六'];
+    var weekEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var keys = ['date.today', 'date.tomorrow', 'date.dayAfter'];
+    return [0, 1, 2].map(function (i) {
+      var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+      var md = state.lang === 'en'
+        ? (d.getMonth() + 1) + '/' + d.getDate()
+        : (d.getMonth() + 1) + '月' + d.getDate() + '日';
+      var week = state.lang === 'en' ? weekEn[d.getDay()] : weekZh[d.getDay()];
+      return {
+        id: 'd' + i,
+        iso: d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(),
+        label: t(keys[i]),
+        text: t('date.fmt', { label: t(keys[i]), md: md, week: week }),
+        week: week
+      };
+    });
+  }
+
+  function currentDoctor() {
+    if (!state.doctor || !state.dept) return null;
+    var list = DOCTORS[state.dept] || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === state.doctor) return list[i];
+    return null;
+  }
+  function currentPatient() {
+    for (var i = 0; i < PATIENTS.length; i++) if (PATIENTS[i].id === state.patient) return PATIENTS[i];
+    return PATIENTS[0];
+  }
+  function currentPay() {
+    for (var i = 0; i < PAYS.length; i++) if (PAYS[i].id === state.pay) return PAYS[i];
+    return null;
+  }
+  function slotText() {
+    if (!state.date || !state.slot) return '';
+    var d = dateOptions().filter(function (o) { return o.id === state.date; })[0];
+    var s = SLOTS.filter(function (o) { return o.id === state.slot; })[0];
+    if (!d || !s) return '';
+    return d.text + ' · ' + t(s.labelKey) + ' ' + t(s.timeKey);
+  }
+
+  /* ---------------- 语音 ---------------- */
+  function speechSupported() { return typeof window !== 'undefined' && 'speechSynthesis' in window; }
+
+  /** 朗读按钮在「念」与「停」之间切换，老人不用找另一个按钮 */
+  function setSpeaking(on) {
+    var btn = $('#btn-speak');
+    if (!btn) return;
+    var lbl = btn.querySelector('[data-i18n]');
+    btn.setAttribute('data-speaking', on ? '1' : '0');
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (lbl) lbl.textContent = on ? t('voice.stop') : t('voice.listen');
+  }
+
+  function speak(text) {
+    setLive(text);
+    if (!speechSupported()) { setLive(t('voice.unsupported')); return false; }
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = SPEECH_LANG[state.lang] || 'zh-CN';
+      u.rate = 0.92;
+      u.onend = function () { setSpeaking(false); };
+      u.onerror = function () { setSpeaking(false); };
+      setSpeaking(true);
+      var voices = window.speechSynthesis.getVoices() || [];
+      for (var i = 0; i < voices.length; i++) {
+        if (voices[i].lang && voices[i].lang.replace('_', '-').toLowerCase().indexOf(u.lang.toLowerCase().slice(0, 2)) === 0) {
+          u.voice = voices[i];
+          break;
+        }
+      }
+      window.speechSynthesis.speak(u);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  function stopSpeak() {
+    if (speechSupported()) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+    setSpeaking(false);
+  }
+  function setLive(text) { var el = $('#live'); if (el) el.textContent = text; }
+
+  function stepVoice() {
+    var lines = [];
+    if (state.step === 0) {
+      lines.push(t('step0.title'), t('step0.lead'), t('step0.cta'));
+    } else if (state.step === 1) {
+      lines.push(t('step1.title'), t('step1.lead'));
+      SYMPTOMS.forEach(function (s) { lines.push(pick(s.name)); });
+      if (state.dept) lines.push(t('step1.recommend', { symptom: pick(currentSymptom().name), dept: pick(DEPTS[state.dept].name) }));
+    } else if (state.step === 2) {
+      lines.push(t('step2.title'), t('step2.lead', { dept: pick(DEPTS[state.dept].name) }));
+      (DOCTORS[state.dept] || []).forEach(function (d) { lines.push(pick(d.name) + '，' + pick(d.title) + '，' + pick(d.good)); });
+    } else if (state.step === 3) {
+      lines.push(t('step3.title'), t('step3.lead'));
+      dateOptions().forEach(function (d) { lines.push(d.text); });
+      SLOTS.forEach(function (s) {
+        var left = state.doctor ? slotLeft(state.doctor, state.date || 'd0', s.id) : 1;
+        lines.push(t(s.labelKey) + ' ' + t(s.timeKey) + '，' + (left > 0 ? t('slot.left', { n: left }) : t('slot.full')));
+      });
+      lines.push(t('step3.fullHint'));
+    } else if (state.step === 4) {
+      lines.push(t('step4.title'), t('step4.lead'));
+      var p = currentPatient();
+      lines.push(t('summary.patient') + ' ' + pick(p.name) + '，' + t('patient.idCard') + ' ' + p.idCard);
+      lines.push(t('summary.dept') + ' ' + pick(DEPTS[state.dept].name) + '，' + t('summary.doctor') + ' ' + pick(currentDoctor().name) + '，' + t('summary.time') + ' ' + slotText());
+      PAYS.forEach(function (pay) { lines.push(t(pay.key) + '，' + t(pay.descKey)); });
+    } else if (state.step === 5) {
+      lines.push(t('step5.title'), t('step5.lead'));
+      lines.push(t('ticket.no') + ' ' + state.ticketNo);
+      lines.push(t('step5.tip1'), t('step5.tip2'), t('step5.tip3'));
+    }
+    return lines.join('。');
+  }
+
+  function currentSymptom() {
+    for (var i = 0; i < SYMPTOMS.length; i++) if (SYMPTOMS[i].id === state.symptom) return SYMPTOMS[i];
+    return SYMPTOMS[0];
+  }
+
+  /* ---------------- 渲染 ---------------- */
+  function applyStaticI18n() {
+    $$('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
+    $$('[data-i18n-aria]').forEach(function (el) { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
+    document.title = t('doc.title');
+    document.documentElement.lang = HTML_LANG[state.lang] || 'zh-CN';
+    document.documentElement.setAttribute('data-lang', state.lang);
+  }
+
+  function renderStepbar() {
+    var bar = $('#stepbar');
+    bar.innerHTML = '';
+    var steps = [0, 1, 2, 3, 4, 5];
+    steps.forEach(function (i) {
+      var done = i < state.step;
+      var li = document.createElement('li');
+      li.className = 'stepbar__item';
+      li.setAttribute('data-state', i === state.step ? 'active' : (done ? 'done' : 'todo'));
+
+      /* 走过的步骤可以点回去改，没走过的不能跳——防止老人误触跳步 */
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'stepbar__btn';
+      btn.setAttribute('data-action', 'gostep');
+      btn.setAttribute('data-value', String(i));
+      if (i === state.step) btn.setAttribute('aria-current', 'step');
+      btn.disabled = !done || state.step === 5;
+      btn.setAttribute('aria-label', t('stepbar.' + i) + (btn.disabled ? '' : '（可回去修改）'));
+
+      var no = document.createElement('span');
+      no.className = 'stepbar__no';
+      no.textContent = done ? '✓' : String(i);
+      var label = document.createElement('span');
+      label.textContent = t('stepbar.' + i);
+      btn.appendChild(no);
+      btn.appendChild(label);
+      li.appendChild(btn);
+      bar.appendChild(li);
+    });
+  }
+
+  function optionCard(opts) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bigcard' + (opts.off ? ' bigcard--off' : '');
+    btn.setAttribute('aria-pressed', opts.selected ? 'true' : 'false');
+    if (opts.off) { btn.disabled = true; btn.setAttribute('aria-disabled', 'true'); }
+    if (opts.action) btn.setAttribute('data-action', opts.action);
+    if (opts.value) btn.setAttribute('data-value', opts.value);
+
+    if (opts.avatarColor) {
+      var av = document.createElement('span');
+      av.className = 'avatar';
+      av.style.background = opts.avatarColor;
+      av.setAttribute('aria-hidden', 'true');
+      av.textContent = opts.avatarText || '';
+      btn.appendChild(av);
+    } else if (opts.icon) {
+      var ic = document.createElement('span');
+      ic.className = 'bigcard__icon';
+      ic.setAttribute('aria-hidden', 'true');
+      ic.textContent = opts.icon;
+      btn.appendChild(ic);
+    }
+
+    var main = document.createElement('span');
+    main.className = 'bigcard__main';
+    var ti = document.createElement('span');
+    ti.className = 'bigcard__title';
+    ti.textContent = opts.title;
+    main.appendChild(ti);
+    if (opts.desc) {
+      var de = document.createElement('span');
+      de.className = 'bigcard__desc';
+      de.textContent = opts.desc;
+      main.appendChild(de);
+    }
+    if (opts.meta) {
+      var me = document.createElement('span');
+      me.className = 'bigcard__meta';
+      me.textContent = opts.meta;
+      main.appendChild(me);
+    }
+    btn.appendChild(main);
+
+    if (!opts.off) {
+      var ck = document.createElement('span');
+      ck.className = 'bigcard__check';
+      ck.setAttribute('aria-hidden', 'true');
+      ck.textContent = '✓';
+      btn.appendChild(ck);
+    }
+    return btn;
+  }
+
+  function renderSymptoms() {
+    var box = $('#symptom-list');
+    box.innerHTML = '';
+    SYMPTOMS.forEach(function (s) {
+      box.appendChild(optionCard({
+        icon: s.icon,
+        title: pick(s.name),
+        selected: state.symptom === s.id,
+        action: 'symptom',
+        value: s.id
+      }));
+    });
+
+    showDeptResult();
+  }
+
+  /** 显示推荐（或手动改挂）的科室 */
+  function showDeptResult() {
+    var result = $('#dept-result');
+    if (state.dept) {
+      result.hidden = false;
+      $('#dept-name').textContent = pick(DEPTS[state.dept].name);
+      $('#dept-reason').textContent = state.deptPicked
+        ? t('step1.pickedDept', { dept: pick(DEPTS[state.dept].name) })
+        : t('step1.recommend', { symptom: pick(currentSymptom().name), dept: pick(DEPTS[state.dept].name) });
+      var altsBox = $('#dept-alts');
+      altsBox.innerHTML = '';
+      altsBox.hidden = true;
+    } else {
+      result.hidden = true;
+    }
+  }
+
+  function renderAlts() {
+    var altsBox = $('#dept-alts');
+    altsBox.innerHTML = '';
+    var s = currentSymptom();
+    var list = (s.alts || []).concat(Object.keys(DEPTS).filter(function (d) {
+      return d !== state.dept && (s.alts || []).indexOf(d) < 0;
+    })).slice(0, 4);
+    if (!list.length) { altsBox.hidden = true; return; }
+    var label = document.createElement('p');
+    label.className = 'notice__text';
+    label.textContent = t('step1.altsLabel');
+    altsBox.appendChild(label);
+    list.forEach(function (d) {
+      altsBox.appendChild(optionCard({
+        title: pick(DEPTS[d].name),
+        selected: false,
+        action: 'dept',
+        value: d
+      }));
+    });
+    altsBox.hidden = false;
+  }
+
+  function renderDoctors() {
+    var box = $('#doctor-list');
+    box.innerHTML = '';
+    $('#step2-lead').textContent = t('step2.lead', { dept: pick(DEPTS[state.dept].name) });
+    (DOCTORS[state.dept] || []).forEach(function (d) {
+      box.appendChild(optionCard({
+        avatarColor: colorOf(d.id),
+        avatarText: initialOf(d),
+        title: pick(d.name) + ' · ' + pick(d.title),
+        desc: pick(d.good),
+        meta: t('summary.fee') + ' ¥' + d.fee,
+        selected: state.doctor === d.id,
+        action: 'doctor',
+        value: d.id
+      }));
+    });
+  }
+
+  function renderDates() {
+    var box = $('#date-list');
+    box.innerHTML = '';
+    dateOptions().forEach(function (d) {
+      box.appendChild(optionCard({
+        icon: (state.lang === 'en' ? d.label.charAt(0) : d.label.charAt(0)),
+        title: d.label,
+        desc: d.text,
+        selected: state.date === d.id,
+        action: 'date',
+        value: d.id
+      }));
+    });
+  }
+
+  function renderSlots() {
+    var box = $('#slot-list');
+    box.innerHTML = '';
+    SLOTS.forEach(function (s) {
+      var left = state.doctor ? slotLeft(state.doctor, state.date || 'd0', s.id) : 1;
+      var off = left === 0;
+      box.appendChild(optionCard({
+        icon: s.id === 'am' ? '上' : '下',
+        title: t(s.labelKey) + ' ' + t(s.timeKey),
+        desc: off ? t('slot.full') : t('slot.left', { n: left }),
+        off: off,
+        selected: !off && state.slot === s.id,
+        action: 'slot',
+        value: s.id
+      }));
+    });
+  }
+
+  function renderPatients() {
+    var box = $('#patient-list');
+    box.innerHTML = '';
+    PATIENTS.forEach(function (p) {
+      box.appendChild(optionCard({
+        avatarColor: colorOf(p.id),
+        avatarText: initialOf(p),
+        title: pick(p.name) + ' · ' + t(p.relKey),
+        desc: pick(p.sex) + ' · ' + t('patient.age', { age: p.age }),
+        meta: t('patient.idCard') + ' ' + p.idCard + ' · ' + t('patient.phone') + ' ' + p.phone,
+        selected: state.patient === p.id,
+        action: 'patient',
+        value: p.id
+      }));
+    });
+  }
+
+  function renderSummary() {
+    var box = $('#summary');
+    box.innerHTML = '';
+    var rows = [
+      [t('summary.dept'), pick(DEPTS[state.dept].name)],
+      [t('summary.doctor'), pick(currentDoctor().name) + ' · ' + pick(currentDoctor().title)],
+      [t('summary.time'), slotText()],
+      [t('ticket.place'), pick(DEPTS[state.dept].place)],
+      [t('summary.fee'), '¥' + currentDoctor().fee]
+    ];
+    rows.forEach(function (r) {
+      var row = document.createElement('div');
+      row.className = 'summary__row';
+      var k = document.createElement('dt');
+      k.className = 'summary__k';
+      k.textContent = r[0];
+      var v = document.createElement('dd');
+      v.className = 'summary__v';
+      v.textContent = r[1];
+      row.appendChild(k);
+      row.appendChild(v);
+      box.appendChild(row);
+    });
+  }
+
+  /* 右栏「您已经选好的」：宽屏常驻，老人随时能看见自己选到哪一步了 */
+  function renderAside() {
+    var box = $('#aside-list');
+    if (!box) return;
+    var now = $('#aside-now');
+    if (now) {
+      now.textContent = (state.step >= 1 && state.step <= 5) ? t('aside.now', { n: state.step }) : '';
+    }
+    box.innerHTML = '';
+    var rows = [];
+    if (state.symptom) rows.push([t('aside.symptom'), pick(currentSymptom().name)]);
+    if (state.dept) rows.push([t('aside.dept'), pick(DEPTS[state.dept].name)]);
+    if (state.doctor) rows.push([t('aside.doctor'), pick(currentDoctor().name)]);
+    if (state.date && state.slot) rows.push([t('aside.time'), slotText()]);
+    if (state.pay) rows.push([t('aside.pay'), t(currentPay().key)]);
+
+    if (!rows.length) {
+      var empty = document.createElement('p');
+      empty.className = 'aside__empty';
+      empty.textContent = t('aside.empty');
+      box.appendChild(empty);
+      return;
+    }
+    rows.forEach(function (r) {
+      var row = document.createElement('div');
+      row.className = 'aside__row';
+      var k = document.createElement('span');
+      k.className = 'aside__k';
+      k.textContent = r[0];
+      var v = document.createElement('span');
+      v.className = 'aside__v';
+      v.textContent = r[1];
+      row.appendChild(k);
+      row.appendChild(v);
+      box.appendChild(row);
+    });
+  }
+
+  function renderPays() {
+    var box = $('#pay-list');
+    box.innerHTML = '';
+    PAYS.forEach(function (p) {
+      box.appendChild(optionCard({
+        icon: p.icon,
+        title: t(p.key),
+        desc: t(p.descKey),
+        selected: state.pay === p.id,
+        action: 'pay',
+        value: p.id
+      }));
+    });
+  }
+
+  function renderTicket() {
+    var box = $('#ticket');
+    box.innerHTML = '';
+    var hp = document.createElement('p');
+    hp.className = 'ticket__hospital';
+    hp.textContent = t('brand.hospital');
+    box.appendChild(hp);
+    var no = document.createElement('p');
+    no.className = 'ticket__label';
+    no.textContent = t('ticket.no');
+    box.appendChild(no);
+    var noV = document.createElement('p');
+    noV.className = 'ticket__no';
+    noV.textContent = state.ticketNo;
+    box.appendChild(noV);
+
+    var rows = [
+      [t('summary.patient'), pick(currentPatient().name)],
+      [t('summary.dept'), pick(DEPTS[state.dept].name)],
+      [t('summary.doctor'), pick(currentDoctor().name) + ' · ' + pick(currentDoctor().title)],
+      [t('summary.time'), slotText()],
+      [t('ticket.place'), pick(DEPTS[state.dept].place)],
+      [t('summary.pay'), t(currentPay().key)]
+    ];
+    var dl = document.createElement('dl');
+    dl.className = 'summary';
+    dl.style.marginTop = '0.8rem';
+    dl.style.border = 'none';
+    dl.style.padding = '0';
+    rows.forEach(function (r) {
+      var row = document.createElement('div');
+      row.className = 'summary__row';
+      var k = document.createElement('dt');
+      k.className = 'summary__k';
+      k.textContent = r[0];
+      var v = document.createElement('dd');
+      v.className = 'summary__v';
+      v.textContent = r[1];
+      row.appendChild(k);
+      row.appendChild(v);
+      dl.appendChild(row);
+    });
+    box.appendChild(dl);
+  }
+
+  /**
+   * 就地更新勾选状态：不重建列表，焦点与朗读位置不丢，
+   * 老人用键盘或读屏时不会「跳到别处」。
+   */
+  function markSelected(containerSel, value) {
+    var cards = $$(containerSel + ' .bigcard');
+    for (var i = 0; i < cards.length; i++) {
+      var isOn = cards[i].getAttribute('data-value') === value;
+      cards[i].setAttribute('aria-pressed', isOn ? 'true' : 'false');
+    }
+  }
+
+  /** 当前这一步的必选项是否已做完（做完才让「下一步」亮起来，引导老人点） */
+  function stepReady() {
+    if (state.step === 0) return true;
+    if (state.step === 1) return !!state.symptom || !!state.deptPicked;
+    if (state.step === 2) return !!state.doctor;
+    if (state.step === 3) return !!state.date && !!state.slot;
+    if (state.step === 4) return !!state.pay;
+    return false;
+  }
+  function updateNextState() {
+    var next = $('#btn-next');
+    if (next && state.step < 5) next.classList.toggle('btn--ready', stepReady());
+  }
+
+  function renderStep() {
+    for (var i = 0; i <= 5; i++) {
+      var el = $('#step-' + i);
+      if (el) el.hidden = (i !== state.step);
+    }
+    document.body.setAttribute('data-step', String(state.step));
+    var bar = $('#actionbar');
+    bar.hidden = (state.step === 5);
+    var prev = $('#btn-prev');
+    prev.disabled = (state.step === 0);
+
+    var next = $('#btn-next');
+    var nextLabel = next.querySelector('[data-i18n]');
+    nextLabel.textContent = state.step === 4 ? t('nav.nextSubmit') : t('nav.next');
+    updateNextState();
+
+    if (state.step === 1) renderSymptoms();
+    if (state.step === 2) renderDoctors();
+    if (state.step === 3) { renderDates(); renderSlots(); }
+    if (state.step === 4) { renderPatients(); renderSummary(); renderPays(); }
+    if (state.step === 5) renderTicket();
+
+    renderStepbar();
+    renderAside();
+    window.scrollTo(0, 0);
+    if (autoSpeak) speak(stepVoice());
+    renderHooks.forEach(function (fn) { try { fn(); } catch (e) { /* 外部模块出错不影响主流程 */ } });
+  }
+
+  function render() { applyStaticI18n(); renderStep(); }
+
+  /* ---------------- 弹窗 ---------------- */
+  var pendingConfirm = false; // 确认窗开着时，语音助手的「确认」才生效
+  function openModal(title, bodyHtml, actions) {
+    var modal = $('#modal');
+    $('#modal-title').textContent = title;
+    var body = $('#modal-body');
+    body.innerHTML = '';
+    if (typeof bodyHtml === 'string') {
+      body.innerHTML = bodyHtml;
+    } else {
+      body.appendChild(bodyHtml);
+    }
+    var act = $('#modal-actions');
+    act.innerHTML = '';
+    actions.forEach(function (a) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn ' + (a.primary ? 'btn--primary' : 'btn--ghost');
+      b.textContent = a.label;
+      b.addEventListener('click', function () { closeModal(); if (a.onClick) a.onClick(); });
+      act.appendChild(b);
+    });
+    modal.hidden = false;
+    var first = act.querySelector('.btn');
+    if (first) first.focus();
+  }
+  function closeModal() { $('#modal').hidden = true; pendingConfirm = false; }
+
+  /** 焦点锁在弹窗里：老人按 Tab 不会跑到背后的页面上 */
+  function trapFocus(container, ev) {
+    var items = container.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  }
+
+  function alertDialog(text) {
+    openModal(t('dialog.needTitle'), '<p>' + text + '</p>', [
+      { label: t('dialog.ok'), primary: true }
+    ]);
+  }
+
+  function helpDialog() {
+    var ul = document.createElement('div');
+    var list = document.createElement('ul');
+    [t('dialog.help1'), t('dialog.help2'), t('dialog.help3')].forEach(function (line) {
+      var li = document.createElement('li');
+      li.textContent = line;
+      list.appendChild(li);
+    });
+    ul.appendChild(list);
+    openModal(t('dialog.helpTitle'), ul, [
+      { label: t('dialog.helpSpeak'), onClick: function () { speak(t('dialog.helpTitle') + '。' + t('dialog.help1') + t('dialog.help2') + t('dialog.help3')); } },
+      { label: t('dialog.close'), primary: true }
+    ]);
+    speak(t('dialog.helpTitle') + '。' + t('dialog.help1') + t('dialog.help2') + t('dialog.help3'));
+  }
+
+  function confirmDialog() {
+    if (!canGoNext()) return; // 信息不全时不弹确认窗，先提示缺什么
+    var body = t('dialog.confirmBody', {
+      dept: pick(DEPTS[state.dept].name),
+      doctor: pick(currentDoctor().name),
+      time: slotText(),
+      patient: pick(currentPatient().name),
+      pay: t(currentPay().key)
+    });
+    openModal(t('dialog.confirmTitle'), '<p>' + body + '</p>', [
+      { label: t('dialog.confirmNo') },
+      { label: t('dialog.confirmYes'), primary: true, onClick: submitBooking }
+    ]);
+    pendingConfirm = true;
+    speak(t('dialog.confirmTitle') + '。' + body);
+  }
+
+  function submitBooking() {
+    pendingConfirm = false;
+    var seed = hash(state.dept + state.doctor + state.date + state.slot + state.patient);
+    state.ticketNo = 'A' + String(100 + (seed % 800));
+    state.step = 5;
+    renderStep();
+    speak(stepVoice());
+  }
+
+  /* ---------------- 流程控制 ---------------- */
+  function canGoNext() {
+    if (state.step === 1) {
+      if (!state.symptom && !state.deptPicked) { alertDialog(t('dialog.needSymptom')); return false; }
+    } else if (state.step === 2) {
+      if (!state.doctor) { alertDialog(t('dialog.needDoctor')); return false; }
+    } else if (state.step === 3) {
+      if (!state.date) { alertDialog(t('dialog.needDate')); return false; }
+      if (!state.slot) { alertDialog(t('dialog.needSlot')); return false; }
+    } else if (state.step === 4) {
+      if (!state.pay) { alertDialog(t('dialog.needPay')); return false; }
+    }
+    return true;
+  }
+
+  function next() {
+    if (state.step === 0) { state.step = 1; renderStep(); return; }
+    if (!canGoNext()) return;
+    if (state.step === 4) { confirmDialog(); return; } // 提交前强制确认，防误操作
+    state.step = Math.min(5, state.step + 1);
+    renderStep();
+  }
+
+  function prev() {
+    if (state.step === 0) return;
+    state.step -= 1;
+    renderStep();
+  }
+
+  /* ---------------- 事件 ---------------- */
+  document.addEventListener('click', function (ev) {
+    var el = ev.target;
+    autoSpeak = true; // 任何一次点选之后即可自动朗读
+
+    var close = el.closest ? el.closest('[data-close]') : null;
+    if (close) { closeModal(); return; }
+
+    var btn = el.closest ? el.closest('[data-action]') : null;
+    if (btn) {
+      var action = btn.getAttribute('data-action');
+      var value = btn.getAttribute('data-value');
+      handleAction(action, value);
+      return;
+    }
+
+    var langBtn = el.closest ? el.closest('[data-lang-btn]') : null;
+    if (langBtn) { setLang(langBtn.getAttribute('data-lang-btn')); return; }
+  });
+
+  function handleAction(action, value) {
+    stopSpeak();
+    switch (action) {
+      case 'start':
+        state.step = 1; renderStep(); break;
+      case 'symptom':
+        state.symptom = value;
+        state.deptPicked = false;
+        state.dept = SYMPTOMS.filter(function (s) { return s.id === value; })[0].dept;
+        state.doctor = null; state.slot = null;
+        markSelected('#symptom-list', value);
+        ensureVisible('#symptom-list', value);
+        showDeptResult();
+        speak(t('step1.recommend', { symptom: pick(currentSymptom().name), dept: pick(DEPTS[state.dept].name) }));
+        break;
+      case 'dept':
+        state.dept = value; state.doctor = null; state.slot = null;
+        state.deptPicked = true;
+        markSelected('#symptom-list', null);
+        showDeptResult();
+        $('#dept-alts').hidden = true;
+        speak(pick(DEPTS[state.dept].name));
+        break;
+      case 'doctor':
+        state.doctor = value; state.slot = null;
+        markSelected('#doctor-list', value);
+        ensureVisible('#doctor-list', value);
+        speak(pick(currentDoctor().name) + '，' + pick(currentDoctor().title));
+        break;
+      case 'date':
+        state.date = value; state.slot = null;
+        markSelected('#date-list', value);
+        ensureVisible('#date-list', value);
+        renderSlots(); // 余量随日期变化，时段需重算
+        speak(dateOptions().filter(function (d) { return d.id === value; })[0].text);
+        break;
+      case 'slot':
+        if (state.doctor && slotLeft(state.doctor, state.date || 'd0', value) === 0) {
+          alertDialog(t('dialog.slotFull'));
+          updateNextState();
+          return;
+        }
+        state.slot = value;
+        markSelected('#slot-list', value);
+        ensureVisible('#slot-list', value);
+        speak(t(value === 'am' ? 'slot.am' : 'slot.pm'));
+        break;
+      case 'patient':
+        state.patient = value;
+        markSelected('#patient-list', value);
+        ensureVisible('#patient-list', value);
+        renderSummary();
+        speak(pick(currentPatient().name));
+        break;
+      case 'pay':
+        state.pay = value;
+        markSelected('#pay-list', value);
+        ensureVisible('#pay-list', value);
+        speak(t(currentPay().key) + '，' + t(currentPay().descKey));
+        break;
+      case 'gostep':
+        /* 只允许回到已经走过的步骤，不能跳过没完成的步骤 */
+        var target = parseInt(value, 10);
+        if (isNaN(target) || target >= state.step || state.step === 5) return;
+        state.step = target;
+        renderStep();
+        break;
+      case 'restart':
+        resetAll(); state.step = 1; renderStep(); break;
+      case 'done':
+        resetAll(); state.step = 0; renderStep(); break;
+    }
+    updateNextState();
+  }
+
+  /** 刚点中的卡片如果滚出屏幕，轻轻带回可视区（不抢焦点，读屏位置不丢） */
+  function ensureVisible(sel, value) {
+    try {
+      var el = $(sel + ' .bigcard[data-value="' + value + '"]');
+      if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest' });
+    } catch (e) { /* 部分浏览器不支持，忽略 */ }
+  }
+
+  function resetAll() {
+    state.symptom = null; state.dept = null; state.deptPicked = false; state.doctor = null;
+    state.date = null; state.slot = null; state.pay = null;
+    state.patient = 'self'; state.ticketNo = null;
+  }
+
+  $('#btn-next').addEventListener('click', next);
+  $('#btn-prev').addEventListener('click', function () { stopSpeak(); prev(); });
+  $('#btn-help').addEventListener('click', function () { stopSpeak(); helpDialog(); });
+  $('#btn-speak').addEventListener('click', function () { speak(stepVoice()); });
+  $('#btn-stop').addEventListener('click', function () { stopSpeak(); setLive(''); });
+  $('#dept-change').addEventListener('click', function () {
+    var box = $('#dept-alts');
+    if (box.hidden) renderAlts(); else { box.hidden = true; box.innerHTML = ''; }
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if ($('#modal').hidden) return;
+    if (ev.key === 'Escape') { closeModal(); return; }
+    if (ev.key === 'Tab') trapFocus($('#modal'), ev);
+  });
+
+  /* ---------------- 字体缩放 ---------------- */
+  var FONT_MIN = 0.9, FONT_MAX = 1.5, FONT_STEP = 0.15;
+  function applyFont() {
+    document.documentElement.style.setProperty('--fs', String(state.font));
+    store('xiaoyuer.font', String(state.font));
+    syncTopbar(); // 字号变了顶栏高度也变，步骤条吸顶位置要跟着走
+  }
+  function setFont(v) {
+    state.font = Math.min(FONT_MAX, Math.max(FONT_MIN, Math.round(v * 100) / 100));
+    applyFont();
+  }
+  $('#font-plus').addEventListener('click', function () { setFont(state.font + FONT_STEP); });
+  $('#font-minus').addEventListener('click', function () { setFont(state.font - FONT_STEP); });
+  $('#font-reset').addEventListener('click', function () { setFont(1); });
+
+  /* ---------------- 语言 ---------------- */
+  function setLang(lang) {
+    if (LANGS.indexOf(lang) < 0) return;
+    state.lang = lang;
+    store('xiaoyuer.lang', lang);
+    stopSpeak();
+    $$('[data-lang-btn]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-lang-btn') === lang ? 'true' : 'false');
+    });
+    render();
+  }
+
+  /* ---------------- 本地记忆 ---------------- */
+  var memStore = {}; // localStorage 不可用（隐私模式、file:// 限制）时的内存回退
+  function store(key, value) {
+    memStore[key] = String(value);
+    try { window.localStorage.setItem(key, String(value)); } catch (e) { /* 隐私模式下忽略 */ }
+  }
+  function read(key) {
+    try {
+      var v = window.localStorage.getItem(key);
+      if (v != null) return v;
+    } catch (e) { /* 忽略，走内存回退 */ }
+    return memStore[key] != null ? memStore[key] : null;
+  }
+
+  /* ---------------- 对外导航动作 ----------------
+     智能体（含语音助手）只能走这份白名单：
+     要么调「能力清单」里的动作，要么调这里的界面导航，绝不能直接碰页面。 */
+  function uiNav(cmd) {
+    stopSpeak();
+    switch (cmd) {
+      case 'next': next(); return true;
+      case 'prev': prev(); return true;
+      case 'help': helpDialog(); return true;
+      case 'read': speak(stepVoice()); return true;
+      case 'stop': stopSpeak(); setLive(''); return true;
+      case 'confirm': if (state.step !== 4) return false; confirmDialog(); return true; // 仍要人工点
+      case 'confirmYes': if (state.step !== 4) return false; closeModal(); submitBooking(); return true;
+      case 'closeModal': closeModal(); return true;
+      case 'fontUp': setFont(state.font + FONT_STEP); return true;
+      case 'fontDown': setFont(state.font - FONT_STEP); return true;
+      case 'fontReset': setFont(1); return true;
+      case 'restart': resetAll(); state.step = 1; renderStep(); return true;
+      case 'home': resetAll(); state.step = 0; renderStep(); return true;
+      default: return false;
+    }
+  }
+
+  /** 当前每一步的「可选项」——智能体只能从这里取值，防止说出一个页面上没有的选项 */
+  function options() {
+    return {
+      symptoms: SYMPTOMS.map(function (s) { return { id: s.id, name: pick(s.name) }; }),
+      depts: Object.keys(DEPTS).map(function (d) { return { id: d, name: pick(DEPTS[d].name) }; }),
+      doctors: (DOCTORS[state.dept] || []).map(function (d) { return { id: d.id, name: pick(d.name), title: pick(d.title) }; }),
+      dates: dateOptions().map(function (d) { return { id: d.id, name: d.label, text: d.text }; }),
+      slots: SLOTS.map(function (s) { return { id: s.id, name: t(s.labelKey), text: t(s.timeKey) }; }),
+      patients: PATIENTS.map(function (p) { return { id: p.id, name: pick(p.name), rel: t(p.relKey) }; }),
+      pays: PAYS.map(function (p) { return { id: p.id, name: t(p.key) }; })
+    };
+  }
+
+  /* ---------------- 空闲关怀：老人停住不动时，轻轻提示一句 ---------------- */
+  var IDLE_MS = 75000;
+  var idleTimer = null;
+  function hideIdle() {
+    var bar = $('#idlebar');
+    if (bar) bar.hidden = true;
+    document.body.classList.remove('idle-on');
+  }
+  function resetIdle() {
+    if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+    hideIdle();
+    if (state.step >= 1 && state.step <= 4) {
+      idleTimer = setTimeout(function () {
+        if (state.step < 1 || state.step > 4) return;
+        var b = $('#idlebar');
+        if (!b) return;
+        b.hidden = false;
+        document.body.classList.add('idle-on');
+      }, IDLE_MS);
+    }
+  }
+  ['click', 'keydown', 'touchstart'].forEach(function (evt) {
+    document.addEventListener(evt, resetIdle, { passive: true });
+  });
+
+  /* ---------------- 步骤条吸顶跟随：按顶栏实际高度对齐 ---------------- */
+  function syncTopbar() {
+    var el = $('.topbar');
+    if (!el || !el.offsetHeight) return;
+    document.documentElement.style.setProperty('--topbar-h', el.offsetHeight + 'px');
+  }
+  window.addEventListener('resize', syncTopbar);
+  if (typeof window.ResizeObserver === 'function') {
+    try { new window.ResizeObserver(syncTopbar).observe($('.topbar')); } catch (e) { /* 忽略 */ }
+  }
+
+  /* ---------------- 对外能力清单（供智能体代驾） ----------------
+     模型只负责「选哪个」，执行一律由下面这些确定性函数完成。 */
+  var CAPABILITIES = [
+    { id: 'select_symptom', risk: 'low', options: SYMPTOMS.map(function (s) { return s.id; }) },
+    { id: 'select_department', risk: 'low', options: Object.keys(DEPTS) },
+    { id: 'select_doctor', risk: 'low', note: 'options depend on department' },
+    { id: 'select_date', risk: 'low', options: ['d0', 'd1', 'd2'] },
+    { id: 'select_slot', risk: 'low', options: ['am', 'pm'] },
+    { id: 'select_patient', risk: 'medium', options: PATIENTS.map(function (p) { return p.id; }) },
+    { id: 'select_payment', risk: 'medium', options: PAYS.map(function (p) { return p.id; }) },
+    { id: 'submit_booking', risk: 'high', note: 'requires granted=true' },
+    { id: 'reset', risk: 'low' }
+  ];
+
+  /** 确定性执行：只接受能力清单内的动作，参数不在取值范围内直接拒绝 */
+  function call(actionId, params) {
+    params = params || {};
+    switch (actionId) {
+      case 'select_symptom':
+        if (!SYMPTOMS.some(function (s) { return s.id === params.value; })) return reject();
+        handleAction('symptom', params.value); return ok();
+      case 'select_department':
+        if (!DEPTS[params.value]) return reject();
+        handleAction('dept', params.value); return ok();
+      case 'select_doctor':
+        if (!state.dept || !(DOCTORS[state.dept] || []).some(function (d) { return d.id === params.value; })) return reject();
+        handleAction('doctor', params.value); return ok();
+      case 'select_date':
+        if (['d0', 'd1', 'd2'].indexOf(params.value) < 0) return reject();
+        handleAction('date', params.value); return ok();
+      case 'select_slot':
+        if (['am', 'pm'].indexOf(params.value) < 0) return reject();
+        if (state.doctor && slotLeft(state.doctor, state.date || 'd0', params.value) === 0) {
+          return { ok: false, reason: 'slot_full' };
+        }
+        handleAction('slot', params.value); return ok();
+      case 'select_patient':
+        if (!PATIENTS.some(function (p) { return p.id === params.value; })) return reject();
+        handleAction('patient', params.value); return ok();
+      case 'select_payment':
+        if (!PAYS.some(function (p) { return p.id === params.value; })) return reject();
+        handleAction('pay', params.value); return ok();
+      case 'submit_booking':
+        if (!canGoNext()) return { ok: false, reason: 'incomplete' };
+        if (params.granted !== true) return { ok: false, reason: 'need_confirm', label: t('nav.nextSubmit') };
+        submitBooking(); return ok();
+      case 'reset':
+        resetAll(); state.step = 0; renderStep(); return ok();
+      default:
+        return reject();
+    }
+  }
+  /* 成功执行一次能力后，顺手刷新右栏摘要 —— 点选走的是就地更新，不会触发 renderStep */
+  function ok() { renderAside(); return { ok: true, state: getState() }; }
+  function reject() { return { ok: false, reason: 'not_in_capability_list' }; }
+
+  function getState() {
+    return {
+      step: state.step,
+      lang: state.lang,
+      font: state.font,
+      symptom: state.symptom,
+      dept: state.dept,
+      doctor: state.doctor,
+      date: state.date,
+      slot: state.slot,
+      patient: state.patient,
+      pay: state.pay,
+      ticketNo: state.ticketNo,
+      deptName: state.dept ? pick(DEPTS[state.dept].name) : null,
+      doctorName: currentDoctor() ? pick(currentDoctor().name) : null,
+      timeText: state.date && state.slot ? slotText() : null
+    };
+  }
+
+  window.XiaoYuEr = {
+    version: '1.1.0',
+    capabilities: CAPABILITIES,
+    getState: getState,
+    call: call,
+    speak: speak,
+    stopSpeak: stopSpeak,
+    setLanguage: setLang,
+    setFontScale: setFont,
+    go: function (step) { state.step = Math.max(0, Math.min(5, step)); renderStep(); },
+    /* 给外部智能体（语音助手等）用的扩展点：注册文案 / 订阅重绘 / 导航 / 可选项 */
+    registerI18n: registerI18n,
+    onRender: onRender,
+    t: t,
+    nav: uiNav,
+    options: options,
+    stepReady: stepReady,
+    isConfirmOpen: function () { return pendingConfirm && !$('#modal').hidden; },
+    /* 调试与自检接口：翻译表、翻译函数、语音文本，供自动化验证使用 */
+    debug: { i18n: I18N, t: t, languages: LANGS, keys: Object.keys(I18N.zh), voiceOfStep: stepVoice, speechLang: SPEECH_LANG,
+      persist: function () { return { font: read('xiaoyuer.font'), lang: read('xiaoyuer.lang') }; } }
+  };
+
+  /* ---------------- 启动 ---------------- */
+  var savedLang = read('xiaoyuer.lang');
+  if (savedLang && LANGS.indexOf(savedLang) >= 0) state.lang = savedLang;
+  var savedFont = parseFloat(read('xiaoyuer.font') || '1');
+  if (!isNaN(savedFont)) state.font = savedFont;
+
+  $$('[data-lang-btn]').forEach(function (b) {
+    b.setAttribute('aria-pressed', b.getAttribute('data-lang-btn') === state.lang ? 'true' : 'false');
+  });
+  applyFont();
+  render();
+  syncTopbar();
+  resetIdle();
+
+  var idleHelp = $('#idlebar-help');
+  if (idleHelp) idleHelp.addEventListener('click', function () { helpDialog(); });
+  var idleClose = $('#idlebar-close');
+  if (idleClose) idleClose.addEventListener('click', function () { hideIdle(); resetIdle(); });
+
+  if (speechSupported()) {
+    window.speechSynthesis.onvoiceschanged = function () { /* 语音列表异步就绪，无需处理 */ };
+  }
+})();
+</script>
+<script>
+/* ============================================================
+   小鱼兒 · 语音智能助手（挂在适老预约挂号页上的「代驾智能体」）
+
+   设计原则（与主项目一致）：
+   1. 智能体只做「决策」——把一句话变成一个动作序列；
+      执行一律交给确定性代码：要么走能力清单 XiaoYuEr.call()，
+      要么走界面导航白名单 XiaoYuEr.nav()，绝不直接改页面。
+   2. 取值只能从「当前可选项」里挑，说一个页面上没有的选项会被拒绝。
+   3. 零成本兜底：没有网络、没有麦克风、没有大模型，规则引擎照样能办事。
+   4. 高危动作（提交预约）必须人工授权，语音也只能把确认窗叫出来。
+   5. 想接真实大模型时用 setPlanner(fn) 挂上去；它挂了或报错，自动回落到规则引擎。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var X = window.XiaoYuEr;
+  if (!X) return;
+
+  /* ---------------- 助手自己的三语文案 ---------------- */
+  var I18N = {
+    zh: {
+      'ai.inlineTitle': '不想自己点？让小鱼兒替您办',
+      'ai.inlineDesc': '点一下，对着手机说「我腿疼」，它替您选好',
+      'ai.fab': '跟我说话',
+      'ai.title': '小鱼兒 · 语音助手',
+      'ai.sub': '您说一句，我替您点',
+      'ai.close': '关闭',
+      'ai.talk': '点这里说话',
+      'ai.listening': '正在听您说…请讲话',
+      'ai.stopListen': '不听了',
+      'ai.hear': '我听到：',
+      'ai.unsupported': '这台设备听不了话。您可以直接点下面的话，一样能办。',
+      'ai.denied': '没能用麦克风。请在浏览器里允许使用麦克风，或直接点下面的话。',
+      'ai.noSpeech': '没听到声音，请离近一点再说一次。',
+      'ai.netErr': '网络不通，暂时听不了话。请直接点下面的话。',
+      'ai.unknown': '没听明白。您可以这样说：',
+      'ai.guard': '这句话我没有把握，先不动页面。请您再说一次，或点下面的话。',
+      'ai.hello': '您好，我是小鱼兒。说一句「我要挂号」就开始，也可以点下面的话。',
+      'ai.didStart': '好的，我们开始挂号。',
+      'ai.didSymptom': '记下了：{symptom}。我帮您挂{dept}。',
+      'ai.didDept': '改挂{dept}。',
+      'ai.didDoctor': '挂{doctor}医生的号。',
+      'ai.didDate': '选{date}。',
+      'ai.didSlot': '选{slot}。',
+      'ai.didPatient': '就诊人：{patient}。',
+      'ai.didPay': '付款方式：{pay}。',
+      'ai.needConfirm': '这一步要您本人定。请点屏幕上的绿色按钮，或者说一声「确认」。',
+      'ai.confirmed': '挂好了，取号码 {no}。请提前 15 分钟到，带好身份证。',
+      'ai.incomplete': '还差一点：{what}',
+      'ai.slotFull': '这个时间已经约满了，换一个吧。',
+      'ai.next': '好的，下一步。',
+      'ai.prev': '好的，回到上一步。',
+      'ai.help': '您可以叫家里人帮您点，也可以到一楼服务台找穿制服的工作人员。',
+      'ai.read': '好的，我念一遍。',
+      'ai.stopped': '好的，不念了。',
+      'ai.fontUp': '字变大了。',
+      'ai.fontDown': '字变小了。',
+      'ai.restart': '好的，重新挂一个。',
+      'ai.finish': '好的，那先到这里。',
+      'ai.chips': '您也可以直接点这些话：',
+      'ai.wrongStep': '这一步还办不了这个，我没有乱动页面。您可以先点「上一步」回去改。',
+      'ai.cancelBooking': '好的，这次先不挂。您还可以改，改好了再点确认。',
+      'ai.askSymptom': '大科里还分好几种。您主要是头晕、心慌、咳嗽，还是肚子痛？',
+      'ai.statusStep': '现在到第 {n} 步：{name}。',
+      'chip.start': '我要挂号',
+      'chip.symptom': '我{name}',
+      'chip.firstDoctor': '第一位医生',
+      'chip.secondDoctor': '第二位医生',
+      'chip.chief': '主任医师',
+      'chip.today': '今天',
+      'chip.tomorrow': '明天',
+      'chip.am': '上午',
+      'chip.pm': '下午',
+      'chip.pay': '用{name}',
+      'chip.confirm': '确认预约',
+      'chip.again': '再挂一个',
+      'chip.done': '好了',
+      'chip.read': '念一遍',
+      'chip.prev': '上一步',
+      'chip.next': '下一步'
+    },
+
+    'zh-Hant': {
+      'ai.inlineTitle': '不想自己點？讓小鱼兒替您辦',
+      'ai.inlineDesc': '點一下，對著手機說「我腿疼」，它替您選好',
+      'ai.fab': '跟我說話',
+      'ai.title': '小鱼兒 · 語音助手',
+      'ai.sub': '您說一句，我替您點',
+      'ai.close': '關閉',
+      'ai.talk': '點這裡說話',
+      'ai.listening': '正在聽您說…請講話',
+      'ai.stopListen': '不聽了',
+      'ai.hear': '我聽到：',
+      'ai.unsupported': '這台設備聽不了話。您可以直接點下面的話，一樣能辦。',
+      'ai.denied': '沒能用麥克風。請在瀏覽器裡允許使用麥克風，或直接點下面的話。',
+      'ai.noSpeech': '沒聽到聲音，請離近一點再說一次。',
+      'ai.netErr': '網路不通，暫時聽不了話。請直接點下面的話。',
+      'ai.unknown': '沒聽明白。您可以這樣說：',
+      'ai.guard': '這句話我沒有把握，先不動頁面。請您再說一次，或點下面的話。',
+      'ai.hello': '您好，我是小鱼兒。說一句「我要掛號」就開始，也可以點下面的話。',
+      'ai.didStart': '好的，我們開始掛號。',
+      'ai.didSymptom': '記下了：{symptom}。我幫您掛{dept}。',
+      'ai.didDept': '改掛{dept}。',
+      'ai.didDoctor': '掛{doctor}醫生的號。',
+      'ai.didDate': '選{date}。',
+      'ai.didSlot': '選{slot}。',
+      'ai.didPatient': '就診人：{patient}。',
+      'ai.didPay': '付款方式：{pay}。',
+      'ai.needConfirm': '這一步要您本人定。請點螢幕上的綠色按鈕，或者說一聲「確認」。',
+      'ai.confirmed': '掛好了，取號碼 {no}。請提前 15 分鐘到，帶好身分證。',
+      'ai.incomplete': '還差一點：{what}',
+      'ai.slotFull': '這個時間已經約滿了，換一個吧。',
+      'ai.next': '好的，下一步。',
+      'ai.prev': '好的，回到上一步。',
+      'ai.help': '您可以叫家裡人幫您點，也可以到一樓服務台找穿制服的工作人員。',
+      'ai.read': '好的，我念一遍。',
+      'ai.stopped': '好的，不念了。',
+      'ai.fontUp': '字變大了。',
+      'ai.fontDown': '字變小了。',
+      'ai.restart': '好的，重新掛一個。',
+      'ai.finish': '好的，那先到這裡。',
+      'ai.chips': '您也可以直接點這些話：',
+      'ai.wrongStep': '這一步還辦不了這個，我沒有亂動頁面。您可以先點「上一步」回去改。',
+      'ai.cancelBooking': '好的，這次先不掛。您還可以改，改好了再點確認。',
+      'ai.askSymptom': '大科裡還分好幾種。您主要是頭暈、心慌、咳嗽，還是肚子痛？',
+      'ai.statusStep': '現在到第 {n} 步：{name}。',
+      'chip.start': '我要掛號',
+      'chip.symptom': '我{name}',
+      'chip.firstDoctor': '第一位醫生',
+      'chip.secondDoctor': '第二位醫生',
+      'chip.chief': '主任醫師',
+      'chip.today': '今天',
+      'chip.tomorrow': '明天',
+      'chip.am': '上午',
+      'chip.pm': '下午',
+      'chip.pay': '用{name}',
+      'chip.confirm': '確認預約',
+      'chip.again': '再掛一個',
+      'chip.done': '好了',
+      'chip.read': '念一遍',
+      'chip.prev': '上一步',
+      'chip.next': '下一步'
+    },
+
+    en: {
+      'ai.inlineTitle': 'Rather not tap? Let Xiao Yu Er do it',
+      'ai.inlineDesc': 'Tap here and say "my leg hurts" — it will pick for you',
+      'ai.fab': 'Talk to me',
+      'ai.title': 'Xiao Yu Er · Voice helper',
+      'ai.sub': 'Say one sentence, I tap for you',
+      'ai.close': 'Close',
+      'ai.talk': 'Tap to speak',
+      'ai.listening': 'Listening… please speak',
+      'ai.stopListen': 'Stop listening',
+      'ai.hear': 'I heard: ',
+      'ai.unsupported': 'This device cannot listen. Just tap one of the phrases below.',
+      'ai.denied': 'Microphone blocked. Please allow it in the browser, or tap a phrase below.',
+      'ai.noSpeech': 'I did not hear anything. Please come closer and try again.',
+      'ai.netErr': 'No network, so listening is off. Please tap a phrase below.',
+      'ai.unknown': 'I did not catch that. You can say things like:',
+      'ai.guard': 'I am not sure about that, so I will not touch the page. Please say it again.',
+      'ai.hello': 'Hello, I am Xiao Yu Er. Say "book an appointment" to start, or tap a phrase below.',
+      'ai.didStart': 'All right, let us start.',
+      'ai.didSymptom': 'Noted: {symptom}. I suggest {dept}.',
+      'ai.didDept': 'Changed to {dept}.',
+      'ai.didDoctor': 'Booking doctor {doctor}.',
+      'ai.didDate': 'Chosen {date}.',
+      'ai.didSlot': 'Chosen {slot}.',
+      'ai.didPatient': 'Patient: {patient}.',
+      'ai.didPay': 'Payment: {pay}.',
+      'ai.needConfirm': 'This step needs your own decision. Tap the green button, or say "confirm".',
+      'ai.confirmed': 'Booked. Queue number {no}. Please arrive 15 minutes early with your ID.',
+      'ai.incomplete': 'One thing is missing: {what}',
+      'ai.slotFull': 'That time is fully booked. Please pick another.',
+      'ai.next': 'All right, next step.',
+      'ai.prev': 'All right, back one step.',
+      'ai.help': 'Ask a family member to help, or find staff in uniform at the service desk.',
+      'ai.read': 'All right, I will read it out.',
+      'ai.stopped': 'All right, stopping.',
+      'ai.fontUp': 'Text is bigger now.',
+      'ai.fontDown': 'Text is smaller now.',
+      'ai.restart': 'All right, start a new booking.',
+      'ai.finish': 'All right, we are done here.',
+      'ai.chips': 'You can also just tap one of these:',
+      'ai.wrongStep': 'That cannot be done on this step, so I changed nothing. Tap Back to edit.',
+      'ai.cancelBooking': 'All right, not booking yet. You can still change things, then confirm.',
+      'ai.askSymptom': 'There are several. Is it dizziness, palpitations, cough, or belly pain?',
+      'ai.statusStep': 'You are on step {n}: {name}.',
+      'chip.start': 'Book an appointment',
+      'chip.symptom': 'I have {name}',
+      'chip.firstDoctor': 'The first doctor',
+      'chip.secondDoctor': 'The second doctor',
+      'chip.chief': 'The chief physician',
+      'chip.today': 'Today',
+      'chip.tomorrow': 'Tomorrow',
+      'chip.am': 'In the morning',
+      'chip.pm': 'In the afternoon',
+      'chip.pay': 'Pay by {name}',
+      'chip.confirm': 'Confirm booking',
+      'chip.again': 'Book another one',
+      'chip.done': 'All done',
+      'chip.read': 'Read it out',
+      'chip.prev': 'Go back',
+      'chip.next': 'Next step'
+    }
+  };
+
+  X.registerI18n(I18N);
+  var T = function (k, v) { return X.t(k, v); };
+  var LANGS = ['zh', 'zh-Hant', 'en'];
+
+  /* ---------------- 关键词表 ---------------- */
+  var KW = {
+    start: {
+      zh: ['我要挂号', '挂个号', '挂个', '预约挂号', '我要预约', '开始挂号', '挂号', '看病', '帮我挂', '挂个骨科', '挂个内科'],
+      'zh-Hant': ['我要掛號', '掛個號', '掛個', '預約掛號', '我要預約', '開始掛號', '掛號', '看病', '幫我掛'],
+      en: ['book an appointment', 'appointment', 'register', 'start', 'see a doctor', 'book']
+    },
+    finish: {
+      zh: ['好了', '知道了', '完成了', '结束', '没了', '不用了'],
+      'zh-Hant': ['好了', '知道了', '完成了', '結束', '沒了', '不用了'],
+      en: ['all done', 'thats all', 'finish', 'done']
+    },
+    next: { zh: ['下一步', '下一页', '继续', '接着', '往下', '继续下一步'], 'zh-Hant': ['下一步', '下一頁', '繼續', '接著', '往下'], en: ['next', 'continue', 'go on'] },
+    prev: { zh: ['上一步', '上一页', '返回', '回去', '后退', '退一步'], 'zh-Hant': ['上一步', '上一頁', '返回', '回去', '後退', '退一步'], en: ['back', 'previous', 'go back'] },
+    help: { zh: ['需要帮助', '我要帮助', '帮忙', '我不会', '不会弄', '不会用', '找人', '怎么办', '咋办'], 'zh-Hant': ['需要幫助', '我要幫助', '幫忙', '我不會', '不會弄', '不會用', '找人', '怎麼辦'], en: ['help', 'assist', 'what should i do'] },
+    read: { zh: ['念一遍', '读一遍', '再念', '念给我听', '读给我听', '念一下', '朗读', '说给我听'], 'zh-Hant': ['念一遍', '讀一遍', '再唸', '唸給我聽', '讀給我聽', '朗讀', '說給我聽'], en: ['read', 'read it', 'say it again'] },
+    stop: { zh: ['别念了', '不要念', '停止', '停下', '安静', '停'], 'zh-Hant': ['別唸了', '不要唸', '停止', '停下', '安靜', '停'], en: ['stop', 'be quiet', 'enough'] },
+    fontUp: { zh: ['字太小', '放大字', '字放大', '大一点', '大一些', '字号大', '看不清字', '字大点'], 'zh-Hant': ['字太小', '放大字', '字放大', '大一點', '大一些', '字級大', '看不清字', '字大點'], en: ['bigger', 'larger', 'too small'] },
+    fontDown: { zh: ['字太大', '缩小', '小一点', '小一些', '字小点'], 'zh-Hant': ['字太大', '縮小', '小一點', '小一些', '字小點'], en: ['smaller', 'too big'] },
+    restart: { zh: ['重新挂', '重挂', '重新来', '重来', '再来一个', '再挂一个', '重新开始'], 'zh-Hant': ['重新掛', '重掛', '重新來', '重來', '再來一個', '再掛一個', '重新開始'], en: ['restart', 'start over', 'another one'] },
+    submit: { zh: ['确认预约', '确认挂号', '就这个', '就这样', '定下来', '提交', '挂了吧', '确认'], 'zh-Hant': ['確認預約', '確認掛號', '就這個', '就這樣', '定下來', '提交', '掛了吧', '確認'], en: ['confirm', 'submit', 'book it'] },
+    yes: { zh: ['确认', '确定', '是的', '对的', '没错', '好的', '可以', '行', '就这个', '提交'], 'zh-Hant': ['確認', '確定', '是的', '對的', '沒錯', '好的', '可以', '行', '就這個', '提交'], en: ['yes', 'confirm', 'ok', 'okay', 'sure', 'correct', 'do it'] },
+    no: { zh: ['取消', '不要', '算了', '不对', '再看看'], 'zh-Hant': ['取消', '不要', '算了', '不對', '再看看'], en: ['no', 'cancel', 'not now'] },
+    status: { zh: ['第几步', '哪一步', '我在哪', '现在到哪', '做到哪'], 'zh-Hant': ['第幾步', '哪一步', '我在哪', '現在到哪', '做到哪'], en: ['which step', 'where am i'] },
+    am: { zh: ['上午', '早上', '上半天', '尚午', '商务', '上五'], 'zh-Hant': ['上午', '早上', '上半天'], en: ['morning'] },
+    pm: { zh: ['下午', '中午', '下半天', '夏午', '下五', '午后'], 'zh-Hant': ['下午', '中午', '下半天', '午後'], en: ['afternoon'] },
+    today: { zh: ['今天', '今日', '当天'], 'zh-Hant': ['今天', '今日', '當天'], en: ['today'] },
+    tomorrow: { zh: ['明天', '明日'], 'zh-Hant': ['明天', '明日'], en: ['tomorrow'] },
+    dayAfter: { zh: ['后天', '大后天'], 'zh-Hant': ['後天', '大後天'], en: ['day after'] },
+    vague: { zh: ['内科', '外科', '专家号', '专家'], 'zh-Hant': ['內科', '外科', '專家號', '專家'], en: ['internal medicine', 'specialist'] }
+  };
+
+  /* 症状 / 科室 / 医生 / 就诊人 / 付款 的口语说法（简繁英各一份） */
+  var SYM_ALIAS = {
+    head: { zh: ['头晕头痛', '头晕', '头痛', '头疼', '头昏', '晕'], 'zh-Hant': ['頭暈頭痛', '頭暈', '頭痛', '頭疼', '頭昏', '暈'], en: ['dizzy', 'headache'] },
+    chest: { zh: ['心慌胸闷', '心慌', '胸闷', '胸痛', '心脏', '心口', '慌'], 'zh-Hant': ['心慌胸悶', '心慌', '胸悶', '胸痛', '心臟', '心口'], en: ['palpitation', 'chest'] },
+    fever: { zh: ['咳嗽发烧', '咳嗽', '发烧', '发热', '咳', '感冒'], 'zh-Hant': ['咳嗽發燒', '咳嗽', '發燒', '發熱', '咳', '感冒'], en: ['cough', 'fever'] },
+    belly: { zh: ['肚子痛', '肚子疼', '腹痛', '胃疼', '胃痛', '拉肚子', '肚'], 'zh-Hant': ['肚子痛', '肚子疼', '腹痛', '胃疼', '胃痛', '拉肚子', '肚'], en: ['stomach', 'belly'] },
+    leg: { zh: ['腿疼', '腿痛', '膝盖', '腿脚', '腿', '腰痛', '关节'], 'zh-Hant': ['腿疼', '腿痛', '膝蓋', '腿腳', '腿', '腰痛', '關節'], en: ['leg', 'knee'] },
+    eye: { zh: ['眼睛不舒服', '眼睛', '眼花', '视力', '看不清', '眼'], 'zh-Hant': ['眼睛不舒服', '眼睛', '眼花', '視力', '看不清', '眼'], en: ['eye', 'vision'] },
+    unsure: { zh: ['不知道选什么', '不知道挂什么', '不知道', '不确定', '随便', '说不清', '全身不舒服'], 'zh-Hant': ['不知道選什麼', '不知道掛什麼', '不知道', '不確定', '隨便', '說不清', '全身不舒服'], en: ['not sure', 'dont know', 'unsure'] }
+  };
+
+  var DEPT_ALIAS = {
+    neurology: { zh: ['神经内科', '脑科', '神经科', '脑血管'], 'zh-Hant': ['神經內科', '腦科', '神經科', '腦血管'], en: ['neurology', 'brain'] },
+    cardiology: { zh: ['心血管内科', '心内科', '心脏科', '心血管'], 'zh-Hant': ['心血管內科', '心內科', '心臟科', '心血管'], en: ['cardiology', 'heart'] },
+    respiratory: { zh: ['呼吸内科', '呼吸科', '喘'], 'zh-Hant': ['呼吸內科', '呼吸科', '喘'], en: ['respiratory', 'lung'] },
+    gastro: { zh: ['消化内科', '消化科', '胃肠', '肠胃'], 'zh-Hant': ['消化內科', '消化科', '胃腸', '腸胃'], en: ['gastro', 'stomach department'] },
+    surgery: { zh: ['普通外科', '外科', '普外'], 'zh-Hant': ['普通外科', '外科', '普外'], en: ['surgery'] },
+    orthopedics: { zh: ['骨科', '骨伤', '关节科'], 'zh-Hant': ['骨科', '骨傷', '關節科'], en: ['orthopedics', 'bone'] },
+    ophthalmology: { zh: ['眼科', '眼睛科'], 'zh-Hant': ['眼科', '眼睛科'], en: ['ophthalmology', 'eye department'] },
+    gp: { zh: ['全科医学科', '全科医学', '全科', '普通门诊'], 'zh-Hant': ['全科醫學科', '全科醫學', '全科', '普通門診'], en: ['general practice', 'general'] }
+  };
+
+  var PAT_ALIAS = {
+    self: { zh: ['本人', '我自己', '我本人', '就我'], 'zh-Hant': ['本人', '我自己', '我本人', '就我'], en: ['myself', 'my own'] },
+    spouse: { zh: ['老伴', '爱人', '配偶', '我老伴', '老头子', '老婆'], 'zh-Hant': ['老伴', '愛人', '配偶', '我老伴', '老婆'], en: ['spouse', 'my wife', 'my husband'] },
+    family: { zh: ['家人', '儿子', '女儿', '孩子', '陪同', '闺女'], 'zh-Hant': ['家人', '兒子', '女兒', '孩子', '陪同'], en: ['family', 'my son', 'my daughter'] }
+  };
+
+  var PAY_ALIAS = {
+    medical: { zh: ['医保卡', '医保', '社保卡', '社保', '医疗卡', '一包'], 'zh-Hant': ['健保卡', '健保', '醫保卡', '醫保', '社保'], en: ['insurance'] },
+    wechat: { zh: ['微信', '威信', '微讯'], 'zh-Hant': ['微信', '威信', '微訊'], en: ['wechat'] },
+    alipay: { zh: ['支付宝', '支付保'], 'zh-Hant': ['支付寶', '支付保'], en: ['alipay'] },
+    hospital: { zh: ['到医院再付', '到医院付', '到医院', '到院付', '现场付', '窗口付', '现金', '看完再付'], 'zh-Hant': ['到醫院再付', '到醫院付', '到醫院', '到院付', '現場付', '窗口付', '現金', '看完再付'], en: ['at hospital', 'pay later', 'cash'] }
+  };
+
+  /* 语音识别常见的同音错字，先纠正再理解 */
+  var FIX = [
+    ['搞好', '挂号'], ['挂好', '挂号'], ['管好', '挂号'], ['乖号', '挂号'],
+    ['头疼', '头痛'], ['肚疼', '肚子痛'], ['肚字疼', '肚子痛'], ['肚子疼', '肚子痛'],
+    ['心荒', '心慌'], ['胸问', '胸闷'], ['胸疼', '胸痛'],
+    ['晌午', '上午'], ['尚午', '上午'], ['上五', '上午'], ['商务', '上午'],
+    ['夏午', '下午'], ['下五', '下午'], ['瞎午', '下午'],
+    ['明田', '明天'], ['后田', '后天'], ['後田', '後天'],
+    ['一包', '医保'], ['一保', '医保'], ['威信', '微信'], ['支付保', '支付宝'],
+    ['到院付', '到医院再付'], ['现场付', '到医院再付'], ['窗口付', '到医院再付'],
+    ['下一部', '下一步'], ['上一部', '上一步'], ['下一页', '下一步'], ['上一页', '上一步']
+  ];
+
+  /* 哪些步骤才允许做哪个动作——防止在错误的步骤上乱点 */
+  var STEP_GUARD = {
+    select_symptom: [1], select_department: [1], select_doctor: [2],
+    select_date: [3], select_slot: [3], select_patient: [4],
+    select_payment: [4], submit_booking: [4]
+  };
+  var NAV_WHITE = ['next', 'prev', 'help', 'read', 'stop', 'confirm', 'confirmYes', 'closeModal',
+    'fontUp', 'fontDown', 'fontReset', 'restart', 'home'];
+
+  /* ---------------- 文本归一 ---------------- */
+  function norm(s) {
+    return String(s || '').toLowerCase().replace(/[\s，。,.;；:：!！?？'"“”‘’、\-—_/\\()（）]/g, '');
+  }
+  function fixText(s) {
+    for (var i = 0; i < FIX.length; i++) s = s.split(FIX[i][0]).join(FIX[i][1]);
+    return s;
+  }
+  function longestHit(text, list) {
+    var best = '';
+    if (!list) return best;
+    for (var i = 0; i < list.length; i++) {
+      var w = norm(list[i]);
+      if (w && text.indexOf(w) >= 0 && w.length > best.length) best = w;
+    }
+    return best;
+  }
+  function aliasHit(text, aliasTable, id) {
+    var a = aliasTable[id];
+    if (!a) return '';
+    return longestHit(text, a[X.getState().lang] || a.zh);
+  }
+  function allLangHit(text, aliasTable, id) {
+    var a = aliasTable[id] || {};
+    var best = '';
+    LANGS.forEach(function (l) {
+      var m = longestHit(text, a[l] || []);
+      if (m.length > best.length) best = m;
+    });
+    return best;
+  }
+
+  /* ---------------- 意图理解（规则引擎，离线可用） ---------------- */
+  function understand(raw) {
+    var text = fixText(norm(raw));
+    if (!text) return { intent: 'empty', actions: [], score: 0 };
+
+    var st = X.getState();
+    var opt = X.options();
+    var lang = st.lang;
+    var order = [lang].concat(LANGS.filter(function (l) { return l !== lang; }));
+    function group(name) {
+      var g = KW[name] || {};
+      for (var i = 0; i < order.length; i++) {
+        var m = longestHit(text, g[order[i]] || []);
+        if (m) return m;
+      }
+      return '';
+    }
+    function act(id, value, score) {
+      return { kind: 'cap', id: id, params: { value: value }, steps: STEP_GUARD[id], score: score };
+    }
+    function nav(cmd, score) { return { kind: 'nav', nav: cmd, score: score }; }
+
+    /* 1. 确认窗开着时，只听「确认 / 取消」，别的都不动 */
+    if (X.isConfirmOpen()) {
+      if (group('yes')) return { intent: 'confirm_yes', actions: [nav('confirmYes', 9)], score: 9 };
+      if (group('no')) return { intent: 'confirm_no', actions: [{ kind: 'closeConfirm' }], score: 9 };
+      return { intent: 'confirm_wait', actions: [], score: 0, reply: T('ai.needConfirm') };
+    }
+
+    /* 2. 控制类：念 / 停 / 帮助 / 字号 / 前后 / 重来 / 问进度，一句话只做一件事 */
+    if (group('stop')) return { intent: 'stop', actions: [nav('stop', 5)], reply: T('ai.stopped'), score: 5 };
+    if (group('read')) return { intent: 'read', actions: [nav('read', 5)], reply: T('ai.read'), score: 5 };
+    if (group('help')) return { intent: 'help', actions: [nav('help', 5)], reply: T('ai.help'), score: 5 };
+    if (group('fontUp')) return { intent: 'fontUp', actions: [nav('fontUp', 5)], reply: T('ai.fontUp'), score: 5 };
+    if (group('fontDown')) return { intent: 'fontDown', actions: [nav('fontDown', 5)], reply: T('ai.fontDown'), score: 5 };
+    if (group('status')) {
+      return {
+        intent: 'status', actions: [], score: 5,
+        reply: T('ai.statusStep', { n: st.step, name: T('stepbar.' + st.step) })
+      };
+    }
+    if (group('restart')) return { intent: 'restart', actions: [nav('restart', 6)], reply: T('ai.restart'), score: 6 };
+    if (group('prev')) return { intent: 'prev', actions: [nav('prev', 5)], reply: T('ai.prev'), score: 5 };
+    if (group('next')) return { intent: 'next', actions: [nav('next', 5)], reply: T('ai.next'), score: 5 };
+
+    var actions = [];
+    var score = 0;
+
+    /* 3. 开始挂号 */
+    var hitStart = group('start');
+    if (hitStart && st.step <= 1) {
+      actions.push(nav(st.step === 0 ? 'next' : 'noop', hitStart.length));
+      score += hitStart.length;
+    }
+
+    /* 4. 症状（口语说法优先，其次页面上的选项名） */
+    var symId = null, symScore = 0;
+    Object.keys(SYM_ALIAS).forEach(function (id) {
+      var m = allLangHit(text, SYM_ALIAS, id);
+      if (m && m.length > symScore) { symScore = m.length; symId = id; }
+    });
+    opt.symptoms.forEach(function (s) {
+      if (text.indexOf(norm(s.name)) >= 0 && norm(s.name).length > symScore) {
+        symScore = norm(s.name).length; symId = s.id;
+      }
+    });
+    if (symId) { actions.push(act('select_symptom', symId, symScore)); score += symScore; }
+
+    /* 5. 科室（说得不够具体时，反过来问一句） */
+    var deptId = null, deptScore = 0;
+    Object.keys(DEPT_ALIAS).forEach(function (id) {
+      var m = allLangHit(text, DEPT_ALIAS, id);
+      if (m && m.length > deptScore) { deptScore = m.length; deptId = id; }
+    });
+    opt.depts.forEach(function (d) {
+      var n = norm(d.name);
+      if (n && text.indexOf(n) >= 0 && n.length > deptScore) { deptScore = n.length; deptId = d.id; }
+    });
+    if (deptId) { actions.push(act('select_department', deptId, deptScore)); score += deptScore; }
+    else if (group('vague') && !symId) {
+      return { intent: 'ask', actions: [], score: 2, reply: T('ai.askSymptom') };
+    }
+
+    /* 6. 医生：第几位 / 职称 / 姓名 / 姓 */
+    var docId = null, docScore = 0;
+    var ord = -1;
+    if (text.indexOf('第一') >= 0 || text.indexOf('首位') >= 0) ord = 0;
+    else if (text.indexOf('第二') >= 0) ord = 1;
+    else if (text.indexOf('第三') >= 0) ord = 2;
+    if (ord >= 0 && opt.doctors[ord]) { docId = opt.doctors[ord].id; docScore = 4; }
+    if (!docId) {
+      [['副主任', 1], ['主任', 0], ['主治', 2], ['专家', 0]].forEach(function (p) {
+        if (!docId && text.indexOf(p[0]) >= 0 && opt.doctors[p[1]]) { docId = opt.doctors[p[1]].id; docScore = 3; }
+      });
+    }
+    if (!docId) {
+      opt.doctors.forEach(function (d) {
+        var full = norm(d.name);
+        var short = st.lang === 'en' ? full.split(' ')[0] : full.charAt(0);
+        if (full && text.indexOf(full) >= 0 && full.length > docScore) { docScore = full.length; docId = d.id; }
+        else if (short && short.length >= 1 && text.indexOf(short) >= 0 && short.length + 1 > docScore) { docScore = short.length + 1; docId = d.id; }
+      });
+    }
+    if (docId) { actions.push(act('select_doctor', docId, docScore)); score += docScore; }
+
+    /* 7. 日期与时段：一句话里可以同时有「明天上午」 */
+    var dateId = null;
+    if (group('today')) dateId = 'd0';
+    else if (group('tomorrow')) dateId = 'd1';
+    else if (group('dayAfter')) dateId = 'd2';
+    if (dateId) { actions.push(act('select_date', dateId, 3)); score += 3; }
+    var slotId = null;
+    if (group('pm')) slotId = 'pm';
+    else if (group('am')) slotId = 'am';
+    if (slotId) { actions.push(act('select_slot', slotId, 3)); score += 3; }
+
+    /* 8. 就诊人与付款方式 */
+    var patId = null, patScore = 0;
+    Object.keys(PAT_ALIAS).forEach(function (id) {
+      var m = allLangHit(text, PAT_ALIAS, id);
+      if (m && m.length > patScore) { patScore = m.length; patId = id; }
+    });
+    if (patId) { actions.push(act('select_patient', patId, patScore)); score += patScore; }
+
+    var payId = null, payScore = 0;
+    Object.keys(PAY_ALIAS).forEach(function (id) {
+      var m = allLangHit(text, PAY_ALIAS, id);
+      if (m && m.length > payScore) { payScore = m.length; payId = id; }
+    });
+    if (payId) { actions.push(act('select_payment', payId, payScore)); score += payScore; }
+
+    /* 9. 提交（高危：只是把确认窗叫出来，仍要本人点或本人说确认） */
+    var hitSubmit = group('submit') || (group('finish') && st.step === 4 ? '确认' : '');
+    if (hitSubmit) {
+      actions.push({ kind: 'cap', id: 'submit_booking', params: {}, steps: STEP_GUARD.submit_booking, score: 5 });
+      score += 5;
+    }
+    if (group('finish') && st.step === 5) { actions.push(nav('home', 4)); score += 4; }
+
+    if (!actions.length) return { intent: 'unknown', actions: [], score: 0 };
+    return { intent: 'act', actions: actions, score: score };
+  }
+
+  /* ---------------- 执行：只走能力清单与导航白名单 ---------------- */
+  function nameOf(kind, id) {
+    var list = (X.options()[kind] || []);
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i].name;
+    return '';
+  }
+  function missingText() {
+    var st = X.getState();
+    if (!st.symptom) return T('dialog.needSymptom');
+    if (!st.doctor) return T('dialog.needDoctor');
+    if (!st.date) return T('dialog.needDate');
+    if (!st.slot) return T('dialog.needSlot');
+    if (!st.pay) return T('dialog.needPay');
+    return '';
+  }
+  function replyOf(a, after) {
+    switch (a.id) {
+      case 'select_symptom': return T('ai.didSymptom', { symptom: nameOf('symptoms', a.params.value), dept: after.deptName });
+      case 'select_department': return T('ai.didDept', { dept: after.deptName });
+      case 'select_doctor': return T('ai.didDoctor', { doctor: after.doctorName });
+      case 'select_date': return T('ai.didDate', { date: nameOf('dates', a.params.value) });
+      case 'select_slot': return T('ai.didSlot', { slot: nameOf('slots', a.params.value) });
+      case 'select_patient': return T('ai.didPatient', { patient: nameOf('patients', a.params.value) });
+      case 'select_payment': return T('ai.didPay', { pay: nameOf('pays', a.params.value) });
+      case 'submit_booking': return T('ai.confirmed', { no: after.ticketNo });
+      default: return '';
+    }
+  }
+
+  function runActions(actions) {
+    var lines = [];
+    for (var i = 0; i < actions.length; i++) {
+      var a = actions[i];
+      if (a.kind === 'closeConfirm') { X.nav('closeModal'); lines.push(T('ai.cancelBooking')); continue; }
+      if (a.nav === 'noop') { lines.push(T('ai.didStart')); continue; }
+      if (a.kind === 'nav') {
+        if (NAV_WHITE.indexOf(a.nav) < 0 || !X.nav(a.nav)) { lines.push(T('ai.wrongStep')); break; }
+        continue;
+      }
+      var st = X.getState();
+      if (a.steps && a.steps.indexOf(st.step) < 0) { lines.push(T('ai.wrongStep')); break; }
+      var r = X.call(a.id, a.params || {});
+      if (!r.ok) {
+        if (r.reason === 'slot_full') lines.push(T('ai.slotFull'));
+        else if (r.reason === 'incomplete') lines.push(T('ai.incomplete', { what: missingText() }));
+        else if (r.reason === 'need_confirm') { X.nav('confirm'); lines.push(T('ai.needConfirm')); }
+        else lines.push(T('ai.guard'));
+        break;
+      }
+      var line = replyOf(a, r.state || X.getState());
+      if (line) lines.push(line);
+    }
+    return lines;
+  }
+
+  /* ---------------- 界面：悬浮按钮 + 对话面板 ---------------- */
+  var wrap = document.createElement('div');
+  wrap.innerHTML =
+    '<div class="ai" id="ai-panel" hidden>' +
+      '<div class="ai__mask" data-ai-close="1"></div>' +
+      '<div class="ai__box" role="dialog" aria-modal="true" aria-labelledby="ai-title">' +
+        '<div class="ai__head">' +
+          '<span class="ai__mark" aria-hidden="true">鱼</span>' +
+          '<div class="ai__headtext">' +
+            '<h2 class="ai__title" id="ai-title"></h2>' +
+            '<p class="ai__status" id="ai-status"></p>' +
+          '</div>' +
+          '<button type="button" class="ai__x" id="ai-close"></button>' +
+        '</div>' +
+        '<div class="ai__log" id="ai-log" role="log" aria-live="polite"></div>' +
+        '<div class="ai__row">' +
+          '<button type="button" class="ai__mic" id="ai-mic" data-state="off">' +
+            '<span class="ai__ring" aria-hidden="true"></span>' +
+            '<span id="ai-mic-label"></span>' +
+          '</button>' +
+          '<button type="button" class="ai__cancel" id="ai-cancel" hidden></button>' +
+        '</div>' +
+        '<p class="ai__chiplabel" id="ai-chiplabel"></p>' +
+        '<div class="ai__chips" id="ai-chips"></div>' +
+      '</div>' +
+    '</div>' +
+    '<button type="button" class="aifab" id="aifab" aria-haspopup="dialog">' +
+      '<span class="aifab__mark" aria-hidden="true">鱼</span>' +
+      '<span class="aifab__text" id="aifab-text"></span>' +
+    '</button>';
+  document.body.appendChild(wrap);
+
+  var panel = document.getElementById('ai-panel');
+  var logBox = document.getElementById('ai-log');
+  var mic = document.getElementById('ai-mic');
+  var micLabel = document.getElementById('ai-mic-label');
+  var cancelBtn = document.getElementById('ai-cancel');
+  var statusEl = document.getElementById('ai-status');
+  var chipsBox = document.getElementById('ai-chips');
+  var fab = document.getElementById('aifab');
+
+  function bubble(who, text) {
+    if (!text) return;
+    var b = document.createElement('div');
+    b.className = 'ai__bubble ai__bubble--' + who;
+    b.textContent = text;
+    logBox.appendChild(b);
+    try { logBox.scrollTop = logBox.scrollHeight; } catch (e) { /* 忽略 */ }
+  }
+  function setStatus(text) { statusEl.textContent = text || ''; }
+
+  /* 常说的话：既是降级方案，也是给老人看的示例 */
+  function chipList() {
+    var st = X.getState(), opt = X.options(), list = [];
+    if (st.step === 0) list.push(T('chip.start'));
+    if (st.step === 1) opt.symptoms.slice(0, 5).forEach(function (s) { list.push(T('chip.symptom', { name: s.name })); });
+    if (st.step === 2) { list.push(T('chip.firstDoctor'), T('chip.secondDoctor'), T('chip.chief')); }
+    if (st.step === 3) { list.push(T('chip.today'), T('chip.tomorrow'), T('chip.am'), T('chip.pm')); }
+    if (st.step === 4) { opt.pays.forEach(function (p) { list.push(T('chip.pay', { name: p.name })); }); list.push(T('chip.confirm')); }
+    if (st.step === 5) { list.push(T('chip.again'), T('chip.done')); }
+    list.push(T('chip.read'));
+    if (st.step > 0 && st.step < 5) list.push(T('chip.prev'));
+    if (st.step > 0 && st.step < 4) list.push(T('chip.next'));
+    return list;
+  }
+
+  function renderChips() {
+    chipsBox.innerHTML = '';
+    chipList().forEach(function (text) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.textContent = text;
+      b.addEventListener('click', function () { hear(text); });
+      chipsBox.appendChild(b);
+    });
+  }
+
+  function renderTexts() {
+    document.getElementById('ai-title').textContent = T('ai.title');
+    document.getElementById('ai-chiplabel').textContent = T('ai.chips');
+    document.getElementById('aifab-text').textContent = T('ai.fab');
+    document.getElementById('ai-close').textContent = T('ai.close');
+    cancelBtn.textContent = T('ai.stopListen');
+    if (listening) { micLabel.textContent = T('ai.listening'); setStatus(T('ai.listening')); }
+    else { micLabel.textContent = T('ai.talk'); if (!statusEl.textContent) setStatus(T('ai.sub')); }
+    if (!SR) mic.hidden = true;
+  }
+
+  var greeted = false;
+  function open() {
+    panel.hidden = false;
+    document.body.classList.add('ai-open');
+    renderTexts();
+    renderChips();
+    if (!greeted) {
+      greeted = true;
+      bubble('ai', T('ai.hello'));
+      X.speak(T('ai.hello'));
+    }
+    setStatus(T('ai.sub'));
+    if (SR) { try { mic.focus(); } catch (e) {} }
+    else { bubble('ai', T('ai.unsupported')); var c = chipsBox.querySelector('.chip'); if (c) c.focus(); }
+  }
+  function close() {
+    stopListen();
+    panel.hidden = true;
+    document.body.classList.remove('ai-open');
+  }
+  function toggle() { if (panel.hidden) open(); else close(); }
+
+  fab.addEventListener('click', open);
+  var inlineOpen = document.getElementById('ai-inline-open');
+  if (inlineOpen) inlineOpen.addEventListener('click', open);
+  document.getElementById('ai-close').addEventListener('click', close);
+  panel.addEventListener('click', function (ev) {
+    var el = ev.target;
+    if (el && el.getAttribute && el.getAttribute('data-ai-close')) close();
+  });
+  panel.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') { close(); return; }
+    if (ev.key !== 'Tab') return;
+    var items = panel.querySelectorAll('button:not([disabled])');
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  });
+
+  /* ---------------- 语音识别 ---------------- */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  var SPEECH_LANG = { zh: 'zh-CN', 'zh-Hant': 'zh-TW', en: 'en-US' };
+  var rec = null, listening = false, lastEngine = 'rule', planner = null;
+
+  function ensureRec() {
+    if (rec || !SR) return rec;
+    rec = new SR();
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.maxAlternatives = 3;
+    rec.onstart = function () { /* 等结果 */ };
+    rec.onresult = function (ev) {
+      var finals = [], interims = [];
+      for (var i = ev.resultIndex; i < ev.results.length; i++) {
+        var r = ev.results[i];
+        for (var j = 0; j < r.length; j++) {
+          if (r.isFinal) finals.push(r[j].transcript);
+          else interims.push(r[j].transcript);
+        }
+      }
+      if (interims.length) setStatus(T('ai.hear') + interims[0]);
+      if (!finals.length) return;
+      /* 识别引擎给的多个候选里，挑「最说得通」的那个再执行 */
+      var best = null;
+      finals.forEach(function (txt) {
+        var u = understand(txt);
+        if (!u.actions.length && u.intent !== 'ask' && u.intent !== 'status') return;
+        if (!best || u.score > best.u.score) best = { txt: txt, u: u };
+      });
+      var chosen = best ? best.txt : finals[0];
+      stopListen();
+      hear(chosen, best ? best.u : null);
+    };
+    rec.onerror = function (ev) {
+      var code = ev && ev.error;
+      var key = code === 'not-allowed' || code === 'service-not-allowed' || code === 'audio-capture' ? 'ai.denied'
+        : code === 'no-speech' ? 'ai.noSpeech'
+        : code === 'network' ? 'ai.netErr' : '';
+      listening = false;
+      mic.setAttribute('data-state', 'off');
+      cancelBtn.hidden = true;
+      micLabel.textContent = T('ai.talk');
+      if (key) { setStatus(T(key)); bubble('ai', T(key)); }
+    };
+    rec.onend = function () {
+      if (!listening) return;
+      listening = false;
+      mic.setAttribute('data-state', 'off');
+      cancelBtn.hidden = true;
+      micLabel.textContent = T('ai.talk');
+      if (!statusEl.textContent || statusEl.textContent.indexOf(T('ai.hear')) === 0) setStatus(T('ai.sub'));
+    };
+    return rec;
+  }
+
+  function startListen() {
+    if (!SR) { setStatus(T('ai.unsupported')); bubble('ai', T('ai.unsupported')); return; }
+    X.stopSpeak();
+    var r = ensureRec();
+    if (!r) return;
+    r.lang = SPEECH_LANG[X.getState().lang] || 'zh-CN';
+    listening = true;
+    mic.setAttribute('data-state', 'on');
+    cancelBtn.hidden = false;
+    micLabel.textContent = T('ai.listening');
+    setStatus(T('ai.listening'));
+    try { r.start(); } catch (e) { /* 已经在听，忽略 */ }
+  }
+  function stopListen() {
+    listening = false;
+    if (mic) mic.setAttribute('data-state', 'off');
+    if (cancelBtn) cancelBtn.hidden = true;
+    if (micLabel) micLabel.textContent = T('ai.talk');
+    try { if (rec) rec.abort(); } catch (e) { /* 忽略 */ }
+  }
+
+  mic.addEventListener('click', function () { if (listening) stopListen(); else startListen(); });
+  cancelBtn.addEventListener('click', stopListen);
+
+  /* ---------------- 一句话进来 → 执行 → 回话 ---------------- */
+  function setPlanner(fn) { planner = typeof fn === 'function' ? fn : null; }
+
+  function normalizePlannerActions(list) {
+    var capIds = X.capabilities.map(function (c) { return c.id; });
+    var out = [];
+    (list || []).forEach(function (a) {
+      if (!a) return;
+      if (a.nav && NAV_WHITE.indexOf(a.nav) >= 0) { out.push({ kind: 'nav', nav: a.nav, score: 9 }); return; }
+      if (a.id && capIds.indexOf(a.id) >= 0) {
+        out.push({ kind: 'cap', id: a.id, params: a.params || {}, steps: STEP_GUARD[a.id], score: 9 });
+      }
+    });
+    return out;
+  }
+
+  function resolve(text) {
+    if (planner) {
+      try {
+        var out = planner(text, { state: X.getState(), options: X.options(), capabilities: X.capabilities });
+        return Promise.resolve(out).then(function (o) {
+          var acts = normalizePlannerActions(o && o.actions);
+          if (acts.length) { lastEngine = 'llm'; return { intent: 'act', actions: acts, reply: (o && o.reply) || '', score: 99 }; }
+          lastEngine = 'rule';
+          return understand(text);
+        }).catch(function () { lastEngine = 'rule'; return understand(text); });
+      } catch (e) { /* 大模型出错 → 规则引擎接管 */ }
+    }
+    lastEngine = 'rule';
+    return Promise.resolve(understand(text));
+  }
+
+  function hear(text, known) {
+    return (known ? Promise.resolve(known) : resolve(text)).then(function (u) {
+      bubble('me', text);
+      if (!u || u.intent === 'empty') { bubble('ai', T('ai.noSpeech')); return u; }
+      var lines = runActions(u.actions || []);
+      if (u.reply && !lines.length) lines.push(u.reply);
+      var reply = lines.filter(Boolean).join('。');
+      if (!reply && u.intent === 'unknown') reply = T('ai.unknown');
+      if (reply) {
+        bubble('ai', reply);
+        /* 念一遍 / 上一步 / 帮助 这些动作页面自己会播报，别把它的声音盖掉 */
+        if (!SILENT[u.intent]) X.speak(reply);
+      }
+      setStatus(T('ai.sub'));
+      renderChips();
+      return u;
+    });
+  }
+  var SILENT = { read: 1, stop: 1, help: 1, next: 1, prev: 1, restart: 1, finish: 1, confirm_no: 1 };
+
+  /* ---------------- 跟随界面语言与步骤 ---------------- */
+  X.onRender(function () {
+    renderTexts();
+    if (!panel.hidden) renderChips();
+  });
+
+  renderTexts();
+  renderChips();
+  X.setLanguage(X.getState().lang); // 触发一次重绘，把助手注册进来的文案刷到页面上
+
+  window.XiaoYuErAI = {
+    version: '1.0.0',
+    supported: !!SR,
+    open: open,
+    close: close,
+    toggle: toggle,
+    startListen: startListen,
+    stopListen: stopListen,
+    isListening: function () { return listening; },
+    /* 把一句话当成「听到的话」灌进来：自检与后续接大模型都走这里 */
+    say: hear,
+    understand: understand,
+    chipList: chipList,
+    setPlanner: setPlanner,
+    engine: function () { return lastEngine; }
+  };
+})();
+</script>
+</body>
+</html>

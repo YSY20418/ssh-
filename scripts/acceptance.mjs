@@ -524,7 +524,7 @@ function renderHtml(meta) {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>阿渡 WebPilot · 功能验收报告</title>
+<title>小鱼儿 · 功能验收报告</title>
 <style>
   :root{
     --ink:#16202e; --sub:#5b6673; --mute:#8b95a3; --line:#e6eaf0; --bg:#f4f6f9;
@@ -575,9 +575,9 @@ function renderHtml(meta) {
 <div class="wrap">
   <header class="hd">
     <div class="logo">
-      <span class="ic">渡</span>
+      <span class="ic">鱼</span>
       <div>
-        <h1>阿渡 WebPilot · 功能验收报告</h1>
+        <h1>小鱼儿 · 功能验收报告</h1>
         <div class="sub">每一项结论都来自对真实服务的实测抓取，可直接作为过程证据</div>
       </div>
     </div>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F5D62">
+<meta name="description" content="小鱼兒 · 面向高龄老人的预约挂号服务，全程只需点选，可语音朗读、可对它说话让它代办，可调大字体。">
+<title>小鱼兒 · 预约挂号</title>
+<link rel="stylesheet" href="styles.css" charset="utf-8">
+<link rel="stylesheet" href="ai.css" charset="utf-8">
+</head>
+<body>
+
+<a class="skip-link" href="#step-root" data-i18n="a11y.skip">跳到主要内容</a>
+
+<!-- ============ 顶部：品牌 + 语言 + 字体缩放 ============ -->
+<header class="topbar">
+  <div class="topbar__inner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">鱼</span>
+      <span class="brand__text">
+        <span class="brand__name">小鱼兒</span>
+        <span class="brand__sub">網頁代駕</span>
+      </span>
+      <span class="brand__sep" aria-hidden="true"></span>
+      <span class="brand__text brand__text--hospital">
+        <span class="brand__hospital" data-i18n="brand.hospital"></span>
+        <span class="brand__hospital-sub" data-i18n="brand.hospitalSub"></span>
+      </span>
+    </div>
+
+    <div class="topbar__tools">
+      <div class="toolgroup" role="group" data-i18n-aria="topbar.font" aria-label="调整字体大小">
+        <button type="button" class="toolbtn" id="font-minus" aria-label="把字调小">
+          <span aria-hidden="true">A-</span>
+        </button>
+        <button type="button" class="toolbtn" id="font-reset" aria-label="恢复默认字体大小">
+          <span aria-hidden="true" data-i18n="topbar.fontReset">标准</span>
+        </button>
+        <button type="button" class="toolbtn" id="font-plus" aria-label="把字调大">
+          <span aria-hidden="true">A+</span>
+        </button>
+      </div>
+
+      <div class="toolgroup" role="group" aria-label="选择语言">
+        <button type="button" class="toolbtn" data-lang-btn="zh" aria-pressed="true">简体</button>
+        <button type="button" class="toolbtn" data-lang-btn="zh-Hant" aria-pressed="false">繁體</button>
+        <button type="button" class="toolbtn" data-lang-btn="en" aria-pressed="false">English</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 步骤指示 ============ -->
+<nav class="stepbar" aria-label="挂号步骤">
+  <ol class="stepbar__list" id="stepbar"></ol>
+</nav>
+
+<!-- ============ 主内容：每一步只做一件事 ============ -->
+<main class="wrap" id="step-root" tabindex="-1">
+<div class="shell">
+<div class="flow">
+
+  <!-- 语音：每一步都可以把屏幕上的话念出来 -->
+  <div class="voicebar">
+    <button type="button" class="btn btn--voice" id="btn-speak">
+      <span class="btn__icon btn__icon--brand" aria-hidden="true">听</span>
+      <span data-i18n="voice.listen"></span>
+    </button>
+    <button type="button" class="btn btn--ghost" id="btn-stop">
+      <span data-i18n="voice.stop"></span>
+    </button>
+  </div>
+
+  <!-- 第 0 步：开始 -->
+  <section class="step" id="step-0" hidden>
+    <div class="notice" role="note">
+      <p class="notice__text" data-i18n="step0.notice"></p>
+    </div>
+    <h1 class="title" data-i18n="step0.title"></h1>
+    <p class="lead" data-i18n="step0.lead"></p>
+    <button type="button" class="bigcard bigcard--start" data-action="start">
+      <span class="bigcard__icon" aria-hidden="true">✓</span>
+      <span class="bigcard__main">
+        <span class="bigcard__title" data-i18n="step0.cta"></span>
+        <span class="bigcard__desc" data-i18n="step0.ctaDesc"></span>
+      </span>
+    </button>
+  </section>
+
+  <!-- 第 1 步：选症状 -->
+  <section class="step" id="step-1" hidden>
+    <h1 class="title" data-i18n="step1.title"></h1>
+    <p class="lead" data-i18n="step1.lead"></p>
+    <div class="grid" id="symptom-list" role="group" data-i18n-aria="step1.group" aria-label="哪里不舒服"></div>
+
+    <div class="notice notice--result" id="dept-result" hidden>
+      <p class="notice__label" data-i18n="step1.recommendLabel"></p>
+      <p class="notice__strong" id="dept-name"></p>
+      <p class="notice__text" id="dept-reason"></p>
+      <div class="notice__row">
+        <button type="button" class="btn btn--ghost" id="dept-change">
+          <span data-i18n="step1.changeDept"></span>
+        </button>
+      </div>
+      <div class="notice__row" id="dept-alts" hidden></div>
+    </div>
+  </section>
+
+  <!-- 第 2 步：选医生 -->
+  <section class="step" id="step-2" hidden>
+    <h1 class="title" data-i18n="step2.title"></h1>
+    <p class="lead" id="step2-lead"></p>
+    <div class="grid" id="doctor-list" role="group" aria-label="选择医生"></div>
+  </section>
+
+  <!-- 第 3 步：选时间 -->
+  <section class="step" id="step-3" hidden>
+    <h1 class="title" data-i18n="step3.title"></h1>
+    <p class="lead" data-i18n="step3.lead"></p>
+
+    <h2 class="subtitle" data-i18n="step3.dateTitle"></h2>
+    <div class="grid grid--3" id="date-list" role="group" aria-label="选择日期"></div>
+
+    <h2 class="subtitle" data-i18n="step3.slotTitle"></h2>
+    <div class="grid grid--2" id="slot-list" role="group" aria-label="选择时段"></div>
+    <p class="hint" data-i18n="step3.fullHint"></p>
+  </section>
+
+  <!-- 第 4 步：核对 + 付款方式 -->
+  <section class="step" id="step-4" hidden>
+    <h1 class="title" data-i18n="step4.title"></h1>
+    <p class="lead" data-i18n="step4.lead"></p>
+
+    <h2 class="subtitle" data-i18n="step4.patientTitle"></h2>
+    <div class="grid" id="patient-list" role="group" aria-label="选择就诊人"></div>
+
+    <h2 class="subtitle" data-i18n="step4.summaryTitle"></h2>
+    <dl class="summary" id="summary"></dl>
+
+    <h2 class="subtitle" data-i18n="step4.payTitle"></h2>
+    <div class="grid grid--2" id="pay-list" role="group" aria-label="选择付款方式"></div>
+  </section>
+
+  <!-- 第 5 步：预约成功 -->
+  <section class="step" id="step-5" hidden>
+    <div class="success">
+      <div class="success__badge" aria-hidden="true">✓</div>
+      <h1 class="title title--success" data-i18n="step5.title"></h1>
+      <p class="lead" data-i18n="step5.lead"></p>
+    </div>
+
+    <div class="ticket" id="ticket"></div>
+
+    <div class="notice notice--tips">
+      <p class="notice__label" data-i18n="step5.tipsLabel"></p>
+      <ul class="tips">
+        <li class="tips__item"><span class="tips__no" aria-hidden="true">1</span><span data-i18n="step5.tip1"></span></li>
+        <li class="tips__item"><span class="tips__no" aria-hidden="true">2</span><span data-i18n="step5.tip2"></span></li>
+        <li class="tips__item"><span class="tips__no" aria-hidden="true">3</span><span data-i18n="step5.tip3"></span></li>
+      </ul>
+    </div>
+
+    <div class="grid grid--2">
+      <button type="button" class="btn btn--ghost" data-action="restart">
+        <span data-i18n="step5.again"></span>
+      </button>
+      <button type="button" class="btn btn--primary" data-action="done">
+        <span data-i18n="step5.finish"></span>
+      </button>
+    </div>
+  </section>
+
+  <p class="footnote" data-i18n="foot.agent"></p>
+
+  <!-- 语音助手：点右下角的「小鱼兒」，对它说话就能办 -->
+  <div class="ai-inline" id="ai-inline">
+    <button type="button" class="ai-inline__btn" id="ai-inline-open">
+      <span class="ai-inline__mark" aria-hidden="true">鱼</span>
+      <span class="ai-inline__main">
+        <span class="ai-inline__title" data-i18n="ai.inlineTitle"></span>
+        <span class="ai-inline__desc" data-i18n="ai.inlineDesc"></span>
+      </span>
+      <span class="ai-inline__go" aria-hidden="true">›</span>
+    </button>
+  </div>
+
+</div><!-- /.flow -->
+
+<!-- 宽屏右栏：随时能看到自己选到哪了（窄屏自动隐藏） -->
+<aside class="aside" id="aside" aria-label="您已经选好的">
+  <p class="aside__title" data-i18n="aside.title"></p>
+  <p class="aside__now" id="aside-now"></p>
+  <div class="aside__list" id="aside-list"></div>
+</aside>
+
+</div><!-- /.shell -->
+</main>
+
+<!-- ============ 空闲关怀：老人停住不动时轻轻提示一句 ============ -->
+<div class="idlebar" id="idlebar" hidden>
+  <p class="idlebar__text" data-i18n="idle.text"></p>
+  <div class="idlebar__row">
+    <button type="button" class="btn btn--help btn--sm" id="idlebar-help">
+      <span data-i18n="nav.help"></span>
+    </button>
+    <button type="button" class="btn btn--ghost btn--sm" id="idlebar-close">
+      <span data-i18n="idle.close"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ============ 底部固定操作栏 ============ -->
+<footer class="actionbar" id="actionbar">
+  <div class="actionbar__inner">
+    <button type="button" class="btn btn--ghost" id="btn-prev">
+      <span class="btn__arrow" aria-hidden="true">←</span>
+      <span data-i18n="nav.prev"></span>
+    </button>
+    <button type="button" class="btn btn--help" id="btn-help">
+      <span class="btn__icon" aria-hidden="true">?</span>
+      <span data-i18n="nav.help"></span>
+    </button>
+    <button type="button" class="btn btn--primary" id="btn-next">
+      <span data-i18n="nav.next"></span>
+      <span class="btn__arrow" aria-hidden="true">→</span>
+    </button>
+  </div>
+</footer>
+
+<!-- ============ 弹窗（确认 / 帮助） ============ -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__mask" data-close="1"></div>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 class="modal__title" id="modal-title"></h2>
+    <div class="modal__body" id="modal-body"></div>
+    <div class="modal__actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<!-- 语音朗读状态（无障碍播报，屏幕可见一句简短提示） -->
+<div class="sr-live" id="live" role="status" aria-live="polite"></div>
+
+<noscript>
+  <div class="noscript">本页需要浏览器开启 JavaScript 才能使用；若无法开启，请到医院一楼服务台由工作人员协助挂号。</div>
+</noscript>
+
+<script src="app.js" charset="utf-8"></script>
+<script src="ai.js" charset="utf-8"></script>
+</body>
+</html>

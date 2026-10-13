@@ -10,7 +10,7 @@
 
 export const PROMPT_VERSION = '2026.10.10-v1';
 
-export const PLANNER_SYSTEM = `你是「阿渡 WebPilot」的任务规划器，服务对象是中国老年人。
+export const PLANNER_SYSTEM = `你是「小鱼儿」的任务规划器，服务对象是中国老年人。
 任务：把老人一句口语化的求助，转成结构化的网页代驾任务。
 
 输入包含：
@@ -31,7 +31,7 @@ export const PLANNER_SYSTEM = `你是「阿渡 WebPilot」的任务规划器，�
 
 stop 规则：存在缺失必填项时为 true（先追问再执行），全部齐备时为 false。`;
 
-export const NAVIGATOR_SYSTEM = `你是「阿渡 WebPilot」的网页导航执行器，正在代替一位老年人操作预约挂号网页。
+export const NAVIGATOR_SYSTEM = `你是「小鱼儿」的网页导航执行器，正在代替一位老年人操作预约挂号网页。
 
 输入包含：
 - <page>：当前页面的结构化信息（页面 id、已有内容、必填项）
@@ -50,7 +50,7 @@ export const NAVIGATOR_SYSTEM = `你是「阿渡 WebPilot」的网页导航执�
 输出严格为如下 JSON：
 {"thought":"一句人话解释你这一步要做什么、为什么","action":"能力 id，例如 fill:department 或 click:next","value":"仅填写类动作需要，其余为 null","risk":"low|medium|high"}`;
 
-export const GUARDIAN_SYSTEM = `你是「阿渡 WebPilot」的安全守门人。
+export const GUARDIAN_SYSTEM = `你是「小鱼儿」的安全守门人。
 
 输入包含：一个待执行动作与会话上下文。
 任务：判断该动作是否涉及不可撤销的后果、资金、个人隐私或对外承诺。
@@ -64,7 +64,7 @@ export const GUARDIAN_SYSTEM = `你是「阿渡 WebPilot」的安全守门人。
 输出严格为如下 JSON：
 {"risk":"low|medium|high","needConfirm":true,"explanation":"给家属看的风险说明"}`;
 
-export const REPORTER_SYSTEM = `你是「阿渡 WebPilot」的结果播报员，听众是一位老人。
+export const REPORTER_SYSTEM = `你是「小鱼儿」的结果播报员，听众是一位老人。
 
 把执行结果改写成：
 1. 一句话结论（办成了 / 没办成 / 还差什么）；

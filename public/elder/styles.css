@@ -1,0 +1,728 @@
+@charset "UTF-8";
+/* ============================================================
+   小鱼兒 · 预约挂号（适老版）
+   配色：背景暖米白 #F2F0EA / 卡片纯白 / 主色深青绿 #2F5D62 /
+        提示区淡米黄 #FAF3E4。不使用高饱和纯黄纯红。
+   字号：正文 19.5px 起、标题 29px 起，可整体放大缩小。
+   自适应：电脑优先 —— ≥1024px 左流程 + 右常驻摘要双栏；
+           窄屏自动收成单列，等比缩放兜底。
+   ============================================================ */
+
+:root {
+  --bg: #f2f0ea;
+  --card: #ffffff;
+  --brand: #2f5d62;
+  --brand-dark: #22474b;
+  --brand-soft: #e3edec;
+  --notice: #faf3e4;
+  --notice-line: #e6dcc0;
+  --ink: #1f2b33;          /* 正文主色，与白底对比度 > 12:1 */
+  --ink-2: #43535c;        /* 次要文字，加深以提升可读性 */
+  --muted: #5e5c54;        /* 辅助说明，加深后仍保持柔和 */
+  --line: #d5d0c5;
+  --off-bg: #e9e5dc;       /* 约满 / 不可用 */
+  --off-ink: #7a766c;
+  --ok: #3f6b52;
+  --ok-soft: #e8f1ea;
+  --warn-ink: #7d5426;
+  --radius: 16px;
+  --radius-sm: 12px;
+  --radius-lg: 22px;
+  --tap: 64px;             /* 按钮最小高度 */
+  --fs: 1;                 /* 字体缩放系数，由按钮控制 */
+  --shell: 1160px;         /* 宽屏内容总宽 */
+  --shadow: 0 2px 8px rgba(31, 43, 51, 0.07);
+  --shadow-lift: 0 10px 28px rgba(31, 43, 51, 0.13);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  font-size: calc(17px * var(--fs));
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Source Han Sans SC",
+               "Noto Sans CJK SC", "Heiti SC", system-ui, sans-serif;
+  font-size: 1.15rem;         /* ≈19.5px */
+  line-height: 1.75;
+  padding-bottom: 8.5rem;     /* 让底部固定栏不遮内容 */
+}
+
+/* 医院氛围背景：纯内联 SVG 绘制的抽象图形（楼宇轮廓 + 十字 + 心电线），
+   不含任何文字与真实医院标识，透明度极低，不影响正文对比度 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 1200px auto;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='760' viewBox='0 0 1200 760'><g fill='%232f5d62'><path opacity='.55' d='M0 640 L0 470 L92 470 L92 402 L198 402 L198 470 L300 470 L300 522 L418 522 L418 430 L520 430 L520 522 L642 522 L642 452 L760 452 L760 522 L880 522 L880 480 L1000 480 L1000 542 L1200 542 L1200 640 Z'/><path opacity='.32' d='M150 128 h58 v-58 h48 v58 h58 v48 h-58 v58 h-48 v-58 h-58 z'/><path opacity='.26' d='M905 206 h42 v-42 h34 v42 h42 v34 h-42 v42 h-34 v-42 h-42 z'/><path opacity='.22' fill='none' stroke='%232f5d62' stroke-width='7' d='M0 706 h250 l28-72 l38 142 l44-192 l38 118 l30-4 h296 l30-58 l34 88 l38-28 h312'/></g></svg>");
+}
+
+/* 背景之上的所有内容需要抬升一层 */
+.topbar, .stepbar, .wrap, .actionbar, .idlebar, .modal, .aifab, .ai { position: relative; z-index: 1; }
+.topbar { z-index: 30; }
+.stepbar { z-index: 29; }
+.actionbar { z-index: 40; }
+.idlebar { z-index: 41; }
+.modal { z-index: 50; }
+
+/* ---------- 通用排版 ---------- */
+.title {
+  font-size: 1.75rem;         /* ≈29px */
+  line-height: 1.4;
+  font-weight: 700;
+  margin: 0.2rem 0 0.5rem;
+  letter-spacing: 0.01em;
+}
+.title--success { color: var(--ok); }
+
+.subtitle {
+  font-size: 1.3rem;          /* ≈22px */
+  font-weight: 700;
+  margin: 1.6rem 0 0.7rem;
+  color: var(--ink);
+}
+
+.lead {
+  font-size: 1.2rem;          /* ≈20px */
+  color: var(--ink-2);
+  margin: 0 0 1.2rem;
+}
+
+.hint {
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin: 0.8rem 0 0;
+}
+
+/* 电脑优先：宽屏给主内容包一张「纸」，让层次更清楚 */
+.wrap {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 1.2rem 1.1rem 2rem;
+}
+.shell { display: grid; gap: 1.1rem; grid-template-columns: 1fr; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  background: #fff;
+  color: var(--brand);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  z-index: 60;
+}
+.skip-link:focus { left: 1rem; top: 1rem; outline: 3px solid var(--brand); }
+
+.sr-live {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- 顶部 ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+/* 顶部一条主色渐变，增加层次与「医疗机构」的观感 */
+.topbar::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-dark), var(--brand) 45%, #528f93);
+}
+.topbar__inner {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0.8rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 0.7rem; }
+.brand__mark {
+  width: 3rem; height: 3rem;
+  display: grid; place-items: center;
+  background: var(--brand);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: 1.6rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(47, 93, 98, 0.28);
+}
+.brand__text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand__name { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.04em; }
+.brand__sub { font-size: 0.85rem; color: var(--muted); letter-spacing: 0.25em; }
+
+/* 虚构院名（不指向任何现实医院） */
+.brand__sep {
+  width: 1px;
+  align-self: stretch;
+  min-height: 2.4rem;
+  background: var(--line);
+  margin: 0 0.2rem;
+}
+.brand__text--hospital { border-left: 0; }
+.brand__hospital {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: 0.02em;
+}
+.brand__hospital-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.topbar__tools { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.toolgroup {
+  display: flex;
+  gap: 0.35rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+}
+.toolbtn {
+  min-height: 2.9rem;
+  min-width: 3.2rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 1.05rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.toolbtn[aria-pressed="true"] {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ---------- 步骤条（跟着顶栏吸顶，走过的步骤可以点回去改） ---------- */
+.stepbar {
+  background: var(--bg);
+  position: sticky;
+  top: var(--topbar-h, 6.2rem);
+  z-index: 29;
+  border-bottom: 1px solid var(--line);
+}
+.stepbar__list {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0.7rem 1.1rem;
+  list-style: none;
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+}
+.stepbar__item {
+  flex: 1 0 auto;
+  display: flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.stepbar__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0.3rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 1rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.stepbar__btn:disabled { cursor: default; }
+.stepbar__btn:not(:disabled):hover { background: var(--brand-soft); }
+.stepbar__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: -2px; }
+.stepbar__no {
+  width: 1.6rem; height: 1.6rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--off-bg);
+  color: var(--off-ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.stepbar__item[data-state="active"] {
+  border-color: var(--brand);
+  border-width: 2px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 700;
+}
+.stepbar__item[data-state="active"] .stepbar__no { background: var(--brand); color: #fff; }
+.stepbar__item[data-state="done"] { color: var(--ok); border-color: var(--ok-soft); }
+.stepbar__item[data-state="done"] .stepbar__no { background: var(--ok); color: #fff; }
+
+/* ---------- 卡片 / 网格 ---------- */
+.grid { display: grid; gap: 0.9rem; grid-template-columns: 1fr; }
+
+.bigcard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 1.15rem 1.2rem;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.25rem;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.bigcard:hover { box-shadow: var(--shadow-lift); }
+.bigcard:active { transform: scale(0.985); }
+.bigcard:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+
+/* 选中态：主色底 + 深描边 + 投影，老人一眼能看出选了哪个 */
+.bigcard[aria-pressed="true"] {
+  background: var(--brand);
+  border-color: var(--brand-dark);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(47, 93, 98, 0.28);
+}
+.bigcard[aria-pressed="true"] .bigcard__desc,
+.bigcard[aria-pressed="true"] .bigcard__meta { color: #eaf3f2; }
+
+.bigcard__icon {
+  flex: 0 0 auto;
+  width: 3.4rem; height: 3.4rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.bigcard[aria-pressed="true"] .bigcard__icon { background: #fff; color: var(--brand); }
+
+.bigcard__main { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 auto; }
+.bigcard__title { font-size: 1.3rem; font-weight: 700; line-height: 1.4; }
+.bigcard__desc { font-size: 1.05rem; color: var(--ink-2); line-height: 1.55; }
+.bigcard__meta { font-size: 1rem; color: var(--muted); }
+.bigcard__check {
+  flex: 0 0 auto;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: transparent;
+}
+.bigcard[aria-pressed="true"] .bigcard__check { color: #fff; }
+
+.bigcard--start {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  font-size: 1.4rem;
+  min-height: 6rem;
+}
+.bigcard--start .bigcard__icon { background: var(--brand); color: #fff; }
+
+/* 不可用（约满） */
+.bigcard--off {
+  background: var(--off-bg);
+  border-color: var(--off-bg);
+  color: var(--off-ink);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.bigcard--off .bigcard__icon { background: #d8d3c8; color: var(--off-ink); }
+.bigcard--off .bigcard__desc { color: var(--off-ink); }
+.bigcard--off:active { transform: none; }
+
+/* 医生头像（用姓氏首字生成，不依赖图片，离线可用） */
+.avatar {
+  flex: 0 0 auto;
+  width: 4.2rem; height: 4.2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--brand);
+}
+.bigcard[aria-pressed="true"] .avatar { box-shadow: 0 0 0 3px #fff; }
+
+/* ---------- 语音条 ---------- */
+.voicebar {
+  display: flex;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.btn--voice {
+  flex: 1 1 auto;
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.btn--voice:hover { background: #d6e6e5; }
+.btn__icon--brand { background: var(--brand); }
+/* 正在朗读：按钮变成「停止朗读」的样子，老人一眼看得出 */
+.btn--voice[data-speaking="1"] { background: var(--brand); color: #fff; }
+.btn--voice[data-speaking="1"] .btn__icon--brand { background: #fff; color: var(--brand); }
+
+.footnote {
+  margin: 2rem 0 0;
+  font-size: 0.95rem;
+  color: #79766d;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ---------- 提示区 / 结果区 ---------- */
+.notice {
+  background: var(--notice);
+  border: 1px solid var(--notice-line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  margin: 0 0 1.2rem;
+}
+.notice--result { background: var(--card); border-color: var(--brand); border-width: 2px; }
+.notice--tips { margin-top: 1.4rem; }
+.notice__label { font-size: 1.05rem; color: var(--warn-ink); margin: 0 0 0.2rem; font-weight: 700; }
+.notice__strong {
+  font-size: 1.55rem; font-weight: 700; color: var(--brand);
+  margin: 0.1rem 0 0.3rem;
+}
+.notice__text { font-size: 1.15rem; color: var(--ink-2); margin: 0; line-height: 1.7; }
+.notice__row { margin-top: 0.8rem; display: flex; gap: 0.7rem; flex-wrap: wrap; }
+
+/* ---------- 摘要表 ---------- */
+.summary {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.4rem 1.2rem;
+  margin: 0;
+}
+.summary__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.summary__row:last-child { border-bottom: 0; }
+.summary__k { color: var(--muted); font-size: 1.05rem; flex: 0 0 auto; }
+.summary__v { font-size: 1.2rem; font-weight: 700; text-align: right; }
+
+/* ---------- 成功页 ---------- */
+.success { text-align: center; padding: 0.5rem 0 0.3rem; }
+.success__badge {
+  width: 5rem; height: 5rem;
+  margin: 0 auto 0.7rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--ok-soft);
+  color: var(--ok);
+  font-size: 2.6rem;
+  font-weight: 700;
+}
+.ticket {
+  background: var(--card);
+  border: 2px solid var(--ok);
+  border-radius: var(--radius-lg);
+  padding: 1.2rem 1.3rem;
+  margin-top: 1rem;
+}
+.ticket__hospital {
+  margin: 0 0 0.2rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: 0.02em;
+}
+.ticket__no {
+  font-size: 2.1rem; font-weight: 700; color: var(--ok);
+  letter-spacing: 0.04em;
+}
+.ticket__label { font-size: 1rem; color: var(--muted); }
+
+.tips { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.55rem; }
+.tips__item {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  font-size: 1.2rem; color: var(--ink); line-height: 1.6;
+}
+.tips__no {
+  flex: 0 0 auto;
+  width: 1.9rem; height: 1.9rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 0.15rem;
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--tap);
+  padding: 0.7rem 1.3rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+.btn:active { transform: scale(0.985); }
+.btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.btn--primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn--primary:hover { background: var(--brand-dark); }
+.btn--primary:disabled,
+.btn:disabled {
+  background: var(--off-bg);
+  border-color: var(--off-bg);
+  color: var(--off-ink);
+  cursor: not-allowed;
+}
+.btn--help { background: var(--notice); border-color: var(--notice-line); color: var(--warn-ink); }
+.btn--sm { min-height: 3.2rem; padding: 0.35rem 1rem; font-size: 1.1rem; }
+/* 必选项做完了，「下一步」轻轻呼吸一下，告诉老人可以点了 */
+.btn--ready { animation: readyPulse 2s ease-in-out infinite; }
+@keyframes readyPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.20); }
+  50% { box-shadow: 0 0 0 8px rgba(47, 93, 98, 0.05); }
+}
+.btn__arrow { font-size: 1.4rem; line-height: 1; }
+.btn__icon {
+  width: 1.7rem; height: 1.7rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--warn-ink);
+  color: #fff;
+  font-size: 1.15rem;
+}
+
+/* ---------- 宽屏右栏：您已经选好的 ---------- */
+.aside { display: none; }
+
+/* ---------- 底部固定栏 ---------- */
+.actionbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 40;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -2px 12px rgba(34, 48, 58, 0.10);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.actionbar__inner {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0.8rem 1.1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 0.7rem;
+}
+
+/* ---------- 空闲关怀条 ---------- */
+.idlebar {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: calc(7.6rem + env(safe-area-inset-bottom));
+  z-index: 41;
+  background: var(--notice);
+  border-top: 1px solid var(--notice-line);
+  box-shadow: 0 -2px 10px rgba(34, 48, 58, 0.08);
+  padding: 0.8rem 1.1rem;
+}
+.idlebar[hidden] { display: none; }
+.idlebar__text {
+  max-width: var(--shell);
+  margin: 0 auto 0.5rem;
+  font-size: 1.15rem;
+  color: var(--warn-ink);
+}
+.idlebar__row { max-width: var(--shell); margin: 0 auto; display: flex; gap: 0.7rem; }
+
+/* ---------- 弹窗 ---------- */
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 1rem; }
+.modal[hidden] { display: none; }
+.modal__mask { position: absolute; inset: 0; background: rgba(31, 43, 51, 0.5); }
+.modal__box {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.4rem 1.2rem;
+  box-shadow: 0 14px 48px rgba(31, 43, 51, 0.32);
+}
+.modal__title { font-size: 1.5rem; margin: 0 0 0.6rem; }
+.modal__body { font-size: 1.15rem; color: var(--ink-2); }
+.modal__body ul { margin: 0.5rem 0 0; padding-left: 1.3rem; }
+.modal__body li { margin: 0.35rem 0; line-height: 1.7; }
+.modal__actions { display: grid; gap: 0.7rem; margin-top: 1.2rem; }
+
+.noscript {
+  background: var(--notice);
+  border: 1px solid var(--notice-line);
+  padding: 1rem 1.2rem;
+  margin: 1rem;
+  border-radius: var(--radius);
+  font-size: 1.15rem;
+}
+
+/* ---------- 无障碍与动效 ---------- */
+:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+@media (prefers-contrast: more) {
+  :root { --ink: #101a1f; --line: #8d8a80; --muted: #4b4942; }
+}
+
+/* ============================================================
+   自适应：电脑优先
+   ============================================================ */
+
+/* 平板及以上：选项可以并排，弹窗按钮并排 */
+@media (min-width: 700px) {
+  .grid--2 { grid-template-columns: 1fr 1fr; }
+  .grid--3 { grid-template-columns: repeat(3, 1fr); }
+  .modal__actions { grid-template-columns: 1fr 1fr; }
+}
+
+/* 电脑：主内容包一张白纸 + 右侧常驻摘要栏 */
+@media (min-width: 1024px) {
+  body { font-size: 1.2rem; padding-bottom: 9.5rem; }
+
+  .wrap { padding: 1.6rem 1.4rem 2.4rem; }
+  .shell {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+    gap: 1.4rem;
+  }
+
+  .flow {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 1.6rem 1.8rem 1.8rem;
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* 电脑端选项卡片更舒展 */
+  .grid { gap: 1rem; }
+  .grid--4 { grid-template-columns: repeat(4, 1fr); }
+  .bigcard { padding: 1.3rem 1.35rem; }
+
+  .aside {
+    display: block;
+    position: sticky;
+    top: calc(var(--topbar-h, 6.2rem) + 4.6rem);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem 1.3rem;
+    box-shadow: var(--shadow);
+  }
+  .aside__title {
+    margin: 0 0 0.2rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--brand);
+  }
+  .aside__now {
+    margin: 0 0 0.8rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .aside__empty {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .aside__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .aside__row:first-child { border-top: 0; }
+  .aside__k { font-size: 0.95rem; color: var(--muted); }
+  .aside__v { font-size: 1.15rem; font-weight: 700; color: var(--ink); line-height: 1.5; }
+
+  .actionbar__inner { padding: 0.9rem 1.4rem; }
+  .voicebar { max-width: 32rem; }
+}
+
+/* 超宽屏：右侧摘要栏再宽一点，整体不拉伸变形 */
+@media (min-width: 1440px) {
+  :root { --shell: 1240px; }
+  .shell { grid-template-columns: minmax(0, 1fr) 340px; }
+}
+
+/* 窄屏（手机）：等比缩放兜底 —— 单列、按钮满宽、底部三键改两行 */
+@media (max-width: 480px) {
+  .actionbar__inner { grid-template-columns: 1fr 1fr; }
+  #btn-next { grid-column: span 2; }
+  .brand__hospital-sub { display: none; }
+  .brand__sep { display: none; }
+  .wrap { padding: 1rem 0.9rem 1.6rem; }
+}
+
+/* ---------- 打印：把预约单打成一张纸 ---------- */
+@media print {
+  body::before { display: none !important; }
+  .topbar, .stepbar, .actionbar, .voicebar, .idlebar,
+  .aifab, .ai, .ai-inline, #modal, .skip-link { display: none !important; }
+  body { padding: 0; background: #fff; }
+  .wrap { max-width: none; }
+  .shell { grid-template-columns: 1fr; }
+  .flow { background: #fff; border: 0; box-shadow: none; padding: 0; }
+  .ticket { border-color: #000; }
+  .step { display: block !important; }
+}

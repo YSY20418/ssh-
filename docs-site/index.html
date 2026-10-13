@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>阿渡 WebPilot · 项目知识中心</title>
+<title>小鱼儿 · 项目知识中心</title>
 <style>
   :root { --ink:#14202e; --muted:#5b6673; --line:#e3e8ef; --blue:#1668dc; --bg:#f7f9fc; }
   * { box-sizing: border-box; }
@@ -35,7 +35,7 @@
 <body>
 <div class="wrap">
 <nav>
-  <h1>阿渡 WebPilot</h1>
+  <h1>小鱼儿</h1>
   <div class="sub">项目知识中心 · v0.2</div>
   <div class="grp">方案</div>
   <a href="#overview">1 项目概览</a>
@@ -145,7 +145,7 @@
 <li><strong>知识注入而非知识依赖</strong>：症状→科室映射由 RAG 提供，提示词要求"必须依据 &lt;knowledge&gt;，未命中则置空并追问"。</li>
 </ul>
 <h3>5.2 Planner 提示词（节选）</h3>
-<pre>你是「阿渡 WebPilot」的任务规划器，服务对象是中国老年人。
+<pre>你是「小鱼儿」的任务规划器，服务对象是中国老年人。
 规则：
 1. 症状要映射到科室时必须依据 &lt;knowledge&gt;，不得凭空判断；未命中则 department 置空并在 ask 中询问。
 2. 日期：相对词「今天/明天/后天」原样保留；没说日期则默认「明天」并说明。
@@ -209,6 +209,7 @@
 <tr><td>市民之家政务大厅</td><td><code>/sim/citizen-hall</code></td><td>医保 / 社保缴费</td><td>办理事项 / 缴费年度 / 档次 / 参保人</td><td>确认缴费（high）</td></tr>
 </table>
 <div class="card"><strong>新增一个站点的成本</strong>：只写一份 <code>SiteDef</code>（页面结构 + 字段 + 动作 + 领域约束 + 槽位抽取规则 + 回执格式），登记进 <code>lib/sim/registry.ts</code> 即可。<strong>Agent 层、安全层、MCP 层、前端渲染器一行都不用改</strong> —— 这正是「能力优先于 DOM」的直接收益。</div>
+<div class="card ok"><strong>给老人自己点的挂号页（纯静态、零框架）</strong>：除「说一句话由智能体代驾」之外，项目另有一份 <code>public/elder/index.html</code> —— 全程点选不用打字（全页 0 个输入控件）、每步只做一件事、可语音朗读、可调字号并记忆、简体 / 繁體 / English 三语文案与语音同步切换、提交前弹确认窗防误点；页面对外声明 9 项标准能力，后续可由智能体通过 <code>XiaoYuEr.call()</code> 驱动，越权参数一律拒绝、高危提交必须 <code>granted: true</code>。真实挂号流程的逐条审核与提炼见 <code>docs/hospital-flow-notes.md</code>，自检命令 <code>npm run check:elder</code>（24 项断言）。<br><br><strong>手机上打开是乱码怎么办</strong>：文件本身是 UTF-8，但常见静态服务器只对 <code>.html</code>/<code>.js</code>/<code>.css</code> 返回 <code>text/html</code>、<code>text/javascript</code>、<code>text/css</code> 而<strong>不带 charset</strong>；HTML 还能靠 <code>&lt;meta charset&gt;</code> 自救，外链的 JS/CSS 没有任何编码线索，部分手机浏览器会按 GBK 解析 → 电脑上正常、手机上乱码。本项目做了三层防护（HTML 双重声明 / 外链写 <code>charset</code> / CSS <code>@charset</code> + JS 带 BOM），并额外提供 <code>npm run build:elder</code> 生成的<strong>单文件版</strong> <code>standalone.html</code>：样式脚本全部内联，编码只由 <code>&lt;meta charset&gt;</code> 决定，手机端一定认。自己起服务请用 <code>npm run serve:static</code>（文本响应强制带 <code>charset=utf-8</code>，会打印局域网地址）；自建 nginx / Apache 各补一行 <code>charset utf-8;</code> / <code>AddDefaultCharset UTF-8</code> 即可。<br><br><strong>页内还有一位语音智能助手</strong>：点右下角「小鱼兒」对它说话，浏览器语音识别后交给本地规则引擎（离线可用）理解成动作，再<strong>只走能力清单</strong>去点页面（跳步骤、点症状、点医生、点日期时段、选付款、朗读、调字号）；不支持语音时自动降级为「常说的话」点选卡片，全程依然不用打字。说到「确认预约」只把确认窗叫出来，仍要本人点一下或本人说一声「确认」。想换成真实大模型时挂一个决策函数即可：<code>window.XiaoYuErAI.setPlanner(fn)</code>，它出错或给出越权动作会自动回落到规则引擎。</div>
 
 <h2 id="rag">9 RAG 知识库</h2>
 <p>知识切片共 10 条办事指南（症状→科室、必备材料、放号时间、退改规则、老年人便利服务、医保缴费等）。检索采用<strong>中文二元组 + 英文词的 TF-IDF 打分</strong>，零外部依赖，可在边缘运行，代价是无需引入向量数据库即可稳定命中。</p>
@@ -356,8 +357,9 @@ http://192.168.x.x:3000</pre>
 <p>两种形态按需二选一：<strong>静态站点</strong>（<code>npm run build:static</code>，产物 <code>out/</code>，放哪都能用 http 打开，不需要 Node 服务）与<strong>服务端应用</strong>（<code>npm run build</code> + <code>npm run start</code>，带 <code>/api/*</code> 接口）。</p>
 <h3>静态站点（推荐先试，不需要服务器）</h3>
 <pre>npm run build:static     # 产出 out/ 目录（约 1.4 MB）</pre>
-<p>产物结构：<code>out/index.html</code>（主控台）、<code>out/sim/city-hospital/index.html</code>、<code>out/sim/citizen-hall/index.html</code>、<code>out/_next/static/</code>（脚本与样式）。</p>
-<p>打开方式：把 <code>out/</code> 整个目录作为站点根目录上传到任意静态空间（对象存储静态托管 / nginx / 内网文件服务器等），或本地 <code>cd out &amp;&amp; python -m http.server 8080</code> 预览。</p>
+<p>产物结构：<code>out/index.html</code>（主控台）、<code>out/elder/index.html</code>（适老挂号页，含语音助手 <code>ai.js</code>）、<code>out/elder/standalone.html</code>（单文件版，手机端最稳）、<code>out/sim/city-hospital/index.html</code>、<code>out/sim/citizen-hall/index.html</code>、<code>out/_next/static/</code>（脚本与样式）。</p>
+<p>打开方式：把 <code>out/</code> 整个目录作为站点根目录上传到任意静态空间（对象存储静态托管 / nginx / 内网文件服务器等），或本地 <code>cd out &amp;&amp; python -m http.server 8080</code> 预览，也可以直接双击 <code>out/index.html</code>。</p>
+<div class="card ok"><strong>产物路径已全部相对化</strong><p style="margin:6px 0 0">Next 静态导出默认写 <code>/_next/...</code> 这类以斜杠开头的绝对路径，只有把 <code>out/</code> 放在域名根目录才能打开，放到二级目录或直接双击打开会整页白屏、被代驾站点的 iframe 也加载不出来。构建时由 <code>scripts/fix-static-paths.mjs</code> 按每个页面的目录深度改写成相对路径（本次 42 处），因此 <code>file://</code> 与任意二级目录都能正常打开。</p></div>
 <div class="card">
 <strong>静态形态能力不打折</strong>
 <p style="margin:6px 0 0">引擎本来就是纯 TypeScript 实现，静态形态把它放到浏览器里跑（<code>lib/runtime/</code>），与服务端形态共用同一份 <code>runAgent</code>，事件序列完全一致。代驾流程、授权门禁、脱敏、审计、能力语义检索、防幻觉闸门、轨迹回放全部保留；没有 <code>/api/*</code>，因此 MCP 清单改为浏览器内调用同一份 <code>lib/mcp/core</code>，自动化评测改为打开页面即跑的「浏览器内自检」（5 场景 / 12 断言）。也不需要任何模型密钥——浏览器里取不到 <code>LLM_API_KEY</code>，自动走规则引擎，离线可完整演示。</p>

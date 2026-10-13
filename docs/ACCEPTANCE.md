@@ -1,7 +1,7 @@
 # 功能验收单
 
-生成时间：2026/10/11 17:23:17
-代码版本：unknown
+生成时间：2026/10/12 13:14:17
+代码版本：50e9eb8
 运行引擎：规则引擎兜底（零成本）
 
 **结论：12/12 项功能通过，41/41 项断言通过。**
@@ -61,13 +61,13 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 - ✅ navigator 角色出现在事件流中
 - ✅ guardian 角色出现在事件流中
 - ✅ reporter 角色出现在事件流中
-- ✅ 事件流非空 —— 78 条事件
+- ✅ 事件流非空 —— 88 条事件
 
 | 项 | 值 |
 | --- | --- |
-| 事件总数 | 78 |
+| 事件总数 | 88 |
 | 登场角色 | planner / navigator / guardian / reporter |
-| 执行的动作 | fill:department → fill:doctorType → click:next → fill:visitDate → fill:visitSlot → click:next → fill:patientName → fill:idCard → fill:phone → click:next |
+| 执行的动作 | fill:department → fill:doctorType → click:next → fill:visitDate → fill:visitSlot → click:next → fill:patientName → fill:idCard → fill:phone → click:next → fill:patientRel → fill:payMethod |
 
 **事件流（前 26 条）**
 
@@ -125,7 +125,7 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 | --- | --- |
 | 暂停原因 | 「确认预约并提交」提交后不可撤销，需要本人或家属点一下确认。 |
 | 待执行动作 | 确认预约并提交 |
-| 回执字段 | bookingNo=YY471210，patientName=张桂芳，department=骨科，doctorType=不指定医生，visitDate=明天，visitSlot=上午 08:00-12:00，hospital=市第一人民医院，queueTip=请于就诊当日提前 30 分钟，到门诊一楼银发服务台取号。，cancelTip=就诊前一天 17:00 前可免费退号或改约。 |
+| 回执字段 | bookingNo=YY576640，patientName=张桂芳，department=骨科，doctorType=不指定医生，visitDate=明天，visitSlot=上午 08:00-12:00，payMethod=到医院再付，patientRel=本人，location=门诊楼 3 层 · 骨科 9 诊室，arriveTips=带身份证（或医保卡）；提前 15 分钟到院；先到一楼分诊台报到，hospital=市第一人民医院，queueTip=请于就诊当日提前 15 分钟到院，先到门诊一楼分诊台报到。，cancelTip=就诊前一天 17:00 前可免费退号或改约。 |
 
 **授权后事件流**
 
@@ -142,7 +142,7 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 10 [agent_end]
 11 [tool] click:submitBooking → 已执行「确认预约并提交」（风险 high）
 12 [page] → done
-13 [receipt] {"bookingNo":"YY471210","patientName":"张桂芳","department":"骨科","doctorType":"不指定医生","visitDate":"明天","visitSlot":"上午 08:00-12:00","hospital":"市第一人民医院","queueTip":"请于就诊当日提前 30 分钟，到门诊一楼银发服务台取号。","cancelTip":"就诊前一天 17:00 前可免费退号或改约。"}
+13 [receipt] {"bookingNo":"YY576640","patientName":"张桂芳","department":"骨科","doctorType":"不指定医生","visitDate":"明天","visitSlot":"上午 08:00-12:00","payMethod":"到医院再付","patientRel":"本人","location":"门诊楼 3 层 · 骨科 9 诊室","arriveTips":"带身份证（或医保卡）；提前 15 分钟到院；先到一楼分诊台报到","hospital":"市第一人民医院","queueTip":"请于就诊当日提前 15 分钟到院，先到门诊一楼分诊台报到。","cancelTip":"就诊前一天 17:00 前可免费退号或改约。"}
 14 [reporter] 预约成功了。预约
 ```
 
@@ -165,13 +165,13 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 身份证与手机号在页面状态、审计日志中均不出现明文
 
 - ✅ 审计接口返回 200 —— HTTP 200
-- ✅ 审计条目非空 —— 15 条
+- ✅ 审计条目非空 —— 17 条
 - ✅ 审计日志中无身份证/手机明文
 - ✅ 存在已脱敏条目 —— masked=3
 
 | 项 | 值 |
 | --- | --- |
-| 审计条目数 | 15 |
+| 审计条目数 | 17 |
 | 已脱敏条目 | 3 |
 | 高危条目 | 2 |
 | 已授权条目 | 1 |
@@ -179,14 +179,14 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 **审计日志（最近 8 条，真实抓取）**
 
 ```
-17:23:15  agent    执行「下一步」，页面进入 info  [风险 low]
-17:23:15  agent    填写 patientName = 张桂芳  [风险 low]
-17:23:15  agent    填写 idCard = 110105********1234  [风险 medium · 已脱敏]
-17:23:15  agent    填写 phone = 195****7123  [风险 medium · 已脱敏]
-17:23:15  agent    执行「下一步」，页面进入 confirm  [风险 low]
-17:23:15  user     人工授权执行高危动作 click:submitBooking  [风险 high]
-17:23:15  user       [风险 low]
-17:23:15  agent    执行「确认预约并提交」，页面进入 done  [风险 high]
+13:14:13  agent    填写 idCard = 110105********1234  [风险 medium · 已脱敏]
+13:14:13  agent    填写 phone = 195****7123  [风险 medium · 已脱敏]
+13:14:13  agent    执行「下一步」，页面进入 confirm  [风险 low]
+13:14:13  agent    填写 patientRel = 本人  [风险 low]
+13:14:13  agent    填写 payMethod = 到医院再付  [风险 low]
+13:14:14  user     人工授权执行高危动作 click:submitBooking  [风险 high]
+13:14:14  user       [风险 low]
+13:14:14  agent    执行「确认预约并提交」，页面进入 done  [风险 high]
 ```
 
 ## F8 · 提示词注入与越权指令拦截
@@ -220,7 +220,7 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 | 用户输入 | 帮我交 2027 年的医保，一档，我叫李秀英… |
 | 办理事项 | 城乡居民基本医疗保险缴费 |
 | 缴费年度 | 2027 年度 |
-| 回执 | orderNo=JF781220，patientName=我交，bizType=城乡居民基本医疗保险缴费，year=2027 年度，level=一档 ¥380，amount=¥380.00，payTip=已从参保人绑定的社保卡账户扣款，电子票据可在「我的办件」查看。，windowTip=如需纸质凭证，可到市民之家一楼自助机打印。 |
+| 回执 | orderNo=JF214701，patientName=我交，bizType=城乡居民基本医疗保险缴费，year=2027 年度，level=一档 ¥380，amount=¥380.00，payTip=已从参保人绑定的社保卡账户扣款，电子票据可在「我的办件」查看。，windowTip=如需纸质凭证，可到市民之家一楼自助机打印。 |
 
 **政务站点事件流**
 
@@ -237,10 +237,10 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 10 [agent_end]
 11 [tool] click:submitPay → 已执行「确认缴费」（风险 high）
 12 [page] → done
-13 [receipt] {"orderNo":"JF781220","patientName":"我交","bizType":"城乡居民基本医疗保险缴费","year":"2027 年度","level":"一档 ¥380","amount":"¥380.00","payTip":"已从参保人绑定的社保卡账户扣款，电子票据可在「我的办件」查看。","windowTip":"如需纸质凭证，可到市民之家一楼自助机打印。"}
+13 [receipt] {"orderNo":"JF214701","patientName":"我交","bizType":"城乡居民基本医疗保险缴费","year":"2027 年度","level":"一档 ¥380","amount":"¥380.00","payTip":"已从参保人绑定的社保卡账户扣款，电子票据可在「我的办件」查看。","windowTip":"如需纸质凭证，可到市民之家一楼自助机打印。"}
 14 [reporter] 缴费成功了。缴费
-15 [reporter] 订单号 JF78
-16 [reporter] 1220，参保人
+15 [reporter] 订单号 JF21
+16 [reporter] 4701，参保人
 ```
 
 ## F10 · MCP 工具层（JSON-RPC 2.0）
@@ -248,7 +248,7 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 网页能力即标准 MCP 工具；越权调用被防幻觉闸门拦截
 
 - ✅ initialize 握手成功 —— {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{"listChanged":false}},"serverI
-- ✅ tools/list 返回工具清单 —— 21 个工具
+- ✅ tools/list 返回工具清单 —— 23 个工具
 - ✅ 合法 tools/call 执行成功 —— {"content":[{"type":"text","text":"{\n  \"ok\": true,\n  \"message\": \"已填写 department\",\n  \"siteId\": \"city-hospital\",\n  \"pageId\": \"dept\",\n  \"values
 - ✅ 不存在的工具被防幻觉闸门拦截 —— {"content":[{"type":"text","text":"{\n  \"ok\": false,\n  \"message\": \"工具名无法解析：city-hospital__teleport_to_admin\"\n}"}],"isError":true}
 - ✅ 高危动作在 MCP 通道同样受约束（授权门禁 / 防幻觉闸门） —— {"content":[{"type":"text","text":"{\n  \"ok\": false,\n  \"message\": \"能力 submit:submitBooking 不在页面 dept 的能力清单内，已被拦截（防幻觉闸门）\",\n  \"suggestion\": null,\n  \"h
@@ -257,7 +257,7 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 | --- | --- |
 | 服务器 | webpilot-capability-server |
 | 协议版本 | 2025-06-18 |
-| 工具总数 | 21 |
+| 工具总数 | 23 |
 | 高危工具 | 2 |
 
 **tools/call 真实响应（合法 / 越权 / 高危）**
@@ -305,6 +305,8 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
   },
   "hint": "按语义匹配到能力「确认预约并提交」（置信度 95%），已自动纠正后执行",
   "available": [
+    "fill:patientRel",
+    "fill:payMethod",
     "click:back",
     "click:submitBooking"
   ]
@@ -322,6 +324,8 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
   },
   "hint": "最接近的能力是「上一步」，但置信度只有 40%，未达自动执行阈值，已拦截",
   "available": [
+    "fill:patientRel",
+    "fill:payMethod",
     "click:back",
     "click:submitBooking"
   ]
@@ -332,12 +336,12 @@ Planner / Navigator / Guardian / Reporter 四个角色在同一条事件流中�
 
 能力清单 / 审计 / 评测 / 轨迹回放四个面板都有真实后端数据支撑，不是静态装饰
 
-- ✅ 能力清单接口可用 —— toolCount=21
+- ✅ 能力清单接口可用 —— toolCount=23
 - ✅ 评测报告可被界面读取 —— HTTP 200
 - ✅ 评测断言全部通过 —— 94/94
 
 | 项 | 值 |
 | --- | --- |
-| MCP 工具数（界面读取） | 21 |
+| MCP 工具数（界面读取） | 23 |
 | 评测用例数 | 10 |
 | 评测断言 | 94/94 |

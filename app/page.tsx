@@ -286,11 +286,11 @@ export default function Page() {
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0f6e8f] text-[20px] font-medium text-white">
-            渡
+            鱼
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <h1 className="text-[27px] font-medium tracking-tight text-[#16202e]">阿渡</h1>
+              <h1 className="text-[27px] font-medium tracking-tight text-[#16202e]">小鱼儿</h1>
               <span className="text-[14px] tracking-[0.2em] text-[#8ba7bb]">網頁代駕</span>
             </div>
             <p className="mt-0.5 text-[16px] text-[#6b7280]">
@@ -302,6 +302,14 @@ export default function Page() {
           <span className="rounded-full border border-[#e6eaf0] bg-white px-3.5 py-1.5 text-[14px] text-[#5b6673]">
             {engineLabel}
           </span>
+          <a
+            href="/elder/index.html"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg border border-[#0f6e8f] bg-white px-4 py-2 text-[15.5px] text-[#0f6e8f] transition hover:bg-[#0f6e8f] hover:text-white"
+          >
+            适老挂号页 →
+          </a>
           <button
             type="button"
             onClick={reset}
@@ -350,7 +358,7 @@ export default function Page() {
               key={siteId}
               ref={iframeRef}
               title={`被代驾站点：${site.name}`}
-              src={`/sim/${siteId}`}
+              src={IS_STATIC ? `sim/${siteId}/index.html` : `/sim/${siteId}`}
               className="h-[640px] w-full border-0"
             />
           </div>

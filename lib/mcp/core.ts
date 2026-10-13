@@ -162,7 +162,7 @@ export function dispatch(method: string, id: unknown, params: Record<string, unk
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: 'webpilot-capability-server', version: '1.0.0' },
         instructions:
-          '阿渡 WebPilot 能力服务器。工具来自被代驾网页自行声明的能力清单，高危动作需人工授权后重试。',
+          '小鱼儿 能力服务器。工具来自被代驾网页自行声明的能力清单，高危动作需人工授权后重试。',
       });
     case 'notifications/initialized':
     case 'ping':

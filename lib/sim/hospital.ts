@@ -22,7 +22,35 @@ const SYMPTOM_TO_DEPT: Array<{ keywords: string[]; dept: string }> = [
   { keywords: ['外伤', '包扎', '缝合', '换药'], dept: '外科' },
 ];
 
-const DEPTS = ['内科', '外科', '儿科', '骨科', '眼科', '口腔科'];
+const DEPTS = ['内科', '外科', '儿科', '骨科', '眼科', '口腔科', '全科医学科'];
+
+/** 科室 → 就诊地点（真实挂号单上必有的「楼层 + 诊室」） */
+const DEPT_PLACE: Record<string, string> = {
+  内科: '门诊楼 2 层 · 内科 3 诊室',
+  外科: '门诊楼 4 层 · 外科 6 诊室',
+  儿科: '门诊楼 1 层 · 儿科 2 诊室',
+  骨科: '门诊楼 3 层 · 骨科 9 诊室',
+  眼科: '门诊楼 5 层 · 眼科 1 诊室',
+  口腔科: '门诊楼 5 层 · 口腔科 4 诊室',
+  全科医学科: '门诊楼 1 层 · 分诊台旁 2 诊室',
+};
+
+/** 付款方式：真实挂号流程的四种常见选择 */
+const PAY_METHODS = ['医保卡', '微信', '支付宝', '到医院再付'];
+
+function guessPayMethod(text: string): string {
+  if (/医保|社保|医保卡|报销/.test(text)) return '医保卡';
+  if (/微信/.test(text)) return '微信';
+  if (/支付宝|支付寶/.test(text)) return '支付宝';
+  if (/到医院再付|到院付|现场付|看完再付|先不付/.test(text)) return '到医院再付';
+  return '到医院再付'; // 兜底：对老人风险最低的一种
+}
+
+function guessRel(text: string): string {
+  if (/老伴|爱人|配偶|我先生|我太太/.test(text)) return '老伴';
+  if (/儿子|女儿|家人|陪同|陪我|孩子陪/.test(text)) return '家人陪同';
+  return '本人';
+}
 
 function guessDept(text: string): { dept: string; evidence: string } | null {
   for (const item of SYMPTOM_TO_DEPT) {
@@ -68,6 +96,11 @@ function extractSlots(text: string, known: Record<string, string>): SlotPlan {
   const phoneMatch = text.match(/1[3-9]\d{9}/);
   if (phoneMatch && !plan.phone) plan.phone = phoneMatch[0];
 
+  // 付款方式与就诊人关系：不阻塞流程（有默认值），但会体现在核对与回执上
+  if (!plan.payMethod) plan.payMethod = guessPayMethod(text);
+  if (!plan.patientRel) plan.patientRel = guessRel(text);
+  if (!plan.location && plan.department) plan.location = DEPT_PLACE[plan.department] ?? '';
+
   const required = ['patientName', 'idCard', 'phone'];
   const missing = required.filter((k) => !plan[k]);
 
@@ -102,14 +135,18 @@ export const HOSPITAL: SiteDef = {
     { label: '医生类型', key: 'doctorType' },
     { label: '就诊日期', key: 'visitDate' },
     { label: '就诊时段', key: 'visitSlot' },
+    { label: '付款方式', key: 'payMethod' },
   ],
   receiptRows: [
     { label: '预约号', key: 'bookingNo' },
+    { label: '到院须知', key: 'arriveTips' },
     { label: '就诊人', key: 'patientName' },
     { label: '科室', key: 'department' },
-    { label: '医生类型', key: 'doctorType' },
+    { label: '就诊地点', key: 'location' },
     { label: '就诊日期', key: 'visitDate' },
     { label: '就诊时段', key: 'visitSlot' },
+    { label: '付款方式', key: 'payMethod' },
+    { label: '医生类型', key: 'doctorType' },
   ],
   examples: [
     '我这两天膝盖上下楼疼，想明天上午去医院看看',
@@ -117,19 +154,25 @@ export const HOSPITAL: SiteDef = {
     '帮我挂个内科，明天下午',
   ],
   domainHints:
-    '科室只能从「内科/外科/儿科/骨科/眼科/口腔科」中选；日期保留「今天/明天/后天」原样；时段只有上午与下午两种；医生类型只有三种。',
+    '科室只能从「内科/外科/儿科/骨科/眼科/口腔科/全科医学科」中选（老人说不清哪里不舒服时选全科医学科）；日期保留「今天/明天/后天」原样；时段只有上午与下午两种，若该时段号源已约满则改选另一时段；医生类型只有三种；付款方式只能从「医保卡/微信/支付宝/到医院再付」中选，老人没说就默认到医院再付。',
   submitActionId: 'submitBooking',
   extractSlots,
   buildReceipt(values) {
+    const dept = values.department ?? '';
     return {
       bookingNo: `YY${Math.floor(100000 + Math.random() * 900000)}`,
       patientName: values.patientName ?? '',
-      department: values.department ?? '',
+      department: dept,
       doctorType: values.doctorType ?? '',
       visitDate: values.visitDate ?? '',
       visitSlot: values.visitSlot ?? '',
+      payMethod: values.payMethod ?? '到医院再付',
+      patientRel: values.patientRel ?? '本人',
+      location: values.location ?? DEPT_PLACE[dept] ?? '门诊楼 1 层 · 分诊台',
+      // 到院须知三条：带证件 / 提前到 / 先分诊 —— 真实挂号单上的标准提示
+      arriveTips: '带身份证（或医保卡）；提前 15 分钟到院；先到一楼分诊台报到',
       hospital: '市第一人民医院',
-      queueTip: '请于就诊当日提前 30 分钟，到门诊一楼银发服务台取号。',
+      queueTip: '请于就诊当日提前 15 分钟到院，先到门诊一楼分诊台报到。',
       cancelTip: '就诊前一天 17:00 前可免费退号或改约。',
     };
   },
@@ -198,10 +241,34 @@ export const HOSPITAL: SiteDef = {
       id: 'confirm',
       title: '确认预约信息',
       subtitle: '第 4 步 / 共 4 步',
-      fields: [],
+      fields: [
+        {
+          id: 'patientRel',
+          label: '就诊人关系',
+          type: 'select',
+          options: ['本人', '老伴', '家人陪同'],
+          required: false,
+          risk: 'low',
+        },
+        {
+          id: 'payMethod',
+          label: '付款方式',
+          type: 'select',
+          options: PAY_METHODS,
+          required: true,
+          risk: 'medium',
+        },
+      ],
       actions: [
         { id: 'back', label: '上一步', kind: 'nav', target: 'info', risk: 'low' },
-        { id: 'submitBooking', label: '确认预约并提交', kind: 'submit', risk: 'high', target: 'done' },
+        {
+          id: 'submitBooking',
+          label: '确认预约并提交',
+          kind: 'submit',
+          risk: 'high',
+          target: 'done',
+          requires: ['patientName', 'idCard', 'phone', 'department', 'visitDate', 'visitSlot', 'payMethod'],
+        },
       ],
     },
     {

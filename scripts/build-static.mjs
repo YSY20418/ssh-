@@ -89,6 +89,18 @@ function runBuild() {
 
 const line = (s = '') => console.log(s);
 
+/** 产物路径相对化：交给独立脚本，构建器只负责编排 */
+function fixPaths() {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [path.join(ROOT, 'scripts', 'fix-static-paths.mjs')], {
+      stdio: 'inherit',
+      cwd: ROOT,
+    });
+    child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error('路径重写失败'))));
+    child.on('error', reject);
+  });
+}
+
 async function main() {
   line('');
   line('  静态站点构建（output: export）');
@@ -107,7 +119,10 @@ async function main() {
 
   const outDir = path.join(ROOT, 'out');
   line('');
-  line(`  [2/2] 完成 → ${existsSync(outDir) ? outDir : '（未找到 out/，请检查上方构建输出）'}`);
+  line('  [2/3] 把绝对路径改写成相对路径（保证 file:// 与二级目录都能开）…');
+  await fixPaths();
+  line('');
+  line(`  [3/3] 完成 → ${existsSync(outDir) ? outDir : '（未找到 out/，请检查上方构建输出）'}`);
   line('');
   line('  使用方式');
   line('    · 直接双击 out/index.html（file:// 即可运行，无需服务器）');
