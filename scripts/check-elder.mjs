@@ -819,6 +819,70 @@ check('离线识别只连公开镜像：零密钥、录音不出浏览器', () =
   return '只连 ' + hosts.join(' + ') + ' · 无密钥 · 录音仅在浏览器内处理';
 });
 
+/* ---------- 43 麦克风权限被拦住：必须说清是哪回事，并给出可自助操作的恢复指引 ---------- */
+await checkAsync('麦克风被浏览器拦住：说清原因 + 给出恢复指引，且不卡死流程', async () => {
+  const doc = dom.window.document;
+  const w = dom.window;
+  const prev = w.XiaoYuErSpeech;
+
+  /* 桩：权限查询答"被拒绝"，取麦克风抛 NotAllowedError —— 这正是"用户点过阻止"后的真实表现 */
+  const deniedErr = new Error('Permission denied');
+  deniedErr.name = 'NotAllowedError';
+  deniedErr.code = 'denied';
+  w.XiaoYuErSpeech = {
+    supported: () => true,
+    ready: () => true,
+    state: () => 'ready',
+    micState: () => Promise.resolve('denied'),
+    cached: () => Promise.resolve(true),
+    prepare: () => Promise.resolve(true),
+    listen: () => Promise.reject(deniedErr),
+    stop: () => true,
+    clean: (t) => t || '',
+    setModel: () => {},
+    modelSize: () => '约 41 MB'
+  };
+  try {
+    const log = doc.getElementById('ai-log');
+    const before = log.children.length;
+    doc.getElementById('ai-mic').dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 350));
+
+    const added = Array.from(log.children).slice(before).map((e) => e.textContent);
+    assert(added.some((t) => /被浏览器拦住/.test(t)),
+      '麦克风被拒时没说清"被拦住"，实际：' + (added.join(' / ') || '（什么都没说）'));
+
+    const howto = doc.getElementById('ai-mic-howto');
+    assert(howto.hidden === false, '麦克风被拒时没有展开恢复指引');
+    ['ai-mic-step1', 'ai-mic-step2', 'ai-mic-step3'].forEach((id) => {
+      assert(doc.getElementById(id).textContent.trim().length > 8, '恢复指引缺了一步：' + id);
+    });
+    const retry = doc.getElementById('ai-mic-retry');
+    assert(retry && !retry.hidden && /再试一次麦克风/.test(retry.textContent),
+      '指引末尾应有「再试一次麦克风」按钮');
+
+    const state = doc.getElementById('ai-mic-state');
+    assert(/被浏览器拦住/.test(state.textContent), '状态行没有显示"被拦住"：' + state.textContent);
+    assert(state.getAttribute('data-state') === 'denied', '状态行 data-state 应为 denied');
+
+    /* 绝不能装作在听 —— 那正是"点了没反应"的另一种形态 */
+    assert(!/正在听/.test(doc.getElementById('ai-status').textContent),
+      '麦克风被拒时状态栏竟然显示"正在听"');
+    assert(doc.querySelector('#ai-mic').getAttribute('data-state') !== 'on',
+      '麦克风被拒时按钮还亮着"正在听"的样式');
+
+    /* 兜底必须在：点选照常能挂号 */
+    const chips = doc.getElementById('ai-chips');
+    assert(chips.children.length > 0, '麦克风被拒后「常说的话」不见了');
+    chips.children[0].dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 120));
+    assert(doc.querySelector('#symptom-list') !== null, '麦克风出问题不应影响挂号主流程');
+    return '被拒 → 说清"被拦住" + 三步指引 + 状态行 + 再试按钮 · 点选兜底仍可用';
+  } finally {
+    w.XiaoYuErSpeech = prev;
+  }
+});
+
 /* ---------- 输出 ---------- */
 const pass = results.filter((r) => r.ok).length;
 const fail = results.length - pass;

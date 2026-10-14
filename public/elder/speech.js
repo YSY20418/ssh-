@@ -108,6 +108,18 @@
       window.WebAssembly && (window.AudioContext || window.webkitAudioContext));
   }
 
+  /* 麦克风权限现在是什么状态。
+     注意：这个 API 不是哪儿都准（有的浏览器在被策略禁用时仍答 "prompt"），
+     所以它只用来"提前告诉老人一声"，真正拍板要靠 getUserMedia 抛出的错误码。 */
+  function micState() {
+    try {
+      if (!navigator.permissions || !navigator.permissions.query) return 'unsupported';
+      return navigator.permissions.query({ name: 'microphone' }).then(function (r) {
+        return r && r.state ? String(r.state) : 'unknown';   // granted / denied / prompt
+      }).catch(function () { return 'unknown'; });
+    } catch (e) { return Promise.resolve('unknown'); }
+  }
+
   function pickKey() {
     try {
       var m = /[?&]asr=([a-z]+)/i.exec(window.location.search);
@@ -216,6 +228,27 @@
   }
 
   /* ---------------- 录音（自带静音自动停止） ---------------- */
+
+  /* 把浏览器五花八门的麦克风错误归成五种"老人能听懂"的原因。
+     错误名（NotAllowedError 等）跨浏览器基本一致，是唯一可靠的分类依据。 */
+  var MIC_CODES = {
+    NotAllowedError: 'denied',       // 用户点了"阻止"，或策略禁用——最常见，且不会再弹窗
+    SecurityError: 'insecure',       // 页面不是安全上下文（非 https / file:// 被禁）
+    PermissionDeniedError: 'denied', // 老浏览器的另一种叫法
+    NotFoundError: 'no-device',      // 压根没有麦克风硬件
+    DevicesNotFoundError: 'no-device',
+    NotReadableError: 'busy',        // 硬件被别的程序占着（腾讯会议、OBS…）
+    TrackStartError: 'busy',
+    OverconstrainedError: 'no-fit',  // 设备不满足约束（极少见）
+    AbortError: 'busy'
+  };
+  function micError(rawName, fallbackMsg) {
+    var err = new Error(fallbackMsg || rawName || '麦克风打不开');
+    err.code = MIC_CODES[rawName] || 'unknown';
+    err.raw = String(rawName || '');
+    return err;
+  }
+
   function Recorder(opts) {
     this.opts = opts || {};
     this.chunks = [];
@@ -229,6 +262,11 @@
   Recorder.prototype.start = function () {
     var self = this;
     var o = self.opts;
+    /* 取麦克风之前先自检一句：file:// 双击打开时 navigator.mediaDevices 可能整个不存在，
+       这种错不说清楚，老人只会看到"没反应"。 */
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return Promise.reject(micError('insecure', '这个页面没有麦克风接口（可能不是 https 打开）'));
+    }
     var constraints = {
       audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
     };
@@ -278,6 +316,9 @@
       mute.connect(ctx.destination);
       self.onFinish = o.onFinish;
       return true;
+    }).catch(function (err) {
+      /* 权限/设备类错误：换成带 code 的错误再抛出去，上层按码说话，不用猜 */
+      throw (err && MIC_CODES[err.name]) ? micError(err.name, err.message) : err;
     });
   };
 
@@ -382,8 +423,9 @@
   }
 
   window.XiaoYuErSpeech = {
-    version: '1.0.0',
+    version: '1.1.0',
     supported: supported,
+    micState: micState,
     state: function () { return state; },
     ready: function () { return !!asr; },
     cached: cached,

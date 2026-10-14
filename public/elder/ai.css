@@ -279,9 +279,62 @@ body.ai-open .aifab { display: none; }
 .ai__offline[data-state="loading"] { border-color: var(--ok); background: var(--ok-soft); }
 .ai__offline[data-state="loading"] .ai__offlinenote { color: var(--ok); }
 
+/* ---------- 麦克风权限：常显状态行 ----------
+   老人不可能凭自己判断"麦克风开没开"，所以把状态明明白白摆在面板里：
+   已允许 / 被拦住 / 还没问过 / 查不出来。颜色只做辅助，文字一定说清。 */
+.ai__micstate {
+  margin: 0.55rem 0 0;
+  font-size: 1.02rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.ai__micstate[data-state="granted"] { color: var(--ok); }
+.ai__micstate[data-state="denied"] { color: var(--warn-ink); font-weight: 700; }
+.ai__micstate[data-state="prompt"] { color: var(--muted); }
+
+/* ---------- 麦克风权限：三步恢复指引 ----------
+   只在失败时出现。步骤用序号开头、左对齐、行距放宽，方便边看边操作；
+   末尾一个实心按钮，改完权限回来点一下就能接着试。 */
+.ai__howto {
+  margin-top: 0.6rem;
+  padding: 0.9rem 1rem 1rem;
+  border: 1px solid var(--warn-line, var(--notice-line));
+  border-radius: var(--radius);
+  background: var(--notice);
+}
+.ai__howto[hidden] { display: none; }
+.ai__howto-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--warn-ink);
+}
+.ai__howto-step {
+  margin: 0 0 0.35rem;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.ai__howtobtn {
+  margin-top: 0.6rem;
+  min-height: 3.5rem;
+  padding: 0.3rem 1.2rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.12rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai__howtobtn:hover { background: var(--brand-dark); }
+.ai__howtobtn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+
 @media (max-width: 480px) {
-  .ai__offlinebtn { min-height: 3.2rem; font-size: 1.1rem; padding: 0.3rem 0.9rem; }
-  .ai__offlinenote { font-size: 1rem; }
+  .ai__micstate { font-size: 1rem; }
+  .ai__howto-step { font-size: 1rem; }
+  .ai__howtobtn { min-height: 3.2rem; font-size: 1.1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

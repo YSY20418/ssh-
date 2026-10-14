@@ -30,7 +30,20 @@
       'ai.stopListen': '不听了',
       'ai.hear': '我听到：',
       'ai.unsupported': '这台设备听不了话。您可以直接点下面的话，一样能办。',
-      'ai.denied': '没能用麦克风。请在浏览器里允许使用麦克风，或直接点下面的话。',
+      'ai.micDenied': '麦克风被浏览器拦住了。我一步一步教您打开：',
+      'ai.micNoDevice': '这台设备没有找到麦克风。您可以直接点下面的话，一样能办。',
+      'ai.micBusy': '麦克风正被别的程序用着（比如视频会议）。关掉它再试，或直接点下面的话。',
+      'ai.micInsecure': '这个打开方式不让用麦克风。请在地址栏里用 https 或本机地址打开，或直接点下面的话。',
+      'ai.micHowTo': '怎么打开麦克风',
+      'ai.micStep1': '① 看屏幕最上方，找浏览器地址栏，点它左边的小图标（锁头或方块）。',
+      'ai.micStep2': '② 在弹出的列表里，找到「麦克风」这一行。',
+      'ai.micStep3': '③ 把麦克风改成「允许」，然后回来再点一次「点这里说话」。',
+      'ai.micStateLabel': '麦克风状态：',
+      'ai.micStateGranted': '已允许，可以直接说',
+      'ai.micStateDenied': '被浏览器拦住了，点下面的方法打开',
+      'ai.micStatePrompt': '还没问过您，点一次麦克风就会问',
+      'ai.micStateUnknown': '查不出来，点一次麦克风试试',
+      'ai.micRetry': '再试一次麦克风',
       'ai.noSpeech': '没听到声音，请离近一点再说一次。',
       'ai.netErr': '网络不通，暂时听不了话。请直接点下面的话，或者点「用离线识别」把它装进这台设备。',
       'ai.startFail': '没能打开麦克风。请再点一次；还是不行，就点下面的话。',
@@ -106,7 +119,20 @@
       'ai.stopListen': '不聽了',
       'ai.hear': '我聽到：',
       'ai.unsupported': '這台設備聽不了話。您可以直接點下面的話，一樣能辦。',
-      'ai.denied': '沒能用麥克風。請在瀏覽器裡允許使用麥克風，或直接點下面的話。',
+      'ai.micDenied': '麥克風被瀏覽器攔住了。我一步一步教您打開：',
+      'ai.micNoDevice': '這台設備沒有找到麥克風。您可以直接點下面的話，一樣能辦。',
+      'ai.micBusy': '麥克風正被別的程式用著（比如視訊會議）。關掉它再試，或直接點下面的話。',
+      'ai.micInsecure': '這個打開方式不讓用麥克風。請在網址列裡用 https 或本機地址打開，或直接點下面的話。',
+      'ai.micHowTo': '怎麼打開麥克風',
+      'ai.micStep1': '① 看螢幕最上方，找瀏覽器網址列，點它左邊的小圖示（鎖頭或方塊）。',
+      'ai.micStep2': '② 在彈出的列表裡，找到「麥克風」這一行。',
+      'ai.micStep3': '③ 把麥克風改成「允許」，然後回來再點一次「點這裡說話」。',
+      'ai.micStateLabel': '麥克風狀態：',
+      'ai.micStateGranted': '已允許，可以直接說',
+      'ai.micStateDenied': '被瀏覽器攔住了，點下面的方法打開',
+      'ai.micStatePrompt': '還沒問過您，點一次麥克風就會問',
+      'ai.micStateUnknown': '查不出來，點一次麥克風試試',
+      'ai.micRetry': '再試一次麥克風',
       'ai.noSpeech': '沒聽到聲音，請離近一點再說一次。',
       'ai.netErr': '網路不通，暫時聽不了話。請直接點下面的話，或者點「用離線識別」把它裝進這台設備。',
       'ai.startFail': '沒能打開麥克風。請再點一次；還是不行，就點下面的話。',
@@ -182,7 +208,20 @@
       'ai.stopListen': 'Stop listening',
       'ai.hear': 'I heard: ',
       'ai.unsupported': 'This device cannot listen. Just tap one of the phrases below.',
-      'ai.denied': 'Microphone blocked. Please allow it in the browser, or tap a phrase below.',
+      'ai.micDenied': 'The microphone is blocked by the browser. Here is how to open it:',
+      'ai.micNoDevice': 'No microphone was found on this device. Just tap one of the phrases below.',
+      'ai.micBusy': 'The microphone is being used by another program (like a video call). Close it and try again, or tap a phrase below.',
+      'ai.micInsecure': 'This way of opening the page does not allow the microphone. Open it with https or a local address, or tap a phrase below.',
+      'ai.micHowTo': 'How to allow the microphone',
+      'ai.micStep1': '1. Look at the very top of the screen: find the browser address bar and tap the small icon on its left (a lock or a square).',
+      'ai.micStep2': '2. In the list that opens, find the row that says "Microphone".',
+      'ai.micStep3': '3. Set the microphone to "Allow", then come back and tap "Tap to speak" once more.',
+      'ai.micStateLabel': 'Microphone: ',
+      'ai.micStateGranted': 'allowed, you can just talk',
+      'ai.micStateDenied': 'blocked by the browser, see how to open it below',
+      'ai.micStatePrompt': 'not asked yet, tap the mic button and it will ask',
+      'ai.micStateUnknown': 'cannot tell, tap the mic button to try',
+      'ai.micRetry': 'Try the microphone again',
       'ai.noSpeech': 'I did not hear anything. Please come closer and try again.',
       'ai.netErr': 'No network, so cloud listening is off. Tap a phrase below, or tap "Offline recognition" to install it on this device.',
       'ai.startFail': 'Could not open the microphone. Tap once more; if it still fails, just tap a phrase below.',
@@ -592,6 +631,14 @@
           '</button>' +
           '<button type="button" class="ai__cancel" id="ai-cancel" hidden></button>' +
         '</div>' +
+        '<p class="ai__micstate" id="ai-mic-state" aria-live="polite"></p>' +
+        '<div class="ai__howto" id="ai-mic-howto" hidden>' +
+          '<p class="ai__howto-title" id="ai-mic-howto-title"></p>' +
+          '<p class="ai__howto-step" id="ai-mic-step1"></p>' +
+          '<p class="ai__howto-step" id="ai-mic-step2"></p>' +
+          '<p class="ai__howto-step" id="ai-mic-step3"></p>' +
+          '<button type="button" class="ai__howtobtn" id="ai-mic-retry"></button>' +
+        '</div>' +
         '<div class="ai__offline" id="ai-offline-box" hidden>' +
           '<button type="button" class="ai__offlinebtn" id="ai-offline"></button>' +
           '<p class="ai__offlinenote" id="ai-offline-note"></p>' +
@@ -617,6 +664,9 @@
   var offBox = document.getElementById('ai-offline-box');
   var offBtn = document.getElementById('ai-offline');
   var offNote = document.getElementById('ai-offline-note');
+  var micStateEl = document.getElementById('ai-mic-state');
+  var howtoBox = document.getElementById('ai-mic-howto');
+  var micRetryBtn = document.getElementById('ai-mic-retry');
 
   function bubble(who, text) {
     if (!text) return;
@@ -627,6 +677,50 @@
     try { logBox.scrollTop = logBox.scrollHeight; } catch (e) { /* 忽略 */ }
   }
   function setStatus(text) { statusEl.textContent = text || ''; }
+
+  /* ---------- 麦克风权限：状态可见 + 可自助恢复 ----------
+     老人最怕两件事：点了没反应、失败了不知道该干什么。
+     所以权限状态常显一行，失败时展开"三步指引"并保留"再试一次"。
+     注意顺序：永远先按老人的点击真实试一次，拿真实错误码再说话——
+     权限查询 API 有的浏览器不准（策略禁用时也答 prompt），不能拿它拦人。 */
+  var micStateNow = 'unknown';
+  function micStateText(s) {
+    if (s === 'granted') return T('ai.micStateGranted');
+    if (s === 'denied') return T('ai.micStateDenied');
+    if (s === 'prompt') return T('ai.micStatePrompt');
+    return T('ai.micStateUnknown');
+  }
+  function renderMicState(s) {
+    if (s) micStateNow = s;
+    if (!micStateEl) return;
+    micStateEl.textContent = T('ai.micStateLabel') + micStateText(micStateNow);
+    micStateEl.setAttribute('data-state', micStateNow);
+  }
+  function refreshMicState() {
+    var OS = offline();
+    if (!OS || !OS.micState) { renderMicState('unknown'); return; }
+    Promise.resolve(OS.micState()).then(renderMicState).catch(function () { renderMicState('unknown'); });
+  }
+  /* 失败时把"怎么打开"摆出来；step 参数让"被拦住"类失败自动展开 */
+  function showHowTo(show) {
+    if (!howtoBox) return;
+    howtoBox.hidden = !show;
+    if (show) {
+      document.getElementById('ai-mic-howto-title').textContent = T('ai.micHowTo');
+      document.getElementById('ai-mic-step1').textContent = T('ai.micStep1');
+      document.getElementById('ai-mic-step2').textContent = T('ai.micStep2');
+      document.getElementById('ai-mic-step3').textContent = T('ai.micStep3');
+      micRetryBtn.textContent = T('ai.micRetry');
+    }
+  }
+  /* 按错误码说人话：每种原因一句话，且都保留"点下面的话"这条退路 */
+  function sayMicFail(code) {
+    if (code === 'denied') { say('ai.micDenied'); }
+    else if (code === 'no-device') { say('ai.micNoDevice'); }
+    else if (code === 'busy') { say('ai.micBusy'); }
+    else if (code === 'insecure') { say('ai.micInsecure'); }
+    else { say('ai.startFail'); }
+  }
 
   /* 常说的话：既是降级方案，也是给老人看的示例 */
   function chipList() {
@@ -669,6 +763,8 @@
        本机识别用不了时，它会引导到「用离线识别」或下面的话。 */
     mic.disabled = false;
     mic.removeAttribute('aria-disabled');
+    renderMicState();
+    refreshMicState();
     renderOffline();
   }
 
@@ -787,6 +883,8 @@
     if (mic) mic.setAttribute('data-state', 'off');
     if (cancelBtn) cancelBtn.hidden = true;
     if (micLabel) micLabel.textContent = T('ai.talk');
+    /* 每次停下来都重新读一次权限：老人可能刚在浏览器里改过设置 */
+    refreshMicState();
   }
   function focusChip() {
     var c = chipsBox.querySelector('.chip');
@@ -815,7 +913,7 @@
     rec.continuous = false;
     rec.interimResults = true;
     rec.maxAlternatives = 3;
-    rec.onstart = function () { armWatchdog(15000); };
+    rec.onstart = function () { armWatchdog(15000); refreshMicState(); };
     rec.onresult = function (ev) {
       var finals = [], interims = [];
       for (var i = ev.resultIndex; i < ev.results.length; i++) {
@@ -840,12 +938,19 @@
     };
     rec.onerror = function (ev) {
       var code = ev && ev.error;
-      var key = code === 'not-allowed' || code === 'service-not-allowed' || code === 'audio-capture' ? 'ai.denied'
+      /* 权限被拦：和离线链路用同一套话术 + 指引，两条路给老人的答案必须一致 */
+      var denied = code === 'not-allowed' || code === 'service-not-allowed' || code === 'audio-capture';
+      var key = denied ? 'ai.micDenied'
         : code === 'no-speech' ? 'ai.noSpeech'
         : code === 'network' ? 'ai.netErr' : '';
       listening = false;
       clearWatchdog();
       micIdle();
+      /* 麦克风被拦住时，把状态行与恢复指引一并摆出来（并刷新一次真实状态） */
+      if (denied) {
+        refreshMicState();
+        showHowTo(true);
+      }
       /* 云端这条路走不通时，把「用离线识别」摆到老人眼前 */
       if (code === 'network' || code === 'not-allowed' || code === 'service-not-allowed' ||
           code === 'audio-capture') { offlineHint = true; renderOffline(); }
@@ -890,12 +995,21 @@
       micIdle();
       if (!text) { say('ai.silent'); focusChip(); return; }
       hear(text);
-    }).catch(function () {
+    }).catch(function (err) {
       if (my !== offlineRun) return;
       listening = false;
       clearWatchdog();
       micIdle();
-      say('ai.startFail');
+      /* 麦克风打不开：按真实错误码说清楚是哪回事，并给出恢复指引。
+         以前这里只说"请再点一次"——权限被拦住时再点一百次也没用，老人会被困死。 */
+      var code = (err && err.code) || 'unknown';
+      sayMicFail(code);
+      if (code === 'denied') {
+        refreshMicState();
+        showHowTo(true);
+        offlineHint = true;
+        renderOffline();
+      }
       focusChip();
     });
     armWatchdog(25000);
@@ -991,6 +1105,16 @@
     prepareOffline().catch(function () { /* 已提示过，不抛到控制台 */ });
   });
 
+  /* 「再试一次麦克风」：看完指引回来点一下。
+     有些浏览器（Chrome/Edge）在用户手动改过设置后，重新调 getUserMedia 就能直接拿到权限，
+     所以这个按钮是真的去试，不是摆设。 */
+  if (micRetryBtn) micRetryBtn.addEventListener('click', function () {
+    showHowTo(false);
+    if (listening) stopListen();
+    refreshMicState();
+    startListen();
+  });
+
   mic.addEventListener('click', function () { if (listening) stopListen(); else startListen(); });
   cancelBtn.addEventListener('click', stopListen);
 
@@ -1067,7 +1191,7 @@
   X.setLanguage(X.getState().lang); // 触发一次重绘，把助手注册进来的文案刷到页面上
 
   window.XiaoYuErAI = {
-    version: '1.1.0',
+    version: '1.2.0',
     supported: !!SR,
     open: open,
     close: close,
@@ -1078,6 +1202,9 @@
     /* 两条识别链路的状态，供界面提示与自检使用 */
     engine: function () { return lastEngine; },
     listenPath: function () { return listening || 'idle'; },
+    /* 麦克风权限状态（granted / denied / prompt / unknown），供自检与界面显示 */
+    micState: function () { return micStateNow; },
+    showHowTo: showHowTo,
     offline: {
       loaded: function () { return !!offline(); },
       supported: function () { var OS = offline(); return !!(OS && OS.supported()); },
