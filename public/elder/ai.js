@@ -9,6 +9,15 @@
    3. 零成本兜底：没有网络、没有麦克风、没有大模型，规则引擎照样能办事。
    4. 高危动作（提交预约）必须人工授权，语音也只能把确认窗叫出来。
    5. 想接真实大模型时用 setPlanner(fn) 挂上去；它挂了或报错，自动回落到规则引擎。
+
+   一句话的旅程（顺序即优先级，越靠前越先说话）：
+     确认窗开着   → 只听「确认 / 取消」
+     页面控制命令 → 念 / 停 / 字号 / 前后步 / 重来 / 问进度（改页面）
+     业务动作     → 症状 / 科室 / 医生 / 日期时段 / 就诊人 / 付款 / 提交（改页面）
+     对话层       → 本地语料库 XiaoYuErCorpus（data/corpus.json）：
+                    打招呼、问身份、问能耐、步进指引、道谢道别、
+                    诉说难受、危急劝导、挂号 FAQ、陪聊、解闷……
+                    只说不动页面；三语；按当前步骤回答；回复轮换不复读。
    ============================================================ */
 (function () {
   'use strict';
@@ -420,6 +429,13 @@
     var opt = X.options();
     var lang = st.lang;
     var order = [lang].concat(LANGS.filter(function (l) { return l !== lang; }));
+    /* 对话层（本地语料库）先算出来备用：
+       ① 页面命令永远优先——所以它只在前文所有动作都没命中时才开口；
+       ② 「专家号」这种既是科室泛称又是常见咨询的词，问诊提醒要让位给真问答，
+         不然老人问「专家号贵吗」得到的却是「您主要是头晕还是咳嗽」。 */
+    var chatHit = (window.XiaoYuErCorpus && typeof window.XiaoYuErCorpus.match === 'function')
+      ? window.XiaoYuErCorpus.match(text, lang, { step: st.step, name: T('stepbar.' + st.step) })
+      : null;
     function group(name) {
       var g = KW[name] || {};
       for (var i = 0; i < order.length; i++) {
@@ -490,7 +506,7 @@
       if (n && text.indexOf(n) >= 0 && n.length > deptScore) { deptScore = n.length; deptId = d.id; }
     });
     if (deptId) { actions.push(act('select_department', deptId, deptScore)); score += deptScore; }
-    else if (group('vague') && !symId) {
+    else if (group('vague') && !symId && !chatHit) {
       return { intent: 'ask', actions: [], score: 2, reply: T('ai.askSymptom') };
     }
 
@@ -550,6 +566,19 @@
     }
     if (group('finish') && st.step === 5) { actions.push(nav('home', 4)); score += 4; }
 
+    /* 10. 对话层：命令一个都没命中时，才轮到「说话」。
+          话术全部来自本地语料库（XiaoYuErCorpus，data/corpus.json 编译而来）：
+          三语、按当前步骤回答、多条回复轮换不复读。
+          「再说一遍」这类不重新编话，直接把上一句原样奉还。 */
+    if (!actions.length && chatHit) {
+      if (chatHit.id === 'repeat' && lastReply) {
+        return { intent: 'chat', actions: [], reply: lastReply, score: 3, chat: chatHit };
+      }
+      return {
+        intent: chatHit.kind === 'guide' ? 'guide' : 'chat',
+        actions: [], reply: chatHit.reply, score: 3, chat: chatHit
+      };
+    }
     if (!actions.length) return { intent: 'unknown', actions: [], score: 0 };
     return { intent: 'act', actions: actions, score: score };
   }
@@ -875,6 +904,8 @@
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   var SPEECH_LANG = { zh: 'zh-CN', 'zh-Hant': 'zh-TW', en: 'en-US' };
   var rec = null, listening = false, lastEngine = 'rule', planner = null;
+  /* 助手上一句说的话：「再说一遍」时原样奉还，也方便自检核对 */
+  var lastReply = '';
   var watchdog = null, offlineRun = 0;
 
   function offline() { return window.XiaoYuErSpeech || null; }
@@ -1170,6 +1201,7 @@
       if (!reply && u.intent === 'unknown') reply = T('ai.unknown');
       if (reply) {
         bubble('ai', reply);
+        lastReply = reply;
         /* 念一遍 / 上一步 / 帮助 这些动作页面自己会播报，别把它的声音盖掉 */
         if (!SILENT[u.intent]) X.speak(reply);
       }
@@ -1191,7 +1223,7 @@
   X.setLanguage(X.getState().lang); // 触发一次重绘，把助手注册进来的文案刷到页面上
 
   window.XiaoYuErAI = {
-    version: '1.2.0',
+    version: '1.3.0',
     supported: !!SR,
     open: open,
     close: close,
@@ -1205,6 +1237,14 @@
     /* 麦克风权限状态（granted / denied / prompt / unknown），供自检与界面显示 */
     micState: function () { return micStateNow; },
     showHowTo: showHowTo,
+    /* 本地对话语料库的状态与规模，供界面与自检使用 */
+    corpus: {
+      loaded: function () { return !!(window.XiaoYuErCorpus && window.XiaoYuErCorpus.match); },
+      stats: function () {
+        var c = window.XiaoYuErCorpus;
+        return (c && typeof c.stats === 'function') ? c.stats() : null;
+      }
+    },
     offline: {
       loaded: function () { return !!offline(); },
       supported: function () { var OS = offline(); return !!(OS && OS.supported()); },

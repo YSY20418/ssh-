@@ -883,6 +883,88 @@ await checkAsync('麦克风被浏览器拦住：说清原因 + 给出恢复指�
   }
 });
 
+/* ---------- 44 本地对话语料库接入：打招呼、问身份都有人答话 ---------- */
+const lastAiText = () => {
+  const list = $$('.ai__bubble--ai');
+  return list.length ? list[list.length - 1].textContent : '';
+};
+await checkAsync('语音助手：本地语料库接入——问候、问能耐都有人答，不再一句「没听明白」', async () => {
+  assert(window.XiaoYuErCorpus && typeof window.XiaoYuErCorpus.match === 'function', '语料库没加载（corpus.js 缺失或没跑起来）');
+  const stats = ai.corpus.stats();
+  assert(stats && stats.patterns >= 1000, '语料库说法不足 1000 条：' + (stats && stats.patterns));
+  ai.open();
+  await ai.say('你好');
+  const hello = lastAiText();
+  assert(hello && hello.indexOf('没听明白') < 0, '打招呼竟回了「没听明白」：' + hello);
+  assert(spoken.some((u) => u.text === hello), '回复没有朗读出来');
+  await ai.say('你能做什么');
+  assert(lastAiText().indexOf('没听明白') < 0, '问能耐竟回了「没听明白」');
+  return `语料库 ${stats.patterns} 条说法在线（${stats.intents} 个意图），问候/问能耐均有回复并朗读`;
+});
+
+/* ---------- 45 步进指引：按当前步骤告诉老人现在该做什么 ---------- */
+await checkAsync('语音助手：步进指引——「然后我该干嘛」按当前步骤回答', async () => {
+  api.call('reset');
+  api.go(0);
+  await ai.say('然后我应该干嘛');
+  const s0 = lastAiText();
+  assert(s0.indexOf('没听明白') < 0, '第 0 步问「然后我应该干嘛」回的是没听明白');
+  assert(s0.indexOf('我要挂号') >= 0, '第 0 步的指引没教老人怎么开始：' + s0);
+  api.go(1);
+  await ai.say('接下来做什么');
+  const s1 = lastAiText();
+  assert(s1.indexOf('没听明白') < 0, '第 1 步问「接下来做什么」回的是没听明白');
+  assert(/不舒服|腿疼|头晕|咳嗽/.test(s1), '第 1 步的指引没引导说症状：' + s1);
+  api.go(4);
+  await ai.say('该干嘛');
+  const s4 = lastAiText();
+  assert(/就诊人|付款|医保/.test(s4), '第 4 步的指引没说到就诊人和付款：' + s4);
+  return '第 0 步教开始 · 第 1 步教说症状 · 第 4 步教选人就付款（按当前步骤回答）';
+});
+
+/* ---------- 46 多语言对话：说的语言和界面可以不一样 ---------- */
+await checkAsync('语音助手：多语言对话——英文界面说中文用中文回，中文界面说英文用英文回', async () => {
+  api.setLanguage('en');
+  await ai.say('你好');
+  let t = lastAiText();
+  assert(/[\u4e00-\u9fa5]/.test(t), '英文界面下说中文，回复不是中文：' + t);
+  api.setLanguage('zh');
+  await ai.say('hello');
+  t = lastAiText();
+  assert(/[a-zA-Z]/.test(t) && !/[\u4e00-\u9fa5]/.test(t), '中文界面下说英文，回复不是英文：' + t);
+  return '跨语言对话成立：跟着老人说的那一门语言回话';
+});
+
+/* ---------- 47 页面命令永远优先，对话层不许劫持 ---------- */
+await checkAsync('语音助手：页面命令优先——「我腿疼」照旧挂骨科，「用医保卡」照旧选医保', async () => {
+  api.call('reset');
+  api.go(1);
+  await ai.say('我腿疼');
+  assert(api.getState().dept === 'orthopedics', '「我腿疼」被对话层接走了，没挂到骨科');
+  assert(ai.understand('我腿疼').intent === 'act', '「我腿疼」的意图不是页面动作');
+  api.go(4);
+  await ai.say('用医保卡');
+  assert(api.getState().pay === 'medical', '「用医保卡」被对话层接走了，没选中医保');
+  assert(ai.understand('用医保卡').intent === 'act', '「用医保卡」的意图不是页面动作');
+  return '症状/付款命令照旧走页面动作，对话层不抢活';
+});
+
+/* ---------- 48 复读与最后的兜底 ---------- */
+await checkAsync('语音助手：连问有回复、听不懂也不乱动页面', async () => {
+  api.setLanguage('zh');
+  api.call('reset');
+  await ai.say('你好');
+  const a = lastAiText();
+  await ai.say('你好');
+  const b = lastAiText();
+  assert(a && b && a.indexOf('没听明白') < 0, '重复问候没有得到像样的回复');
+  const before = JSON.stringify(api.getState());
+  await ai.say('阿斯不存在的话');
+  assert(lastAiText().indexOf('没听明白') >= 0, '彻底听不懂时应该说「没听明白」并给出常说的话');
+  assert(JSON.stringify(api.getState()) === before, '闲聊改了页面状态');
+  return '连问有回复 · 听不懂不乱动 · 兜底话术仍在';
+});
+
 /* ---------- 输出 ---------- */
 const pass = results.filter((r) => r.ok).length;
 const fail = results.length - pass;

@@ -8,6 +8,8 @@
     "build": "next build",
     "build:static": "node scripts/build-static.mjs",
     "check:elder": "node scripts/check-elder.mjs",
+    "check:corpus": "node scripts/check-corpus.mjs",
+    "build:corpus": "node scripts/build-corpus.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "build:elder": "node scripts/build-elder-single.mjs",
     "serve:static": "node scripts/serve-static.mjs",
