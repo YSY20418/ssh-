@@ -659,6 +659,8 @@
     document.getElementById('ai-title').textContent = T('ai.title');
     document.getElementById('ai-chiplabel').textContent = T('ai.chips');
     document.getElementById('aifab-text').textContent = T('ai.fab');
+    /* 窄屏只显示圆形鱼标（见 ai.css），文字藏起来后靠 aria-label 供读屏识别 */
+    fab.setAttribute('aria-label', T('ai.fab'));
     document.getElementById('ai-close').textContent = T('ai.close');
     cancelBtn.textContent = T('ai.stopListen');
     if (listening) { micLabel.textContent = T('ai.stopListen'); }

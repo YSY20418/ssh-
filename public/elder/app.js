@@ -265,8 +265,10 @@
       'topbar.font': 'Change text size',
       'topbar.fontReset': 'Reset',
       'topbar.langGroup': 'Choose language',
-      'lang.zh': 'Simplified',
-      'lang.hant': 'Traditional',
+      /* 语言用它自己的写法显示（国际通行的「语言自称」）：既短，也不会在
+         简体 / 繁体界面里混进英文单词。 */
+      'lang.zh': '简体',
+      'lang.hant': '繁體',
       'lang.en': 'English',
       'voice.listen': 'Listen to instructions',
       'voice.stop': 'Stop reading',
@@ -609,6 +611,10 @@
     btn.setAttribute('data-speaking', on ? '1' : '0');
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     if (lbl) lbl.textContent = on ? t('voice.stop') : t('voice.listen');
+    /* 语音条整体同步状态：只有正在朗读时，「停止朗读」才占地方——
+       平时只有一个按钮，屏幕上少一件吵人的东西 */
+    var bar = $('#voicebar');
+    if (bar) bar.setAttribute('data-speaking', on ? '1' : '0');
   }
 
   function speak(text) {
@@ -716,6 +722,7 @@
       no.className = 'stepbar__no';
       no.textContent = done ? '✓' : String(i);
       var label = document.createElement('span');
+      label.className = 'stepbar__label';
       label.textContent = t('stepbar.' + i);
       btn.appendChild(no);
       btn.appendChild(label);

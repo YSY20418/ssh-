@@ -5,24 +5,26 @@
    ============================================================ */
 
 /* ---------- 页面内的入口卡片 ---------- */
-.ai-inline { margin: 1.6rem 0 0; }
+.ai-inline { margin: var(--sp-5) 0 0; }
 .ai-inline__btn {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: var(--sp-3);
   width: 100%;
   min-height: var(--tap);
-  padding: 1.1rem 1.2rem;
-  border: 2px dashed var(--brand);
+  padding: 1.05rem 1.1rem;
+  border: 1px solid var(--card-line);
   border-radius: var(--radius);
-  background: var(--brand-soft);
+  background: var(--card);
   color: var(--ink);
   font-family: inherit;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   text-align: left;
   cursor: pointer;
+  transition: border-color 0.12s ease;
 }
-.ai-inline__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.ai-inline__btn:hover { border-color: var(--brand); }
+.ai-inline__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
 .ai-inline__mark {
   flex: 0 0 auto;
   width: 3.2rem; height: 3.2rem;
@@ -33,10 +35,10 @@
   font-size: 1.5rem;
   font-weight: 700;
 }
-.ai-inline__main { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 auto; }
-.ai-inline__title { font-size: 1.3rem; font-weight: 700; color: var(--brand); }
-.ai-inline__desc { font-size: 1.05rem; color: var(--ink-2); line-height: 1.55; }
-.ai-inline__go { font-size: 1.8rem; color: var(--brand); }
+.ai-inline__main { display: flex; flex-direction: column; gap: 0.1rem; flex: 1 1 auto; min-width: 0; }
+.ai-inline__title { font-size: 1.25rem; font-weight: 700; color: var(--brand); }
+.ai-inline__desc { font-size: 1.02rem; color: var(--ink-2); line-height: 1.55; }
+.ai-inline__go { font-size: 1.7rem; color: var(--brand); flex: 0 0 auto; }
 
 /* ---------- 悬浮按钮 ---------- */
 .aifab {
@@ -46,33 +48,45 @@
   z-index: 44;
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  min-height: 4.2rem;
-  padding: 0.5rem 1.1rem 0.5rem 0.5rem;
-  border: 2px solid var(--brand-dark);
+  gap: 0.55rem;
+  min-height: 4rem;
+  padding: 0.45rem 1rem 0.45rem 0.45rem;
+  border: 0;
   border-radius: 999px;
   background: var(--brand);
   color: #fff;
   font-family: inherit;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(34, 48, 58, 0.22);
+  box-shadow: 0 4px 14px rgba(47, 93, 98, 0.28);
 }
 .aifab:active { transform: scale(0.98); }
 .aifab:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
 .aifab__mark {
-  width: 3rem; height: 3rem;
+  width: 2.9rem; height: 2.9rem;
   display: grid; place-items: center;
   border-radius: 50%;
   background: #fff;
   color: var(--brand);
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 700;
+  flex: 0 0 auto;
 }
 body[data-step="5"] .aifab { bottom: calc(1.4rem + env(safe-area-inset-bottom)); }
 body.idle-on .aifab { bottom: calc(var(--actionbar-h, 7.8rem) + 5.6rem + env(safe-area-inset-bottom)); }
 body.ai-open .aifab { display: none; }
+
+/* 窄屏与平板：悬浮球收成一个圆形鱼标。
+   带文字的药丸会压住下面的选项卡片——对老人来说，「挡住能点的东西」
+   比「少两个字」糟得多。文字改由 aria-label 供读屏识别。 */
+@media (max-width: 899px) {
+  .aifab { min-height: 0; padding: 0.25rem; gap: 0; }
+  .aifab__text { display: none; }
+  .aifab__mark { width: 3.2rem; height: 3.2rem; font-size: 1.6rem; }
+  /* 球变小了，空闲关怀条出现时不用再抬那么高 */
+  body.idle-on .aifab { bottom: calc(var(--actionbar-h, 7.8rem) + 4.6rem + env(safe-area-inset-bottom)); }
+}
 
 /* ---------- 对话面板 ---------- */
 .ai { position: fixed; inset: 0; z-index: 45; display: flex; align-items: flex-end; justify-content: center; }
@@ -162,20 +176,20 @@ body.ai-open .aifab { display: none; }
   border-bottom-right-radius: 4px;
 }
 
-.ai__row { display: flex; gap: 0.7rem; }
+.ai__row { display: flex; gap: var(--sp-2); }
 .ai__mic {
   flex: 1 1 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.7rem;
-  min-height: 4.4rem;
-  border: 2px solid var(--brand-dark);
+  gap: var(--sp-2);
+  min-height: 4.2rem;
+  border: 0;
   border-radius: var(--radius);
   background: var(--brand);
   color: #fff;
   font-family: inherit;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -194,30 +208,30 @@ body.ai-open .aifab { display: none; }
 }
 .ai__cancel {
   flex: 0 0 auto;
-  min-height: 4.4rem;
-  padding: 0 1.1rem;
-  border: 2px solid var(--line);
+  min-height: 4.2rem;
+  padding: 0 1rem;
+  border: 1px solid var(--card-line);
   border-radius: var(--radius);
   background: var(--card);
   color: var(--ink-2);
   font-family: inherit;
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   font-weight: 700;
   cursor: pointer;
 }
 .ai__cancel[hidden] { display: none; }
 
-.ai__chiplabel { margin: 0.9rem 0 0.4rem; font-size: 1.05rem; color: var(--muted); }
-.ai__chips { display: flex; flex-wrap: wrap; gap: 0.55rem; overflow-y: auto; max-height: 22vh; }
+.ai__chiplabel { margin: var(--sp-3) 0 var(--sp-1); font-size: 1.02rem; color: var(--muted); }
+.ai__chips { display: flex; flex-wrap: wrap; gap: 0.5rem; overflow-y: auto; max-height: 22vh; }
 .chip {
-  min-height: 3.4rem;
-  padding: 0.4rem 1rem;
-  border: 2px solid var(--line);
+  min-height: 3.2rem;
+  padding: 0.35rem 0.95rem;
+  border: 1px solid var(--card-line);
   border-radius: 999px;
   background: var(--card);
   color: var(--ink);
   font-family: inherit;
-  font-size: 1.1rem;
+  font-size: 1.08rem;
   cursor: pointer;
 }
 .chip:hover { border-color: var(--brand); color: var(--brand); }
@@ -239,14 +253,14 @@ body.ai-open .aifab { display: none; }
 .ai__offline[hidden] { display: none; }
 .ai__offlinebtn {
   flex: 0 0 auto;
-  min-height: 3.6rem;
-  padding: 0.3rem 1.25rem;
-  border: 2px solid var(--brand);
+  min-height: 3.5rem;
+  padding: 0.3rem 1.2rem;
+  border: 1px solid var(--brand);
   border-radius: var(--radius);
   background: var(--card);
   color: var(--brand);
   font-family: inherit;
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   font-weight: 700;
   cursor: pointer;
 }

@@ -342,9 +342,13 @@ check('细节增强：步骤条可回退、下一步就绪高亮、朗读按钮�
   assert($('#btn-next').classList.contains('btn--ready'), '选好后「下一步」没有高亮引导');
   click('#btn-speak');
   assert($('#btn-speak').getAttribute('data-speaking') === '1', '朗读时按钮未切成停止态');
+  /* 语音条整体同步：只有正在朗读时，「停止朗读」才占地方，平时屏幕上只有一个按钮 */
+  assert($('#voicebar').getAttribute('data-speaking') === '1', '朗读时语音条未同步状态');
+  assert($('#btn-stop').hidden === false, '停止朗读按钮应可访问');
   click('#btn-stop');
   assert($('#btn-speak').getAttribute('data-speaking') === '0', '停止后按钮状态未复位');
-  return '步骤条回退 · 就绪高亮 · 朗读状态切换';
+  assert($('#voicebar').getAttribute('data-speaking') === '0', '停止后语音条状态未复位');
+  return '步骤条回退 · 就绪高亮 · 朗读状态切换 · 停止按钮按需出现';
 });
 
 /* ---------- 17. 语音助手入口 ---------- */
