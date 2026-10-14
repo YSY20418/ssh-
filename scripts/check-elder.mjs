@@ -965,6 +965,78 @@ await checkAsync('语音助手：连问有回复、听不懂也不乱动页面',
   return '连问有回复 · 听不懂不乱动 · 兜底话术仍在';
 });
 
+/* ---------- 49 小医灵：形态、入口、知识库都在位 ---------- */
+await checkAsync('小医灵：光点 / 机器人 / 对话面板 / 页内入口 / 医学知识库全部接入', async () => {
+  const M = window.XiaoYiLing;
+  assert(M, '页面没有挂上 window.XiaoYiLing（medic.js 没加载或报错）');
+  assert(doc.getElementById('medic-orb') && doc.getElementById('medic-panel'), '光点或对话面板缺失');
+  assert(doc.getElementById('medic-inline-open'), '页面里没有小医灵入口卡片');
+  const st = M.kb.stats();
+  assert(st.redflags >= 10 && st.topics >= 12, `知识库规模不对：${JSON.stringify(st)}`);
+  assert(M.form() === 'idle', `初始形态应是漂浮（idle），实际 ${M.form()}`);
+  return `红旗 ${st.redflags} 类 · 主题 ${st.topics} 个 · 三语说法 ${st.patterns} 条 · 光点/面板/入口齐全`;
+});
+
+/* ---------- 50 小医灵预问诊：共情追问 + 红旗直通 120 ---------- */
+await checkAsync('小医灵：问症状走共情追问，说红旗症状立即建议 120', async () => {
+  const M = window.XiaoYiLing;
+  const ai2 = window.XiaoYuErAI;
+  M.reset();
+  M.open(false);
+  M.ask('我头痛三天了');
+  const s1 = M.session();
+  assert(s1.stage === 'ask' && s1.topicId === 'headache', '说头痛后没有进入追问');
+  assert(M.lastReply().indexOf('没听明白') < 0, '小医灵回了「没听明白」');
+  M.reset();
+  M.ask('我胸口疼得厉害，还出大汗');
+  const s2 = M.session();
+  assert(s2.stage === 'done' && s2.escalated, '红旗症状没有立即按急症处理');
+  const log = doc.getElementById('medic-log').textContent;
+  assert(/120/.test(log) && /急诊/.test(log), '红旗回复里没有 120 与急诊');
+  M.close();
+  return '共情 → 追问 → 分诊；红旗 → 立即 120/急诊';
+});
+
+/* ---------- 51 麦克风全页只询问一次 ---------- */
+await checkAsync('麦克风只询问一次：小鱼儿与小医灵共用同一次授权', async () => {
+  /* 前面的检查临时替换过 XiaoYuErSpeech，这里先还原成真身再测 */
+  dom.window.XiaoYuErSpeech = REAL_SPEECH;
+  const SP = REAL_SPEECH;
+  assert(SP && typeof SP.ensureMic === 'function', 'speech.js 没有 ensureMic');
+  let gum = 0;
+  Object.defineProperty(window.navigator, 'mediaDevices', {
+    configurable: true,
+    value: {
+      getUserMedia() {
+        gum++;
+        return Promise.resolve({ getTracks: () => [{ stop() {} }] });
+      }
+    }
+  });
+  await SP.ensureMic();
+  const first = gum;
+  assert(first === 1, `第一次授权应恰好弹一次窗，实际 ${first} 次`);
+  await SP.ensureMic();
+  assert(gum === first, '第二次调用又弹了一次窗');
+  const st = await SP.micState();
+  assert(st === 'granted', `已授权时应直接答 granted，实际 ${st}`);
+  return '授权一次记住 · 不再重复弹窗与查询';
+});
+
+/* ---------- 52 形态状态机：点开面板变机器人，关掉恢复漂浮 ---------- */
+await checkAsync('小医灵形态状态机：漂浮 → 点击开面板（机器人）→ 关闭恢复漂浮', async () => {
+  const M = window.XiaoYiLing;
+  M.close();
+  assert(M.form() === 'idle', '关闭后没有恢复漂浮');
+  const sp = M.state();
+  assert(sp.speed >= 20 && sp.speed <= 40, `漂浮速度应在 20-40px/s，实际 ${sp.speed}`);
+  M.open(false);
+  assert(M.form() === 'chat', '打开面板后没有进入对话形态');
+  assert(doc.getElementById('medic-root').getAttribute('data-form') === 'chat', '根容器状态没切换');
+  M.close();
+  return 'data-form 跟随状态切换，速度落在 20-40px/s';
+});
+
 /* ---------- 输出 ---------- */
 const pass = results.filter((r) => r.ok).length;
 const fail = results.length - pass;

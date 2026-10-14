@@ -1243,6 +1243,348 @@ body.ai-open .aifab { display: none; }
   .aifab, .ai__mic, .ai__ring { transition: none; animation: none; }
 }
 </style>
+<style>
+/* ============================================================
+   小医灵 · 医疗问诊智能体（medic.js 配套样式）
+   沿用主页面的配色与适老尺寸：大按钮、大字号、圆角、高对比。
+   形态：默认半透明医疗蓝绿光点；悬停放大发光；长按/拖动/对话时
+   变成小机器人。颜色只用页面既有令牌，不引入新色。
+   ============================================================ */
+
+/* ---------- 页面内的入口卡片 ---------- */
+.medic-inline { margin: var(--sp-3) 0 0; }
+.medic-inline__btn {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.15rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+.medic-inline__btn:hover { border-color: var(--brand); }
+.medic-inline__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.medic-inline__mark {
+  flex: 0 0 auto;
+  width: 3rem; height: 3rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+}
+.medic-inline__mark .ico { width: 1.9rem; height: 1.9rem; }
+.medic-inline__main { display: flex; flex-direction: column; gap: 0.1rem; flex: 1 1 auto; min-width: 0; }
+.medic-inline__title { font-size: 1.2rem; font-weight: 700; color: var(--brand); }
+.medic-inline__desc { font-size: 1rem; color: var(--ink-2); line-height: 1.55; }
+.medic-inline__go { font-size: 1.7rem; color: var(--brand); flex: 0 0 auto; }
+
+/* ---------- 根容器：光点与提示气泡 ---------- */
+.medic { position: fixed; inset: 0; z-index: 43; pointer-events: none; }
+.medic[data-form="idle"] .medic-orb,
+.medic[data-form="hover"] .medic-orb { pointer-events: auto; }
+
+/* 光点：比按钮小，但命中区域放大到 48px（老人手指粗） */
+.medic-orb {
+  position: absolute;
+  left: 0; top: 0;
+  width: 34px; height: 34px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: none;
+  transition: transform 0.18s ease;
+}
+.medic-orb::after {           /* 放大命中区，视觉不变 */
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+}
+.medic-orb:focus-visible { outline: 3px solid var(--brand); outline-offset: 4px; border-radius: 50%; }
+
+/* 光点形态 */
+.medic-orb__dot {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #7fa8a4 0%, var(--brand) 62%, var(--brand-dark) 100%);
+  box-shadow: 0 0 0 1px rgba(47, 93, 98, 0.18), 0 0 14px 2px rgba(47, 93, 98, 0.28);
+  opacity: 0.92;
+  animation: medic-breathe 3.6s ease-in-out infinite;
+  transition: opacity 0.2s ease;
+}
+.medic-orb__glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(47, 93, 98, 0.22) 0%, rgba(47, 93, 98, 0) 68%);
+  opacity: 0.85;
+}
+/* 机器人形态：默认收起 */
+.medic-orb__bot {
+  position: absolute;
+  inset: -14px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.medic-orb__bot .bot { width: 100%; height: 100%; filter: drop-shadow(0 3px 6px rgba(31, 43, 51, 0.18)); }
+
+.medic[data-form="hover"] .medic-orb { transform: scale(1.14); }
+.medic[data-form="hover"] .medic-orb__glow { opacity: 1; }
+.medic[data-form="hover"] .medic-orb__dot { opacity: 1; }
+.medic[data-form="pressing"] .medic-orb,
+.medic[data-form="dragging"] .medic-orb,
+.medic[data-form="chat"] .medic-orb { transform: scale(1.05); cursor: grab; }
+.medic[data-form="dragging"] .medic-orb { cursor: grabbing; }
+
+/* 长按 / 拖动 / 对话：光点让位给机器人 */
+.medic[data-form="pressing"] .medic-orb__dot,
+.medic[data-form="dragging"] .medic-orb__dot,
+.medic[data-form="chat"] .medic-orb__dot,
+.medic[data-form="pressing"] .medic-orb__glow,
+.medic[data-form="dragging"] .medic-orb__glow,
+.medic[data-form="chat"] .medic-orb__glow { opacity: 0; }
+.medic[data-form="pressing"] .medic-orb__bot,
+.medic[data-form="dragging"] .medic-orb__bot,
+.medic[data-form="chat"] .medic-orb__bot { display: flex; }
+.medic[data-form="chat"] .medic-orb { pointer-events: auto; }
+
+/* 眨眼与点头 */
+.bot__eye { transform-origin: center; animation: medic-blink 4.4s infinite; }
+.medic-orb__bot.is-nod { animation: medic-nod 0.7s ease; }
+
+/* 悬停气泡 */
+.medic-tip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  margin-top: -10px;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: var(--brand-dark);
+  color: #fff;
+  font-size: 0.92rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+.medic[data-form="hover"] .medic-tip { opacity: 1; }
+
+/* ---------- 对话面板 ---------- */
+.medic-panel { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; }
+.medic-panel[hidden] { display: none; }
+.medic__mask { position: absolute; inset: 0; background: rgba(31, 43, 51, 0.34); }
+.medic__box {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(86vh, 720px);
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
+}
+
+.medic__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--brand);
+  color: #fff;
+}
+.medic__mark {
+  flex: 0 0 auto;
+  width: 2.9rem; height: 2.9rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: #fff;
+}
+.medic__mark .bot { width: 2.3rem; height: 2.3rem; }
+.medic__headtext { flex: 1 1 auto; min-width: 0; }
+.medic__title { margin: 0; font-size: 1.22rem; font-weight: 700; }
+.medic__status { margin: 0.1rem 0 0; font-size: 0.95rem; opacity: 0.92; min-height: 1.3em; }
+.medic__x {
+  flex: 0 0 auto;
+  min-width: 2.6rem; min-height: 2.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+.medic__x:hover { background: rgba(255, 255, 255, 0.14); }
+.medic__x:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+.medic__log {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+}
+.medic__msg { display: flex; }
+.medic__msg--me { justify-content: flex-end; }
+.medic__msg--ai { justify-content: flex-start; }
+.medic__text {
+  max-width: 88%;
+  padding: 0.72rem 0.95rem;
+  border-radius: var(--radius);
+  font-size: 1.06rem;
+  line-height: 1.62;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.medic__msg--ai .medic__text {
+  background: var(--card);
+  border: 1px solid var(--card-line);
+  border-top-left-radius: 4px;
+  color: var(--ink);
+}
+.medic__msg--me .medic__text {
+  background: var(--brand);
+  border-top-right-radius: 4px;
+  color: #fff;
+}
+
+/* 麦克风与停止 */
+.medic__row { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4) 0; }
+.medic__mic {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: var(--tap);
+  padding: 0 var(--sp-4);
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.medic__mic[data-state="on"] { background: var(--brand-dark); }
+.medic__mic:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.medic__ring {
+  width: 0.85rem; height: 0.85rem;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.9;
+}
+.medic__mic[data-state="on"] .medic__ring { animation: medic-pulse 1.1s ease-in-out infinite; }
+.medic__stop {
+  min-height: var(--tap);
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--card-line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.medic__voicehint {
+  margin: var(--sp-2) var(--sp-4) 0;
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--notice);
+  border: 1px solid var(--notice-line);
+  color: var(--warn-ink);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+.medic__voicehint[hidden] { display: none; }
+
+/* 点选 chips：一次最多 3 个问题、每题 2-4 个选项，老人不用打字 */
+.medic__chiplabel { margin: var(--sp-4) var(--sp-4) 0; font-size: 1rem; color: var(--ink-2); }
+.medic__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4) 0;
+}
+.medic__chip {
+  min-height: 3rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--card-line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.medic__chip:hover { border-color: var(--brand); background: var(--brand-soft); }
+.medic__chip:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.medic__chip:active { transform: scale(0.98); }
+
+.medic__disclaimer {
+  margin: var(--sp-3) var(--sp-4) var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+/* ---------- 动画 ---------- */
+@keyframes medic-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+@keyframes medic-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.12); }
+}
+@keyframes medic-nod {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-6deg); }
+  65% { transform: rotate(5deg); }
+}
+@keyframes medic-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.35); opacity: 0.55; }
+}
+
+/* ---------- 自适应：窄屏从底部弹出，宽屏居中偏下 ---------- */
+@media (min-width: 701px) {
+  .medic-panel { align-items: center; padding: var(--sp-4); }
+  .medic__box { border-radius: var(--radius-lg); }
+}
+@media (max-width: 700px) {
+  .medic__box { max-height: 92vh; }
+  .medic__text { max-width: 92%; font-size: 1.1rem; }
+}
+
+/* 老人要求「别动」时：去掉呼吸与脉冲，漂浮由 JS 侧停掉 */
+@media (prefers-reduced-motion: reduce) {
+  .medic-orb__dot { animation: none; }
+  .medic__mic[data-state="on"] .medic__ring { animation: none; }
+  .bot__eye { animation: none; }
+}
+</style>
 </head>
 <body>
 
@@ -1454,6 +1796,18 @@ body.ai-open .aifab { display: none; }
         <span class="ai-inline__desc" data-i18n="ai.inlineDesc"></span>
       </span>
       <span class="ai-inline__go" aria-hidden="true">›</span>
+    </button>
+  </div>
+
+  <!-- 小医灵：医疗预问诊。点这张卡片，或点页面里漂浮的蓝绿色小光点 -->
+  <div class="medic-inline" id="medic-inline">
+    <button type="button" class="medic-inline__btn" id="medic-inline-open">
+      <span class="medic-inline__mark" data-icon="stethoscope" aria-hidden="true"></span>
+      <span class="medic-inline__main">
+        <span class="medic-inline__title" data-i18n="medic.inlineTitle"></span>
+        <span class="medic-inline__desc" data-i18n="medic.inlineDesc"></span>
+      </span>
+      <span class="medic-inline__go" aria-hidden="true">›</span>
     </button>
   </div>
 
@@ -3441,6 +3795,9 @@ body.ai-open .aifab { display: none; }
                                       opts.onTick(阶段, 信息): listening / recognizing
      stop()                        → 停止录音 / 中断识别
      setModel('fast'|'best')      → 换模型（fast≈41MB / best≈77MB）
+     ensureMic()                   → 麦克风一次性授权预检（全页共用，只问一次）
+     resetMic()                    → 清掉授权记忆，允许再问一次（手动重试用）
+     micGranted()                  → 本次是否已经拿到过授权
    ============================================================ */
 (function () {
   'use strict';
@@ -3526,10 +3883,53 @@ body.ai-open .aifab { display: none; }
       window.WebAssembly && (window.AudioContext || window.webkitAudioContext));
   }
 
+  /* ---------------- 麦克风授权：整个页面只问一次 ----------------
+     老人点一次麦克风，就应该只看到一次「是否允许使用麦克风」。
+     反复弹窗会让老人以为页面坏了，干脆不再点。
+     所以第一次取麦克风成功后，立刻把音轨释放掉，并把「已授权」记住
+     （内存 + localStorage）：
+       · 后续 listen() 先过 ensureMic()，已授权就直接通过——
+         不再查权限、不再触发弹窗；
+       · 被拒绝时绝不自动重试（ Chrome 被拒后本来也不会再弹），
+         只保留老人手动点的「再试一次」；
+       · 小鱼儿面板与小医灵面板共用这一个授权，不会各问一遍。 */
+  var micGranted = false;
+  try {
+    micGranted = !!(window.localStorage && window.localStorage.getItem('xye.mic.granted') === '1');
+  } catch (e) { micGranted = false; }
+
+  function ensureMic() {
+    if (micGranted) return Promise.resolve(true);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return Promise.reject(micError('insecure', '这个页面没有麦克风接口（可能不是 https 打开）'));
+    }
+    return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      /* 预检拿到就还回去：真正录音时还会再取一次，那次不会再弹窗 */
+      try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { /* 忽略 */ }
+      micGranted = true;
+      try {
+        if (window.localStorage) window.localStorage.setItem('xye.mic.granted', '1');
+      } catch (e2) { /* 隐私模式下写不进去也不致命：本次会话内仍只问一次 */ }
+      return true;
+    }).catch(function (err) {
+      throw (err && MIC_CODES[err.name]) ? micError(err.name, err.message) : err;
+    });
+  }
+
+  /* 手动重试时清掉记忆，允许再问一次 */
+  function resetMic() {
+    micGranted = false;
+    try {
+      if (window.localStorage) window.localStorage.removeItem('xye.mic.granted');
+    } catch (e) { /* 忽略 */ }
+  }
+
   /* 麦克风权限现在是什么状态。
      注意：这个 API 不是哪儿都准（有的浏览器在被策略禁用时仍答 "prompt"），
-     所以它只用来"提前告诉老人一声"，真正拍板要靠 getUserMedia 抛出的错误码。 */
+     所以它只用来"提前告诉老人一声"，真正拍板要靠 getUserMedia 抛出的错误码。
+     已经授权过就直接答 granted，不再去问浏览器——少一次查询，少一次等待。 */
   function micState() {
+    if (micGranted) return Promise.resolve('granted');
     try {
       if (!navigator.permissions || !navigator.permissions.query) return 'unsupported';
       return navigator.permissions.query({ name: 'microphone' }).then(function (r) {
@@ -3779,29 +4179,32 @@ body.ai-open .aifab { display: none; }
   function listen(opts) {
     var o = opts || {};
     if (!asr) return Promise.reject(new Error('离线识别还没准备好'));
-    return new Promise(function (resolve, reject) {
-      var rec = new Recorder({
-        maxMs: o.maxMs, quietMs: o.quietMs, noSpeechMs: o.noSpeechMs,
-        onTick: o.onTick,
-        onFinish: function (spoke, samples) {
-          active = null;
-          if (!spoke) { resolve(''); return; }
-          if (typeof o.onTick === 'function') o.onTick('recognizing');
-          var seconds = samples.length / 16000;
-          if (seconds < 0.4) { resolve(''); return; }
-          try {
-            Promise.resolve(asr(samples, {
-              language: o.language || 'zh',   // 界面是英文时传 'en'，其余都按中文听
-              task: 'transcribe',
-              return_timestamps: false
-            }))
-              .then(function (out) { resolve(clean(out && out.text)); })
-              .catch(function (err) { reject(err); });
-          } catch (err) { reject(err); }
-        }
+    /* 先过一次性授权预检：已授权就直接录音，不再弹窗、不再查权限 */
+    return ensureMic().then(function () {
+      return new Promise(function (resolve, reject) {
+        var rec = new Recorder({
+          maxMs: o.maxMs, quietMs: o.quietMs, noSpeechMs: o.noSpeechMs,
+          onTick: o.onTick,
+          onFinish: function (spoke, samples) {
+            active = null;
+            if (!spoke) { resolve(''); return; }
+            if (typeof o.onTick === 'function') o.onTick('recognizing');
+            var seconds = samples.length / 16000;
+            if (seconds < 0.4) { resolve(''); return; }
+            try {
+              Promise.resolve(asr(samples, {
+                language: o.language || 'zh',   // 界面是英文时传 'en'，其余都按中文听
+                task: 'transcribe',
+                return_timestamps: false
+              }))
+                .then(function (out) { resolve(clean(out && out.text)); })
+                .catch(function (err) { reject(err); });
+            } catch (err) { reject(err); }
+          }
+        });
+        active = rec;
+        rec.start().catch(function (err) { active = null; reject(err); });
       });
-      active = rec;
-      rec.start().catch(function (err) { active = null; reject(err); });
     });
   }
 
@@ -3841,9 +4244,13 @@ body.ai-open .aifab { display: none; }
   }
 
   window.XiaoYuErSpeech = {
-    version: '1.1.0',
+    version: '1.2.0',
     supported: supported,
     micState: micState,
+    /* 一次性授权预检：整个页面（小鱼儿 + 小医灵）共用，只问一次 */
+    ensureMic: ensureMic,
+    resetMic: resetMic,
+    micGranted: function () { return micGranted; },
     state: function () { return state; },
     ready: function () { return !!asr; },
     cached: cached,
@@ -10070,6 +10477,1037 @@ body.ai-open .aifab { display: none; }
     understand: understand,
     chipList: chipList,
     setPlanner: setPlanner
+  };
+})();
+</script>
+<!-- 小医灵医学知识库（本地数据库 data/medic-kb.json 的编译产物，由 npm run build:medic 生成） -->
+<script>
+/* ============================================================
+   小医灵 · 本地医学知识库（编译产物，勿手改）
+   数据源：data/medic-kb.json —— 改话术请改那里，再跑 npm run build:medic
+   由 scripts/build-medic.mjs 生成：五条硬规则质检 + 编译
+   ============================================================ */
+(function (g) {
+  'use strict';
+  var DATA = {"meta":{"name":"小医灵本地医学知识库（预问诊分诊）","version":1,"langs":["zh","zh-Hant","en"],"maxQuestions":3,"triageLevels":{"er":{"zh":"立即急诊 / 拨打 120","zh-Hant":"立即急診 / 撥打 120","en":"Go to the ER now / call 120"},"24h":{"zh":"24 小时内就诊","zh-Hant":"24 小時內就診","en":"See a doctor within 24 hours"},"appointment":{"zh":"近期预约门诊","zh-Hant":"近期預約門診","en":"Book an outpatient appointment"},"home":{"zh":"可先居家观察","zh-Hant":"可先居家觀察","en":"Rest and watch at home for now"}},"disclaimer":{"zh":"我是预问诊小助手，只能帮您梳理症状、提醒紧急风险，不能替代医生诊断、开药或处理急症。情况要紧时，请直接拨打 120 或去最近的急诊。","zh-Hant":"我是預問診小助手，只能幫您梳理症狀、提醒緊急風險，不能替代醫生診斷、開藥或處理急症。情況要緊時，請直接撥打 120 或去最近的急診。","en":"I am a pre-consultation helper. I can only sort out your symptoms and flag emergencies. I cannot diagnose, prescribe, or treat. In an emergency, call 120 or go to the nearest ER."},"privacyNote":{"zh":"另外提醒您：判断病情不需要姓名、身份证号和手机号，请不要把这些发给我。","zh-Hant":"另外提醒您：判斷病情不需要姓名、身份證號和手機號，請不要把這些發給我。","en":"One more note: I do not need your name, ID number, or phone number. Please do not send them."}},"redflags":[{"id":"chest_pain","priority":1,"zh":{"patterns":["胸痛","胸口疼","胸口痛","心口疼","心口痛","胸闷的厉害","喘不上气","呼吸困难","出大汗","一身大汗","濒死感","感觉快要不行了","心慌得厉害","胸口难受","胸口发闷","胸口有压迫感"],"reply":"您说的这些可能是心脏或肺部急症的信号，一刻都不能等。请立即拨打 120，或让家人送您去最近的急诊，不要自己开车、不要硬撑、不要等它自己好。到了急诊，把「胸痛/胸闷、喘不上气、大汗」原样告诉分诊护士。"},"zh-Hant":{"patterns":["胸痛","胸口疼","胸口痛","心口疼","心口痛","胸悶得厲害","喘不上氣","呼吸困難","出大汗","一身大汗","瀕死感","感覺快要不行了","心慌得厲害","胸口難受","胸口發悶","胸口有壓迫感"],"reply":"您說的這些可能是心臟或肺部急症的信號，一刻都不能等。請立即撥打 120，或讓家人送您去最近的急診，不要自己開車、不要硬撐、不要等它自己好。到了急診，把「胸痛/胸悶、喘不上氣、大汗」原樣告訴分診護士。"},"en":{"patterns":["chest pain","my chest hurts","tight chest","cannot breathe","short of breath","sweating a lot","feel like i am dying","pressure in my chest","chest feels heavy","chest feels tight"],"reply":"What you describe can be a sign of a heart or lung emergency. Please call 120 right now, or have family take you to the nearest ER. Do not drive yourself, do not wait it out. Tell the triage nurse exactly: chest pain, hard breathing, heavy sweating."}},{"id":"thunder_headache","priority":2,"zh":{"patterns":["雷击样头痛","突然剧烈头痛","头痛得像要裂开","头痛得炸开","从来没有这么痛过头","一生中最痛的头痛","撞到头之后头痛","头部受击后头痛"],"reply":"突然发作、剧烈到从来没有过的头痛，可能是脑血管急症，必须马上排除。请立即去急诊或拨打 120；这期间别自己吃止痛药硬扛，那会掩盖病情。如果刚刚撞过头部，更要尽快去医院。"},"zh-Hant":{"patterns":["雷擊樣頭痛","突然劇烈頭痛","頭痛得像要裂開","頭痛得炸開","從來沒有這麼痛過頭","一生中最痛的頭痛","撞到頭之後頭痛","頭部受擊後頭痛"],"reply":"突然發作、劇烈到從來沒有過的頭痛，可能是腦血管急症，必須馬上排除。請立即去急診或撥打 120；這期間別自己吃止痛藥硬扛，那會掩蓋病情。如果剛剛撞過頭部，更要盡快去醫院。"},"en":{"patterns":["worst headache of my life","sudden severe headache","thunderclap headache","headache after hitting my head","head exploded"],"reply":"A sudden, worst-ever headache can be a brain blood-vessel emergency and must be ruled out now. Go to the ER or call 120 at once. Do not just take painkillers and wait, and do not drive yourself."}},{"id":"stroke","priority":3,"zh":{"patterns":["口角歪斜","嘴歪了","一边手脚没力气","单侧无力","一只手抬不起来","一条腿迈不动","说话不清楚","言语不清","大舌头","视物模糊","看东西模糊","看东西重影","突然看不见","一边脸麻木"],"reply":"您说的可能是中风的信号，中风抢救是以分钟计算的。请立即拨打 120，说清楚「口角歪斜 / 一边没力气 / 说话不清楚 / 看东西模糊」和症状开始的时间——开始时间直接决定治疗方案。不要等症状自己过去，也不要先睡一觉看看。"},"zh-Hant":{"patterns":["口角歪斜","嘴歪了","一邊手腳沒力氣","單側無力","一隻手抬不起來","一條腿邁不動","說話不清楚","言語不清","大舌頭","視物模糊","看東西模糊","看東西重影","突然看不見","一邊臉麻木"],"reply":"您說的可能是中風的信號，中風搶救是以分鐘計算的。請立即撥打 120，說清楚「口角歪斜 / 一邊沒力氣 / 說話不清楚 / 看東西模糊」和症狀開始的時間——開始時間直接決定治療方案。不要等症狀自己過去，也不要先睡一覺看看。"},"en":{"patterns":["face is drooping","one side is weak","cannot lift one arm","slurred speech","blurred vision","double vision","one side of my face is numb"],"reply":"This can be a sign of stroke, and stroke treatment is measured in minutes. Call 120 now and say exactly: face drooping, one-sided weakness, slurred speech, or blurred vision, plus when it started. Do not wait for it to pass."}},{"id":"consciousness","priority":4,"zh":{"patterns":["晕过去了","晕厥","失去意识","意识不清","昏迷","叫不醒","抽搐","抽风","翻白眼","口吐白沫"],"reply":"晕倒、意识不清、抽搐都需要立刻由医生判断原因，耽误不得。请立即拨打 120；在等人来的时候，让病人侧卧、清理口鼻、不要往嘴里塞任何东西、不要掐人中。如果是别人在旁边，请记下发作持续了多久。"},"zh-Hant":{"patterns":["暈過去了","暈厥","失去意識","意識不清","昏迷","叫不醒","抽搐","抽風","翻白眼","口吐白沫"],"reply":"暈倒、意識不清、抽搐都需要立刻由醫生判斷原因，耽誤不得。請立即撥打 120；在等人來的時候，讓病人側臥、清理口鼻、不要往嘴裡塞任何東西、不要掐人中。如果是別人在旁邊，請記下發作持續了多久。"},"en":{"patterns":["passed out","fainted","lost consciousness","cannot wake up","having a seizure","convulsions","unresponsive"],"reply":"Fainting, confusion, or seizures need a doctor to find the cause right away. Call 120 now. While waiting, lay the person on their side, keep the mouth clear, put nothing in the mouth, and note how long it lasted."}},{"id":"bleeding","priority":5,"zh":{"patterns":["大出血","流血不止","血止不住","呕血","吐血","黑色大便","黑便","便血","大便带血","大便出血","尿血","咳血","咯血"],"reply":"出血不止、呕血、黑便或便血都可能指向消化道出血这类危险情况，不能在家观察。请立即去急诊或拨打 120；这期间先别吃东西别喝水，保留呕吐物或排泄物的样子给医生看。正在吃阿司匹林、华法林这类药的，一定要告诉医生。"},"zh-Hant":{"patterns":["大出血","流血不止","血止不住","嘔血","吐血","黑色大便","黑便","便血","大便帶血","大便出血","尿血","咳血","咯血"],"reply":"出血不止、嘔血、黑便或便血都可能指向消化道出血這類危險情況，不能在家觀察。請立即去急診或撥打 120；這期間先別吃東西別喝水，保留嘔吐物或排泄物的樣子給醫生看。正在吃阿司匹林、華法林這類藥的，一定要告訴醫生。"},"en":{"patterns":["heavy bleeding","bleeding will not stop","vomiting blood","black stool","blood in stool","blood in urine","coughing up blood"],"reply":"Uncontrolled bleeding, vomiting blood, black stool, or blood in stool can mean dangerous internal bleeding. Go to the ER or call 120 now. Do not eat or drink, and show the doctor what you vomited or passed. Mention blood thinners like aspirin or warfarin."}},{"id":"allergy","priority":6,"zh":{"patterns":["严重过敏","过敏性休克","喉头紧缩","喉咙发紧","喉咙肿了","全身起疹子还喘不上气","皮疹伴呼吸困难","被蜜蜂蜇了之后肿","吃药后全身肿"],"reply":"喉咙发紧、全身肿、喘不上气，可能是会快速恶化的严重过敏反应，请立即拨打 120 或去急诊，一刻都不要等。如果刚刚吃过药、被虫子蜇过、或接触过明显过敏原，把时间和物品说给医生听。不要自己先吃抗过敏药硬扛。"},"zh-Hant":{"patterns":["嚴重過敏","過敏性休克","喉頭緊縮","喉嚨發緊","喉嚨腫了","全身起疹子還喘不上氣","皮疹伴呼吸困難","被蜜蜂蜇了之後腫","吃藥後全身腫"],"reply":"喉嚨發緊、全身腫、喘不上氣，可能是會快速惡化的嚴重過敏反應，請立即撥打 120 或去急診，一刻都不要等。如果剛剛吃過藥、被蟲子蜇過、或接觸過明顯過敏原，把時間和物品說給醫生聽。不要自己先吃抗過敏藥硬扛。"},"en":{"patterns":["severe allergic reaction","anaphylaxis","throat is closing","swollen throat","hives and cannot breathe","swollen after a bee sting","swollen after taking medicine"],"reply":"A tightening throat, swelling, and hard breathing can be a severe allergic reaction that worsens fast. Call 120 or go to the ER now. Tell the doctor about any new medicine, sting, or food. Do not just take antihistamines and wait."}},{"id":"high_fever","priority":7,"zh":{"patterns":["高烧不退","持续高热","发烧超过三天","烧了三天不退","四十度","四十度五","41度","40度","烧到抽搐","退烧药不管用","高烧三天","高烧几天","烧了三天","一直高烧","反复高烧","退烧药也没用","吃了退烧药还烧"],"reply":"持续高烧不退，尤其是吃了退烧药还是压不下来，需要尽快让医生查找原因。请今天就去医院发热门诊或急诊；老人、孩子、孕妇和慢性病患者更不要拖。去医院时把体温记录和正在吃的药带上。"},"zh-Hant":{"patterns":["高燒不退","持續高熱","發燒超過三天","燒了三天不退","四十度","四十度五","41度","40度","燒到抽搐","退燒藥不管用","高燒三天","高燒幾天","燒了三天","一直高燒","反覆高燒","退燒藥也沒用","吃了退燒藥還燒"],"reply":"持續高燒不退，尤其是吃了退燒藥還是壓不下來，需要盡快讓醫生查找原因。請今天就去醫院發熱門診或急診；老人、孩子、孕婦和慢性病患者更不要拖。去醫院時把體溫記錄和正在吃的藥帶上。"},"en":{"patterns":["fever will not go down","high fever for days","fever over three days","41 degrees","40 degrees","fever medicine is not working","high fever for three days","fever keeps coming back","fever medicine is not helping"],"reply":"A fever that stays high, especially when medicine does not bring it down, needs a doctor to find the cause. Go to a fever clinic or the ER today. Bring your temperature record and the medicines you are taking."}},{"id":"pregnancy","priority":8,"zh":{"patterns":["怀孕了肚子痛","怀孕肚子疼","孕期出血","见红了","产后大出血","阴道大出血","怀孕了胸痛","胎动不见了"],"reply":"孕期的腹痛、出血、胸痛都可能是母婴双方的急症，请立即去有产科的急诊，不要等、不要自己用药。去医院时带上产检本，说清楚怀孕多少周、最后一次产检是什么时候。"},"zh-Hant":{"patterns":["懷孕了肚子痛","懷孕肚子疼","孕期出血","見紅了","產後大出血","陰道大出血","懷孕了胸痛","胎動不見了"],"reply":"孕期的腹痛、出血、胸痛都可能是母嬰雙方的急症，請立即去有產科的急診，不要等、不要自己用藥。去醫院時帶上產檢本，說清楚懷孕多少周、最後一次產檢是什麼時候。"},"en":{"patterns":["pregnant and have abdominal pain","pregnant with belly pain","bleeding during pregnancy","heavy bleeding after giving birth","pregnant with chest pain","baby stopped moving"],"reply":"Belly pain, bleeding, or chest pain during pregnancy can endanger both you and the baby. Go to an ER with obstetrics now. Bring your maternity record and say how many weeks along you are."}},{"id":"child","priority":9,"zh":{"patterns":["孩子惊厥","小孩抽搐","婴儿抽搐","孩子抽风","孩子叫不醒","婴儿精神差","孩子嘴唇发紫","小孩喘不过气"],"reply":"孩子抽搐、叫不醒、嘴唇发紫，请立即拨打 120 或直奔儿科急诊。发作时让孩子侧卧、不要往嘴里塞东西、记录开始和结束的时间；精神特别差、不肯吃奶、尿量明显减少也要尽快就医。"},"zh-Hant":{"patterns":["孩子驚厥","小孩抽搐","嬰兒抽搐","孩子抽風","孩子叫不醒","嬰兒精神差","孩子嘴唇發紫","小孩喘不過氣"],"reply":"孩子抽搐、叫不醒、嘴唇發紫，請立即撥打 120 或直奔兒科急診。發作時讓孩子側臥、不要往嘴裡塞東西、記錄開始和結束的時間；精神特別差、不肯吃奶、尿量明顯減少也要盡快就醫。"},"en":{"patterns":["my child has a seizure","child is convulsing","baby is having a fit","child will not wake up","baby seems very weak","child lips turned blue"],"reply":"Seizures, unresponsiveness, or blue lips in a child need emergency care. Call 120 or go to a pediatric ER now. Lay the child on their side, put nothing in the mouth, and time the episode."}},{"id":"selfharm","priority":10,"zh":{"patterns":["想自杀","不想活了","活着没意思","想自残","想伤害自己","割腕","想从楼上跳下去"],"reply":"谢谢您愿意说出来，这很重要。您现在最需要的是有人陪在身边：请马上联系一位信得过的家人或朋友，或拨打当地心理援助热线（如北京 010-82951332、上海 021-12320-5、全国 12355 青少年服务台），情况紧急请直接拨打 120 或去最近的急诊。请把家里可能伤到自己的东西先交给别人保管。"},"zh-Hant":{"patterns":["想自殺","不想活了","活著沒意思","想自殘","想傷害自己","割腕","想從樓上跳下去"],"reply":"謝謝您願意說出來，這很重要。您現在最需要的是有人陪在身邊：請馬上聯繫一位信得過的家人或朋友，或撥打當地心理援助熱線（如北京 010-82951332、上海 021-12320-5、全國 12355 青少年服務台），情況緊急請直接撥打 120 或去最近的急診。請把家裡可能傷到自己的東西先交給別人保管。"},"en":{"patterns":["i want to kill myself","i want to die","do not want to live anymore","i want to hurt myself","thinking about suicide"],"reply":"Thank you for telling me. What you need most right now is a person beside you. Please reach out to someone you trust, or call a local crisis hotline; if you are in immediate danger, call 120 or go to the nearest ER. Ask someone to hold onto anything that could hurt you."}}],"topics":[{"id":"headache","priority":10,"dept":{"zh":"神经内科","zh-Hant":"神經內科","en":"Neurology"},"zh":{"patterns":["头痛","头疼","头很痛","头好痛","脑壳疼","脑袋疼","偏头痛","头一阵一阵疼","两边太阳穴疼","后脑勺疼"],"empathy":"头痛起来真折磨人，我陪您一条一条理清楚，先看看有没有危险信号。","redflagHint":"如果头痛是突然发作、剧烈得从来没有过，或者伴着发烧、呕吐、看东西模糊、一边手脚没力气，请不要继续问我，立即去急诊或拨打 120。","questions":[{"q":"头痛是什么时候开始的？","options":["刚刚开始","今天开始的","已经好几天了","记不清了"]},{"q":"痛起来是什么感觉？","options":["胀胀地痛","一跳一跳地痛","像被勒住","说不上来"]},{"q":"有没有伴着发烧、呕吐，或者看东西模糊？","options":["都没有","有发烧","有呕吐","看东西模糊"]}],"triage":"大多数头痛和没睡好、用脑太久、血压波动、感冒发烧有关，歇一歇、睡一觉能缓解。如果反复发作、越来越痛、影响到睡觉和吃饭，建议近期预约神经内科门诊，带上平时的血压记录。出现上面说的危险信号，请立即去急诊。","edu":"头痛的原因非常多：睡眠不足、疲劳、情绪紧张、血压波动、感冒发烧都可能引起，也有偏头痛这类会反复发作的毛病。到底是哪一种，需要医生结合检查和您的病史来判断，我不能替您下结论。","sources":[{"org":"中华医学会神经病学分会","title":"中国偏头痛诊治指南"},{"org":"英国国家医疗服务体系（NHS）","title":"Headaches 症状说明"}]},"zh-Hant":{"patterns":["頭痛","頭疼","頭很痛","頭好痛","腦殼疼","腦袋疼","偏頭痛","頭一陣一陣疼","兩邊太陽穴疼","後腦勺疼"],"empathy":"頭痛起來真折磨人，我陪您一條一條理清楚，先看看有沒有危險信號。","redflagHint":"如果頭痛是突然發作、劇烈得從來沒有過，或者伴著發燒、嘔吐、看東西模糊、一邊手腳沒力氣，請不要繼續問我，立即去急診或撥打 120。","questions":[{"q":"頭痛是什麼時候開始的？","options":["剛剛開始","今天開始的","已經好幾天了","記不清了"]},{"q":"痛起來是什麼感覺？","options":["脹脹地痛","一跳一跳地痛","像被勒住","說不上來"]},{"q":"有沒有伴著發燒、嘔吐，或者看東西模糊？","options":["都沒有","有發燒","有嘔吐","看東西模糊"]}],"triage":"大多數頭痛和沒睡好、用腦太久、血壓波動、感冒發燒有關，歇一歇、睡一覺能緩解。如果反覆發作、越來越痛、影響到睡覺和吃飯，建議近期預約神經內科門診，帶上平時的血壓記錄。出現上面說的危險信號，請立即去急診。","edu":"頭痛的原因非常多：睡眠不足、疲勞、情緒緊張、血壓波動、感冒發燒都可能引起，也有偏頭痛這類會反覆發作的毛病。到底是哪一種，需要醫生結合檢查和您的病史來判斷，我不能替您下結論。","sources":[{"org":"中華醫學會神經病學分會","title":"中國偏頭痛診治指南"},{"org":"英國國家醫療服務體系（NHS）","title":"Headaches 症狀說明"}]},"en":{"patterns":["headache","my head hurts","head is pounding","migraine","splitting headache"],"empathy":"A headache is miserable. Let me walk through it with you and check for warning signs first.","redflagHint":"If the headache came on suddenly, is the worst you have ever had, or comes with fever, vomiting, blurred vision, or one-sided weakness, stop here and go to the ER or call 120.","questions":[{"q":"When did the headache start?","options":["Just now","Today","Several days ago","Not sure"]},{"q":"What does it feel like?","options":["Pressing or tight","Throbbing","Like a band","Hard to describe"]},{"q":"Any fever, vomiting, or blurred vision with it?","options":["None","Fever","Vomiting","Blurred vision"]}],"triage":"Most headaches are linked to poor sleep, strain, blood-pressure changes, or a cold, and ease with rest. If they keep coming back, get worse, or disturb sleep and meals, book a neurology outpatient visit soon and bring your blood-pressure records. With any warning sign above, go to the ER now.","edu":"Headaches have many causes: lack of sleep, fatigue, stress, blood-pressure swings, colds and fever, and recurring conditions such as migraine. Which one it is needs a doctor's exam and your history. I cannot decide for you.","sources":[{"org":"Chinese Medical Association, Neurology Branch","title":"Chinese guideline for migraine diagnosis and treatment"},{"org":"UK National Health Service (NHS)","title":"Headaches condition page"}]}},{"id":"dizziness","priority":11,"dept":{"zh":"神经内科 / 耳鼻喉科","zh-Hant":"神經內科 / 耳鼻喉科","en":"Neurology / ENT"},"zh":{"patterns":["头晕","头昏","晕乎乎","天旋地转","眩晕","站起来眼黑","站不稳","感觉要摔倒","一动就晕"],"empathy":"头晕起来确实让人不放心，我先把最危险的情况排掉。","redflagHint":"头晕同时伴着胸痛、说话不清楚、一边手脚没力气、剧烈头痛，或者直接晕过去了，请立即拨打 120。","questions":[{"q":"晕起来是天旋地转，还是头昏沉沉？","options":["天旋地转","头昏沉沉","站起来那一下晕","说不上来"]},{"q":"每次晕持续多久？","options":["几秒钟","几分钟","几十分钟以上","一直晕"]},{"q":"有没有伴着耳鸣、听力下降，或者恶心想吐？","options":["都没有","有耳鸣","听力下降","恶心想吐"]}],"triage":"体位变化时短短几秒的眩晕，多数和内耳功能有关；反复发作、伴着耳鸣听力下降，建议预约耳鼻喉科或神经内科门诊，查清原因。晕持续时间长、站不稳、老人独自在家容易摔伤，建议 24 小时内就诊，外出有人陪。","edu":"头晕既可能是内耳平衡器官的问题，也可能和血压、血糖、贫血或脑血管有关，老年人尤其常见。原因不同，治疗完全不同，需要医生做体格检查和必要的化验才能分清。","sources":[{"org":"默沙东诊疗手册（MSD Manual）大众版","title":"头晕"},{"org":"国家卫生健康委员会","title":"老年健康科普服务平台"}]},"zh-Hant":{"patterns":["頭暈","頭昏","暈乎乎","天旋地轉","眩暈","站起來眼黑","站不穩","感覺要摔倒","一動就暈"],"empathy":"頭暈起來確實讓人不放心，我先把最危險的情況排掉。","redflagHint":"頭暈同時伴著胸痛、說話不清楚、一邊手腳沒力氣、劇烈頭痛，或者直接暈過去了，請立即撥打 120。","questions":[{"q":"暈起來是天旋地轉，還是頭昏沉沉？","options":["天旋地轉","頭昏沉沉","站起來那一下暈","說不上來"]},{"q":"每次暈持續多久？","options":["幾秒鐘","幾分鐘","幾十分鐘以上","一直暈"]},{"q":"有沒有伴著耳鳴、聽力下降，或者惡心想吐？","options":["都沒有","有耳鳴","聽力下降","惡心想吐"]}],"triage":"體位變化時短短幾秒的眩暈，多數和內耳功能有關；反覆發作、伴著耳鳴聽力下降，建議預約耳鼻喉科或神經內科門診，查清原因。暈持續時間長、站不穩、老人獨自在家容易摔傷，建議 24 小時內就診，外出有人陪。","edu":"頭暈既可能是內耳平衡器官的問題，也可能和血壓、血糖、貧血或腦血管有關，老年人尤其常見。原因不同，治療完全不同，需要醫生做體格檢查和必要的化驗才能分清。","sources":[{"org":"默沙東診療手冊（MSD Manual）大眾版","title":"頭暈"},{"org":"國家衛生健康委員會","title":"老年健康科普服務平台"}]},"en":{"patterns":["dizzy","dizziness","the room is spinning","lightheaded when i stand up","cannot stand steady"],"empathy":"Dizziness is worrying. Let me rule out the dangerous causes first.","redflagHint":"If dizziness comes with chest pain, slurred speech, one-sided weakness, a severe headache, or fainting, call 120 now.","questions":[{"q":"Is the room spinning, or is your head just heavy?","options":["Room spinning","Head feels heavy","Only when standing","Hard to say"]},{"q":"How long does each episode last?","options":["Seconds","Minutes","Tens of minutes","All the time"]},{"q":"Any ringing in the ears, hearing loss, or nausea?","options":["None","Ringing ears","Hearing loss","Nausea"]}],"triage":"Brief spinning when changing position is often linked to the inner ear. Repeated episodes with ringing or hearing loss should be checked by ENT or neurology. Long episodes or unsteadiness in an older adult risk falls, so aim for a visit within 24 hours and do not go out alone.","edu":"Dizziness can come from the inner ear, or from blood pressure, blood sugar, anemia, or brain blood-vessel problems, and it is common in older adults. The treatments differ completely, so a doctor's exam and tests are needed.","sources":[{"org":"MSD Manual, Consumer Version","title":"Dizziness"},{"org":"National Health Commission of China","title":"Elderly health public-education platform"}]}},{"id":"fever","priority":12,"dept":{"zh":"发热门诊 / 呼吸内科","zh-Hant":"發熱門診 / 呼吸內科","en":"Fever clinic / Respiratory"},"zh":{"patterns":["发热","发烧","身上烫","体温高","发烧了","低烧","反复发烧","怕冷发抖"],"empathy":"发烧最熬人，我陪您看看该怎么办，先问清楚要紧的情况。","redflagHint":"高烧不退、吃了退烧药还是压不下来、喘不上气、意识模糊、抽搐，或者皮肤按压不褪色的小红点，请立即去急诊。","questions":[{"q":"体温大概多少度、烧了几天了？","options":["不到 38 度，一两天","38 到 39 度","39 度以上","好几天了"]},{"q":"除了发烧，还有哪里不舒服？","options":["咳嗽嗓子疼","头痛浑身酸","拉肚子","说不上来"]},{"q":"有没有高血压、糖尿病，或者在吃免疫抑制剂、激素？","options":["都没有","有慢性病","在吃免疫抑制剂","怀孕了"]}],"triage":"低烧一两天、精神还好，可以先多喝水多休息、观察体温变化；38.5 度以上或明显难受，建议 24 小时内到发热门诊就诊。老人、孕妇、慢性病患者和免疫功能差的人，别拖，尽早就医。就医时请戴口罩，说清楚体温记录和接触史。","edu":"发烧本身不是病，是身体在对抗感染或炎症的信号，感冒、流感、新冠、尿路感染等都可能引起。要紧的是找到原因，而不是把体温压下去就当没事，这需要医生判断。","sources":[{"org":"中国疾病预防控制中心","title":"流感等呼吸道传染病防控科普"},{"org":"默沙东诊疗手册（MSD Manual）大众版","title":"发热"}]},"zh-Hant":{"patterns":["發熱","發燒","身上燙","體溫高","發燒了","低燒","反覆發燒","怕冷發抖"],"empathy":"發燒最熬人，我陪您看看該怎麼辦，先問清楚要緊的情況。","redflagHint":"高燒不退、吃了退燒藥還是壓不下來、喘不上氣、意識模糊、抽搐，或者皮膚按壓不褪色的小紅點，請立即去急診。","questions":[{"q":"體溫大概多少度、燒了幾天了？","options":["不到 38 度，一兩天","38 到 39 度","39 度以上","好幾天了"]},{"q":"除了發燒，還有哪裡不舒服？","options":["咳嗽嗓子疼","頭痛渾身酸","拉肚子","說不上來"]},{"q":"有沒有高血壓、糖尿病，或者在吃免疫抑制劑、激素？","options":["都沒有","有慢性病","在吃免疫抑制劑","懷孕了"]}],"triage":"低燒一兩天、精神還好，可以先多喝水多休息、觀察體溫變化；38.5 度以上或明顯難受，建議 24 小時內到發熱門診就診。老人、孕婦、慢性病患者和免疫功能差的人，別拖，盡早就醫。就醫時請戴口罩，說清楚體溫記錄和接觸史。","edu":"發燒本身不是病，是身體在對抗感染或發炎的信號，感冒、流感、新冠、尿路感染等都可能引起。要緊的是找到原因，而不是把體溫壓下去就當沒事，這需要醫生判斷。","sources":[{"org":"中國疾病預防控制中心","title":"流感等呼吸道傳染病防控科普"},{"org":"默沙東診療手冊（MSD Manual）大眾版","title":"發熱"}]},"en":{"patterns":["fever","i have a fever","burning up","high temperature","chills and fever"],"empathy":"Fevers are exhausting. Let me sort out what to do, starting with the urgent parts.","redflagHint":"A fever that stays high despite medicine, hard breathing, confusion, seizures, or a rash that does not fade when pressed needs the ER now.","questions":[{"q":"What is the temperature and for how many days?","options":["Under 38C, 1-2 days","38-39C","Above 39C","Several days"]},{"q":"What else do you feel?","options":["Cough and sore throat","Headache and body aches","Diarrhea","Hard to say"]},{"q":"Any diabetes, high blood pressure, immune-suppressing drugs, or pregnancy?","options":["None","Chronic illness","On immune suppressants","Pregnant"]}],"triage":"A mild fever for a day or two with normal energy can be watched at home with fluids and rest. At 38.5C or higher, or feeling clearly unwell, visit a fever clinic within 24 hours. Older adults, pregnant women, and people with chronic illness should not wait. Wear a mask and bring your temperature record.","edu":"Fever is not a disease itself; it is the body fighting infection or inflammation. Colds, flu, COVID-19, and urinary infections can all cause it. The key is finding the cause, which needs a doctor.","sources":[{"org":"Chinese Center for Disease Control and Prevention","title":"Influenza and respiratory infection prevention"},{"org":"MSD Manual, Consumer Version","title":"Fever"}]}},{"id":"cough","priority":13,"dept":{"zh":"呼吸内科","zh-Hant":"呼吸內科","en":"Respiratory medicine"},"zh":{"patterns":["咳嗽","咳得厉害","老咳嗽","干咳","咳痰","咳黄痰","半夜咳","一咳就停不下来"],"empathy":"咳嗽久了最影响休息，我帮您理一理，先排除要紧的情况。","redflagHint":"咳血、喘不上气、嘴唇发紫、胸痛伴大汗，请立即去急诊。","questions":[{"q":"咳嗽多久了，有痰吗？","options":["几天，没痰","几天，有白痰","超过两周","有黄绿痰"]},{"q":"什么情况下咳得厉害？","options":["夜里平躺时","早上起床时","一遇到冷空气","说不清"]},{"q":"有没有喘不上气、胸痛，或者咳出血？","options":["都没有","有点喘","胸口疼","咳出血了"]}],"triage":"感冒后一两周的咳嗽很常见，注意休息、多喝温水、避开烟雾刺激；超过两周不好、有黄绿痰、发烧反复，建议预约呼吸内科门诊。出现喘不上气、胸痛或咳血，请立即就医。吸烟的人建议借这次机会和医生谈谈戒烟。","edu":"咳嗽是身体的保护反射，感冒、支气管炎、哮喘、过敏、甚至胃食管反流都可能引起，病程不同原因也不同。是否需要拍片、用什么药，必须医生看过才能定。","sources":[{"org":"中华医学会呼吸病学分会","title":"中国咳嗽的诊断与治疗指南"},{"org":"英国国家医疗服务体系（NHS）","title":"Cough 症状说明"}]},"zh-Hant":{"patterns":["咳嗽","咳得厲害","老咳嗽","乾咳","咳痰","咳黃痰","半夜咳","一咳就停不下來"],"empathy":"咳嗽久了最影響休息，我幫您理一理，先排除要緊的情況。","redflagHint":"咳血、喘不上氣、嘴唇發紫、胸痛伴大汗，請立即去急診。","questions":[{"q":"咳嗽多久了，有痰嗎？","options":["幾天，沒痰","幾天，有白痰","超過兩週","有黃綠痰"]},{"q":"什麼情況下咳得厲害？","options":["夜裡平躺時","早上起床時","一遇到冷空氣","說不清"]},{"q":"有沒有喘不上氣、胸痛，或者咳出血？","options":["都沒有","有點喘","胸口疼","咳出血了"]}],"triage":"感冒後一兩週的咳嗽很常見，注意休息、多喝溫水、避開煙霧刺激；超過兩週不好、有黃綠痰、發燒反覆，建議預約呼吸內科門診。出現喘不上氣、胸痛或咳血，請立即就醫。吸煙的人建議借這次機會和醫生談談戒煙。","edu":"咳嗽是身體的保護反射，感冒、支氣管炎、哮喘、過敏、甚至胃食道反流都可能引起，病程不同原因也不同。是否需要拍片、用什麼藥，必須醫生看過才能定。","sources":[{"org":"中華醫學會呼吸病學分會","title":"中國咳嗽的診斷與治療指南"},{"org":"英國國家醫療服務體系（NHS）","title":"Cough 症狀說明"}]},"en":{"patterns":["cough","coughing a lot","dry cough","coughing up phlegm","cough at night"],"empathy":"A lasting cough wrecks your sleep. Let me sort it out and rule out the urgent causes.","redflagHint":"Coughing up blood, hard breathing, blue lips, or chest pain with sweating needs the ER now.","questions":[{"q":"How long, and is there phlegm?","options":["A few days, no phlegm","A few days, white phlegm","Over two weeks","Green or yellow phlegm"]},{"q":"When is the cough worst?","options":["Lying down at night","Right after waking","In cold air","Not sure"]},{"q":"Any breathlessness, chest pain, or blood?","options":["None","A bit breathless","Chest pain","Coughed blood"]}],"triage":"A cough for one to two weeks after a cold is common; rest, warm fluids, and avoiding smoke help. Beyond two weeks, green phlegm, or repeated fever, book a respiratory clinic visit. Breathlessness, chest pain, or blood means go now.","edu":"Coughing is a protective reflex. Colds, bronchitis, asthma, allergies, and even acid reflux can cause it, and the cause varies with duration. Whether you need an X-ray or medicine is for the doctor to decide.","sources":[{"org":"Chinese Medical Association, Respiratory Branch","title":"Chinese guideline for cough diagnosis and treatment"},{"org":"UK National Health Service (NHS)","title":"Cough condition page"}]}},{"id":"sore_throat","priority":14,"dept":{"zh":"耳鼻喉科","zh-Hant":"耳鼻喉科","en":"ENT"},"zh":{"patterns":["嗓子疼","喉咙痛","咽喉痛","咽口水疼","嗓子哑","喉咙肿痛","扁桃体疼"],"empathy":"嗓子疼起来连喝水都受罪，我陪您看看要不要紧。","redflagHint":"喉咙肿得喘不上气、说不出话、口水往外流、脖子僵硬发硬，请立即去急诊。","questions":[{"q":"嗓子疼几天了，发烧吗？","options":["一两天，不烧","两三天，有点烧","超过一周","高烧"]},{"q":"除了嗓子，还有哪里不舒服？","options":["鼻塞流涕","咳嗽","耳朵里面疼","说不上来"]},{"q":"有没有呼吸不畅、嘴巴张不开，或者脖子发硬？","options":["都没有","呼吸有点费劲","嘴巴张不开","脖子发硬"]}],"triage":"普通感冒引起的嗓子疼，多数一周内自己好转，多喝温水、淡盐水漱口、少说话。高烧不退、张不开嘴、吞咽困难到水都喝不下、呼吸不畅，请立即就医；反复发作的扁桃体炎建议预约耳鼻喉科评估。","edu":"嗓子疼大多是病毒感染，抗生素对病毒无效，这也是为什么不建议一疼就自己吃消炎药。是否需要化验、用什么治疗，要医生看过喉咙再定。","sources":[{"org":"美国梅奥诊所（Mayo Clinic）","title":"Sore throat 疾病科普"},{"org":"英国国家医疗服务体系（NHS）","title":"Sore throat 症状说明"}]},"zh-Hant":{"patterns":["嗓子疼","喉嚨痛","咽喉痛","吞口水疼","嗓子啞","喉嚨腫痛","扁桃體疼"],"empathy":"嗓子疼起來連喝水都受罪，我陪您看看要不要緊。","redflagHint":"喉嚨腫得喘不上氣、說不出話、口水往外流、脖子僵硬發硬，請立即去急診。","questions":[{"q":"嗓子疼幾天了，發燒嗎？","options":["一兩天，不燒","兩三天，有點燒","超過一週","高燒"]},{"q":"除了嗓子，還有哪裡不舒服？","options":["鼻塞流涕","咳嗽","耳朵裡面疼","說不上來"]},{"q":"有沒有呼吸不暢、嘴巴張不開，或者脖子發硬？","options":["都沒有","呼吸有點費勁","嘴巴張不開","脖子發硬"]}],"triage":"普通感冒引起的嗓子疼，多數一週內自己好轉，多喝溫水、淡鹽水漱口、少說話。高燒不退、張不開嘴、吞嚥困難到水都喝不下、呼吸不暢，請立即就醫；反覆發作的扁桃體炎建議預約耳鼻喉科評估。","edu":"嗓子疼大多是病毒感染，抗生素對病毒無效，這也是為什麼不建議一疼就自己吃消炎藥。是否需要化驗、用什麼治療，要醫生看過喉嚨再定。","sources":[{"org":"美國梅奧診所（Mayo Clinic）","title":"Sore throat 疾病科普"},{"org":"英國國家醫療服務體系（NHS）","title":"Sore throat 症狀說明"}]},"en":{"patterns":["sore throat","throat hurts","painful swallowing","hoarse voice","swollen tonsils"],"empathy":"A sore throat makes even drinking painful. Let me see whether it needs urgent care.","redflagHint":"A swollen throat with hard breathing, drooling, a stiff neck, or inability to open the mouth needs the ER now.","questions":[{"q":"How many days, and any fever?","options":["1-2 days, no fever","2-3 days, slight fever","Over a week","High fever"]},{"q":"Anything else bothering you?","options":["Runny nose","Cough","Ear pain","Hard to say"]},{"q":"Any trouble breathing, opening your mouth, or a stiff neck?","options":["None","Breathing is harder","Cannot open mouth","Stiff neck"]}],"triage":"Most sore throats from colds settle within a week with warm fluids, salt-water gargles, and voice rest. High fever, drooling, inability to swallow water, or breathing trouble needs care now. Recurrent tonsillitis is worth an ENT assessment.","edu":"Most sore throats are viral, and antibiotics do nothing against viruses, which is why self-medicating with them is not advised. Whether you need a test or treatment is for the doctor after examining your throat.","sources":[{"org":"Mayo Clinic","title":"Sore throat condition page"},{"org":"UK National Health Service (NHS)","title":"Sore throat condition page"}]}},{"id":"abdominal_pain","priority":15,"dept":{"zh":"消化内科 / 普外科","zh-Hant":"消化內科 / 普通外科","en":"Gastroenterology / General surgery"},"zh":{"patterns":["肚子疼","肚子痛","腹痛","肚脐周围疼","右下腹疼","胃疼","胃痛","小肚子疼","一阵一阵绞痛"],"empathy":"肚子疼最难忍，我帮您一条一条问清楚，危险的情况先排掉。","redflagHint":"肚子硬得像木板、一按就痛得厉害、呕血或便血、疼得打滚冒冷汗，请立即去急诊。","questions":[{"q":"疼在哪个位置，什么时候开始的？","options":["上腹部，今天开始","右下腹，刚出现","到处都疼","说不清"]},{"q":"是什么性质的疼？","options":["一阵一阵绞痛","一直隐隐作痛","烧灼样疼","说不清"]},{"q":"有没有发烧、呕吐，或者大便带血？","options":["都没有","有发烧","呕吐","大便带血"]}],"triage":"饮食不当引起的胃痛、受凉后的肚子疼，多数一两天内缓解，可以先清淡饮食、别吃凉的辣的。疼痛持续超过一天不缓解、越来越重、固定在右下腹、伴发烧呕吐，建议 24 小时内就诊；出现危险信号请立即去急诊。老人和孕妇的腹痛一律不要拖。","edu":"肚子疼从吃坏肚子、便秘到阑尾炎、胆结石、胰腺炎都可能，位置和性质能提供重要线索，但单凭描述无法确诊，需要医生查体甚至影像检查。在没弄清之前，不要盲目吃止痛药。","sources":[{"org":"默沙东诊疗手册（MSD Manual）大众版","title":"急性腹痛"},{"org":"中华医学会消化病学分会","title":"中国慢性胃炎诊治指南"}]},"zh-Hant":{"patterns":["肚子疼","肚子痛","腹痛","肚臍周圍疼","右下腹疼","胃疼","胃痛","小肚子疼","一陣一陣絞痛"],"empathy":"肚子疼最難忍，我幫您一條一條問清楚，危險的情況先排掉。","redflagHint":"肚子硬得像木板、一按就痛得厲害、嘔血或便血、疼得打滾冒冷汗，請立即去急診。","questions":[{"q":"疼在哪個位置，什麼時候開始的？","options":["上腹部，今天開始","右下腹，剛出現","到處都疼","說不清"]},{"q":"是什麼性質的疼？","options":["一陣一陣絞痛","一直隱隱作痛","燒灼樣疼","說不清"]},{"q":"有沒有發燒、嘔吐，或者大便帶血？","options":["都沒有","有發燒","嘔吐","大便帶血"]}],"triage":"飲食不當引起的胃痛、受涼後的肚子疼，多數一兩天內緩解，可以先清淡飲食、別吃涼的辣的。疼痛持續超過一天不緩解、越來越重、固定在右下腹、伴發燒嘔吐，建議 24 小時內就診；出現危險信號請立即去急診。老人和孕婦的腹痛一律不要拖。","edu":"肚子疼從吃壞肚子、便祕到闌尾炎、膽結石、胰臟炎都可能，位置和性質能提供重要線索，但單憑描述無法確診，需要醫生查體甚至影像檢查。在沒弄清之前，不要盲目吃止痛藥。","sources":[{"org":"默沙東診療手冊（MSD Manual）大眾版","title":"急性腹痛"},{"org":"中華醫學會消化病學分會","title":"中國慢性胃炎診治指南"}]},"en":{"patterns":["stomach ache","stomach pain","belly hurts","pain in my abdomen","cramping pain","lower abdominal pain"],"empathy":"Belly pain is hard to bear. Let me ask a few things and rule out danger first.","redflagHint":"A board-like rigid belly, severe tenderness, vomiting blood or blood in stool, or drenching sweats need the ER now.","questions":[{"q":"Where is the pain and when did it start?","options":["Upper belly, today","Lower right, just now","Everywhere","Not sure"]},{"q":"What kind of pain is it?","options":["Cramping waves","Constant dull ache","Burning","Not sure"]},{"q":"Any fever, vomiting, or blood in stool?","options":["None","Fever","Vomiting","Blood in stool"]}],"triage":"Stomach aches from food or a chill often ease in a day or two with light food and nothing cold or spicy. Pain lasting more than a day, worsening, fixed in the lower right, or with fever and vomiting needs a visit within 24 hours. Never ignore belly pain in older adults or pregnancy.","edu":"Belly pain ranges from bad food and constipation to appendicitis, gallstones, or pancreatitis. Location and character give clues, but description alone cannot confirm anything; a doctor's exam and imaging decide. Do not blindly take painkillers first.","sources":[{"org":"MSD Manual, Consumer Version","title":"Acute abdominal pain"},{"org":"Chinese Medical Association, Gastroenterology Branch","title":"Chinese guideline for chronic gastritis"}]}},{"id":"diarrhea","priority":16,"dept":{"zh":"消化内科 / 肠道门诊","zh-Hant":"消化內科 / 腸道門診","en":"Gastroenterology"},"zh":{"patterns":["拉肚子","腹泻","跑肚","拉稀","一天拉好几次","水样便","拉水"],"empathy":"拉肚子最怕脱水，我帮您看看现在该怎么办。","redflagHint":"拉得站不起来、口干尿少、便血、高烧不退、意识模糊，请立即就医。","questions":[{"q":"一天拉几次，大便是什么样？","options":["三四次，稀便","次数很多，水样","有黏液脓血","记不清"]},{"q":"有没有发烧、呕吐？","options":["都没有","有发烧","有呕吐","又烧又吐"]},{"q":"最近有没有吃不新鲜的东西、外出就餐，或者有人在吃同样的饭？","options":["都没有","吃了剩菜或凉菜","外出就餐过","家人也这样"]}],"triage":"大多数腹泻是病毒或吃坏东西引起，关键是把水补上：口服补液盐或淡盐水加糖，少量多次喝，别只喝白开水。一两天内好转可以先观察；高烧、便血、脱水明显、老人孩子孕妇腹泻超过一天，请尽快就医。","edu":"腹泻时身体丢的不只是水，还有盐分，所以补液比止泻更重要，这也是不建议一腹泻就吃强力止泻药的原因。是否需要化验大便、用什么药，要医生定。","sources":[{"org":"中国疾病预防控制中心","title":"感染性腹泻防控科普"},{"org":"世界卫生组织（WHO）","title":"腹泻病（Diarrhoeal disease）专题"}]},"zh-Hant":{"patterns":["拉肚子","腹瀉","跑肚","拉稀","一天拉好幾次","水樣便","拉水"],"empathy":"拉肚子最怕脫水，我幫您看看現在該怎麼辦。","redflagHint":"拉得站不起來、口乾尿少、便血、高燒不退、意識模糊，請立即就醫。","questions":[{"q":"一天拉幾次，大便是什麼樣？","options":["三四次，稀便","次數很多，水樣","有黏液膿血","記不清"]},{"q":"有沒有發燒、嘔吐？","options":["都沒有","有發燒","有嘔吐","又燒又吐"]},{"q":"最近有沒有吃不新鮮的東西、外出就餐，或者有人在吃同樣的飯？","options":["都沒有","吃了剩菜或涼菜","外出就餐過","家人也這樣"]}],"triage":"大多數腹瀉是病毒或吃壞東西引起，關鍵是把水補上：口服補液鹽或淡鹽水加糖，少量多次喝，別只喝白開水。一兩天內好轉可以先觀察；高燒、便血、脫水明顯、老人孩子孕婦腹瀉超過一天，請盡快就醫。","edu":"腹瀉時身體丟的不只是水，還有鹽分，所以補液比止瀉更重要，這也是不建議一腹瀉就吃強力止瀉藥的原因。是否需要化驗大便、用什麼藥，要醫生定。","sources":[{"org":"中國疾病預防控制中心","title":"感染性腹瀉防控科普"},{"org":"世界衛生組織（WHO）","title":"腹瀉病（Diarrhoeal disease）專題"}]},"en":{"patterns":["diarrhea","the runs","loose stools","pooping many times a day","watery stool"],"empathy":"Diarrhea's biggest risk is dehydration. Let me work out what to do.","redflagHint":"Too weak to stand, dry mouth with little urine, blood in stool, persistent high fever, or confusion needs care now.","questions":[{"q":"How many times a day, and what does it look like?","options":["3-4 times, loose","Many times, watery","Mucus or blood","Not sure"]},{"q":"Any fever or vomiting?","options":["None","Fever","Vomiting","Both"]},{"q":"Any spoiled food, eating out, or others with the same meal?","options":["None","Leftovers or cold dishes","Ate out","Family too"]}],"triage":"Most diarrhea is viral or food-related; the priority is fluids: oral rehydration salts or lightly salted sweetened water, sipped often, not plain water alone. Watch for a day or two if it is mild. High fever, blood, clear dehydration, or diarrhea over a day in older adults, children, or pregnancy needs care.","edu":"Diarrhea loses water and salts, so rehydration matters more than stopping the stool, which is why strong anti-diarrheals are not advised first. Stool tests and medicines are for the doctor to decide.","sources":[{"org":"Chinese Center for Disease Control and Prevention","title":"Infectious diarrhea prevention"},{"org":"World Health Organization (WHO)","title":"Diarrhoeal disease topic page"}]}},{"id":"nausea_vomit","priority":17,"dept":{"zh":"消化内科","zh-Hant":"消化內科","en":"Gastroenterology"},"zh":{"patterns":["恶心","想吐","呕吐","吐了","反胃","干呕","吃不下饭还想吐"],"empathy":"恶心呕吐最耗人，我陪您看看是哪儿出了问题。","redflagHint":"呕血、吐到脱水、腹痛剧烈、伴胸痛大汗、意识不清，请立即去急诊。","questions":[{"q":"吐出来的是食物、苦水，还是带血？","options":["食物","苦水或酸水","带血丝","说不上来"]},{"q":"一天吐几次，还能喝水吗？","options":["一两次，能喝水","好几次，勉强能喝","喝不进去","说不上来"]},{"q":"吐之前有没有吃坏东西、头部受伤，或者剧烈头痛？","options":["都没有","吃坏东西了","撞过头","头痛得厉害"]}],"triage":"吃坏东西、晕车、早孕反应引起的恶心呕吐，多数一两天缓解，可以先禁食一两顿、少量多次喝淡盐水或补液盐。反复呕吐、喝水都吐、伴腹痛或头痛、老人和慢性病患者，建议 24 小时内就诊。","edu":"恶心呕吐的原因从吃坏东西、胃肠炎、晕车到头部问题、代谢问题都可能，吐出来的样子和伴随症状是重要线索。反复呕吐时别急着吃止吐药，先防脱水，让医生判断原因。","sources":[{"org":"默沙东诊疗手册（MSD Manual）大众版","title":"恶心与呕吐"},{"org":"英国国家医疗服务体系（NHS）","title":"Feeling sick (nausea) 症状说明"}]},"zh-Hant":{"patterns":["噁心","想吐","嘔吐","吐了","反胃","乾嘔","吃不下飯還想吐"],"empathy":"噁心嘔吐最耗人，我陪您看看是哪兒出了問題。","redflagHint":"嘔血、吐到脫水、腹痛劇烈、伴胸痛大汗、意識不清，請立即去急診。","questions":[{"q":"吐出來的是食物、苦水，還是帶血？","options":["食物","苦水或酸水","帶血絲","說不上來"]},{"q":"一天吐幾次，還能喝水嗎？","options":["一兩次，能喝水","好幾次，勉強能喝","喝不進去","說不上來"]},{"q":"吐之前有沒有吃壞東西、頭部受傷，或者劇烈頭痛？","options":["都沒有","吃壞東西了","撞過頭","頭痛得厲害"]}],"triage":"吃壞東西、暈車、早孕反應引起的噁心嘔吐，多數一兩天緩解，可以先禁食一兩頓、少量多次喝淡鹽水或補液鹽。反覆嘔吐、喝水都吐、伴腹痛或頭痛、老人和慢性病患者，建議 24 小時內就診。","edu":"噁心嘔吐的原因從吃壞東西、胃腸炎、暈車到頭部問題、代謝問題都可能，吐出來的樣子和伴隨症狀是重要線索。反覆嘔吐時別急著吃止吐藥，先防脫水，讓醫生判斷原因。","sources":[{"org":"默沙東診療手冊（MSD Manual）大眾版","title":"噁心與嘔吐"},{"org":"英國國家醫療服務體系（NHS）","title":"Feeling sick (nausea) 症狀說明"}]},"en":{"patterns":["nausea","feel like throwing up","vomiting","throwing up","retching"],"empathy":"Nausea and vomiting wear you out. Let me find where the problem is.","redflagHint":"Vomiting blood, vomiting until dehydrated, severe belly pain, chest pain with sweating, or confusion needs the ER now.","questions":[{"q":"Is it food, bitter fluid, or blood?","options":["Food","Bitter or sour fluid","Streaks of blood","Not sure"]},{"q":"How many times, and can you keep water down?","options":["Once or twice, water stays","Several times, barely","Cannot keep water","Not sure"]},{"q":"Bad food, a head injury, or a severe headache before this?","options":["None","Bad food","Hit my head","Severe headache"]}],"triage":"Nausea from bad food, motion sickness, or early pregnancy usually settles in a day or two: skip a meal or two, then sip lightly salted water or rehydration solution. Repeated vomiting, unable to keep water down, or pain and headache in older adults or chronic illness needs a visit within 24 hours.","edu":"Causes range from bad food and gastroenteritis to motion sickness, head problems, and metabolic issues. What comes up and the accompanying symptoms are important clues. With repeated vomiting, prevent dehydration first and let the doctor find the cause.","sources":[{"org":"MSD Manual, Consumer Version","title":"Nausea and vomiting"},{"org":"UK National Health Service (NHS)","title":"Feeling sick (nausea) page"}]}},{"id":"rash","priority":18,"dept":{"zh":"皮肤科","zh-Hant":"皮膚科","en":"Dermatology"},"zh":{"patterns":["皮疹","起疹子","身上痒","长疙瘩","风团","红斑","一抓一道痕"],"empathy":"又痒又难看最闹心，我帮您看看要不要紧。","redflagHint":"皮疹伴着喘不上气、喉咙发紧、脸肿、高烧不退，请立即去急诊。","questions":[{"q":"疹子长什么样、痒不痒？","options":["一片红，很痒","一个个疙瘩","风团一样，来得快去得快","说不上来"]},{"q":"长了多久，范围在扩大吗？","options":["一两天，没扩大","一两天，在扩大","超过一周","反复发作"]},{"q":"出现前有没有吃新药、吃特别的东西，或者被虫子咬？","options":["都没有","吃了新药","吃了海鲜等食物","被虫子咬过"]}],"triage":"小范围、不扩散、不发烧的疹子可以先观察，避免搔抓、热水烫洗和乱涂药膏。范围扩大、反复发作、影响睡眠，或说不清原因，建议预约皮肤科门诊；用药后出现的皮疹更要尽快就诊，并把药名告诉医生。","edu":"皮疹的原因很多：过敏、湿疹、病毒或细菌感染、药物反应都可能，单凭样子很难定性。是否需要吃药、涂什么，必须医生看过才能定，自己乱涂激素药膏可能越涂越糟。","sources":[{"org":"默沙东诊疗手册（MSD Manual）大众版","title":"皮疹与瘙痒"},{"org":"国家卫生健康委员会","title":"健康科普平台"}]},"zh-Hant":{"patterns":["皮疹","起疹子","身上癢","長疙瘩","風團","紅斑","一抓一道痕"],"empathy":"又癢又難看最鬧心，我幫您看看要不要緊。","redflagHint":"皮疹伴著喘不上氣、喉嚨發緊、臉腫、高燒不退，請立即去急診。","questions":[{"q":"疹子長什麼樣、癢不癢？","options":["一片紅，很癢","一個個疙瘩","風團一樣，來得快去得快","說不上來"]},{"q":"長了多久，範圍在擴大嗎？","options":["一兩天，沒擴大","一兩天，在擴大","超過一週","反覆發作"]},{"q":"出現前有沒有吃新藥、吃特別的東西，或者被蟲子咬？","options":["都沒有","吃了新藥","吃了海鮮等食物","被蟲子咬過"]}],"triage":"小範圍、不擴散、不發燒的疹子可以先觀察，避免搔抓、熱水燙洗和亂塗藥膏。範圍擴大、反覆發作、影響睡眠，或說不清原因，建議預約皮膚科門診；用藥後出現的皮疹更要盡快就診，並把藥名告訴醫生。","edu":"皮疹的原因很多：過敏、濕疹、病毒或細菌感染、藥物反應都可能，單憑樣子很難定性。是否需要吃藥、塗什麼，必須醫生看過才能定，自己亂塗激素藥膏可能越塗越糟。","sources":[{"org":"默沙東診療手冊（MSD Manual）大眾版","title":"皮疹與瘙癢"},{"org":"國家衛生健康委員會","title":"健康科普平台"}]},"en":{"patterns":["rash","skin rash","breaking out in hives","itchy bumps","red patches on skin"],"empathy":"Itchy, ugly rashes are upsetting. Let me see if this needs urgent care.","redflagHint":"A rash with hard breathing, a tight throat, facial swelling, or persistent high fever needs the ER now.","questions":[{"q":"What do the spots look like, and are they itchy?","options":["Red patches, very itchy","Individual bumps","Hives that come and go","Hard to say"]},{"q":"How long, and is it spreading?","options":["1-2 days, not spreading","1-2 days, spreading","Over a week","Keeps coming back"]},{"q":"Any new medicine, unusual food, or insect bites before it?","options":["None","New medicine","Seafood or new food","Insect bite"]}],"triage":"Small, non-spreading rashes without fever can be watched: no scratching, no hot water, and no random creams. Spreading, recurring, sleep-disturbing, or unexplained rashes deserve a dermatology appointment; a rash after a new medicine needs to be seen soon, with the drug name.","edu":"Rashes have many causes: allergy, eczema, viral or bacterial infection, drug reactions. Looks alone rarely settle it. What to take or apply is for the doctor, and random steroid creams can make things worse.","sources":[{"org":"MSD Manual, Consumer Version","title":"Rashes and itching"},{"org":"National Health Commission of China","title":"Health public-education platform"}]}},{"id":"back_pain","priority":19,"dept":{"zh":"骨科 / 康复科","zh-Hant":"骨科 / 復健科","en":"Orthopedics / Rehabilitation"},"zh":{"patterns":["腰疼","腰痛","腰酸","闪了腰","腰直不起来","腰疼得动不了"],"empathy":"腰疼起来连翻身都难，我陪您一步步来。","redflagHint":"腰疼伴着两条腿没力气、大小便失控或排不出、会阴发麻，请立即去急诊。","questions":[{"q":"疼了多久，是怎么引起的？","options":["刚扭伤","几天了","超过两周","说不清原因"]},{"q":"疼在什么位置？","options":["正中间一束","一边屁股大腿","整片都疼","说不上来"]},{"q":"有没有腿麻、腿没力气，或者大小便不正常？","options":["都没有","腿麻","腿没力气","大小便不正常"]}],"triage":"扭伤、受凉、劳累引起的腰疼，多数一两周缓解：卧床别超过一两天，温热敷、慢慢活动，避免弯腰搬重物。两周不好、夜里痛醒、伴着腿麻无力，建议预约骨科或康复科门诊；出现危险信号请立即就医。","edu":"腰疼最常见的原因是肌肉韧带劳损和腰椎退变，少数情况涉及神经压迫甚至更严重的问题。腿麻无力和大小便改变是区别「能不能先观察」的关键信号，出现就不要拖。","sources":[{"org":"美国梅奥诊所（Mayo Clinic）","title":"Back pain 疾病科普"},{"org":"默沙东诊疗手册（MSD Manual）大众版","title":"腰痛"}]},"zh-Hant":{"patterns":["腰疼","腰痛","腰酸","閃了腰","腰直不起來","腰疼得動不了"],"empathy":"腰疼起來連翻身都難，我陪您一步步來。","redflagHint":"腰疼伴著兩條腿沒力氣、大小便失控或排不出、會陰發麻，請立即去急診。","questions":[{"q":"疼了多久，是怎麼引起的？","options":["剛扭傷","幾天了","超過兩週","說不清原因"]},{"q":"疼在什麼位置？","options":["正中間一束","一邊屁股大腿","整片都疼","說不上來"]},{"q":"有沒有腿麻、腿沒力氣，或者大小便不正常？","options":["都沒有","腿麻","腿沒力氣","大小便不正常"]}],"triage":"扭傷、受涼、勞累引起的腰疼，多數一兩週緩解：臥床別超過一兩天，溫熱敷、慢慢活動，避免彎腰搬重物。兩週不好、夜裡痛醒、伴著腿麻無力，建議預約骨科或復健科門診；出現危險信號請立即就醫。","edu":"腰疼最常見的原因是肌肉韌帶勞損和腰椎退變，少數情況涉及神經壓迫甚至更嚴重的問題。腿麻無力和大小便改變是區別「能不能先觀察」的關鍵信號，出現就不要拖。","sources":[{"org":"美國梅奧診所（Mayo Clinic）","title":"Back pain 疾病科普"},{"org":"默沙東診療手冊（MSD Manual）大眾版","title":"腰痛"}]},"en":{"patterns":["back pain","lower back hurts","my back is sore","threw my back out","cannot straighten my back"],"empathy":"Back pain makes even turning over hard. Let me take it step by step.","redflagHint":"Back pain with weakness in both legs, loss of bladder or bowel control, or numbness in the saddle area needs the ER now.","questions":[{"q":"How long, and what caused it?","options":["Just twisted it","A few days","Over two weeks","No clear cause"]},{"q":"Where is the pain?","options":["Center strip","One side into the leg","Whole area","Hard to say"]},{"q":"Any leg numbness, leg weakness, or bladder or bowel changes?","options":["None","Leg numbness","Leg weakness","Bladder or bowel changes"]}],"triage":"Back pain from strain, cold, or overwork usually eases in one to two weeks: bed rest no more than a day or two, warm compresses, gentle movement, no heavy lifting. Pain beyond two weeks, night pain, or leg numbness and weakness needs orthopedics or rehabilitation. Red flags mean go now.","edu":"Most back pain comes from muscle and ligament strain and degenerative change; a minority involves nerve compression or worse. Leg weakness and bladder or bowel changes are what separate watch-and-wait from urgent care.","sources":[{"org":"Mayo Clinic","title":"Back pain condition page"},{"org":"MSD Manual, Consumer Version","title":"Low back pain"}]}},{"id":"insomnia","priority":20,"dept":{"zh":"神经内科 / 心理科","zh-Hant":"神經內科 / 心理科","en":"Neurology / Psychology"},"zh":{"patterns":["失眠","睡不着","入睡困难","半夜老醒","睡眠浅","天天做梦","睡不好"],"empathy":"睡不着最熬人，我陪您看看能从哪里改善。","redflagHint":"长期睡不着伴情绪低落、觉得活着没意思，请尽快联系家人陪伴并就医，必要时拨打心理援助热线。","questions":[{"q":"主要是睡不着，还是半夜老醒？","options":["躺下睡不着","半夜老醒","早早就醒","说不上来"]},{"q":"这样的情况持续多久了？","options":["最近几天","一两周","一两个月","半年以上"]},{"q":"睡前有没有喝浓茶咖啡、想事情想得太多，或者在吃药？","options":["都没有","喝茶或咖啡","心里有事","在吃药"]}],"triage":"短期睡不好，先从睡眠习惯入手：固定作息、睡前不喝浓茶咖啡、白天少躺少睡、卧室安静遮光。持续一个月以上、白天没精神、情绪低落，建议预约神经内科或心理科门诊，让医生评估是否需要干预。","edu":"失眠常常是压力、情绪、慢性病或药物影响的结果，也可能反过来加重血压和心脏负担。要不要用药、用什么，必须医生评估后决定，不建议自己反复吃安眠药。","sources":[{"org":"中华医学会神经病学分会","title":"中国成人失眠诊断与治疗指南"},{"org":"国家卫生健康委员会","title":"健康科普平台·睡眠健康"}]},"zh-Hant":{"patterns":["失眠","睡不著","入睡困難","半夜老醒","睡眠淺","天天做夢","睡不好"],"empathy":"睡不著最熬人，我陪您看看能從哪裡改善。","redflagHint":"長期睡不著伴情緒低落、覺得活著沒意思，請盡快聯繫家人陪伴並就醫，必要時撥打心理援助熱線。","questions":[{"q":"主要是睡不著，還是半夜老醒？","options":["躺下睡不著","半夜老醒","早早就醒","說不上來"]},{"q":"這樣的情況持續多久了？","options":["最近幾天","一兩週","一兩個月","半年以上"]},{"q":"睡前有沒有喝濃茶咖啡、想事情想得太多，或者在吃藥？","options":["都沒有","喝茶或咖啡","心裡有事","在吃藥"]}],"triage":"短期睡不好，先從睡眠習慣入手：固定作息、睡前不喝濃茶咖啡、白天少躺少睡、臥室安靜遮光。持續一個月以上、白天沒精神、情緒低落，建議預約神經內科或心理科門診，讓醫生評估是否需要干預。","edu":"失眠常常是壓力、情緒、慢性病或藥物影響的結果，也可能反過來加重血壓和心臟負擔。要不要用藥、用什麼，必須醫生評估後決定，不建議自己反覆吃安眠藥。","sources":[{"org":"中華醫學會神經病學分會","title":"中國成人失眠診斷與治療指南"},{"org":"國家衛生健康委員會","title":"健康科普平台·睡眠健康"}]},"en":{"patterns":["insomnia","cannot sleep","trouble falling asleep","keep waking at night","light sleeper"],"empathy":"Not sleeping is exhausting. Let me look at what can be improved.","redflagHint":"Long-term poor sleep with low mood or feeling life is not worth living needs family support and a doctor, and a crisis hotline if urgent.","questions":[{"q":"Is it falling asleep, or waking at night?","options":["Cannot fall asleep","Wake at night","Wake too early","Hard to say"]},{"q":"How long has this been going on?","options":["A few days","One to two weeks","One to two months","Over six months"]},{"q":"Tea or coffee before bed, a lot on your mind, or any medicines?","options":["None","Tea or coffee","Something on my mind","Taking medicines"]}],"triage":"For short-term poor sleep, start with habits: a fixed schedule, no strong tea or coffee before bed, less daytime napping, a quiet dark bedroom. Beyond a month, with low energy or low mood, book a neurology or psychology visit for assessment.","edu":"Insomnia often follows stress, mood, chronic illness, or medicines, and can worsen blood pressure and heart strain in turn. Whether to use medicine is a doctor's decision; repeated self-medication with sleeping pills is not advised.","sources":[{"org":"Chinese Medical Association, Neurology Branch","title":"Chinese guideline for adult insomnia diagnosis and treatment"},{"org":"National Health Commission of China","title":"Health public-education platform, sleep health"}]}},{"id":"indigestion","priority":21,"dept":{"zh":"消化内科","zh-Hant":"消化內科","en":"Gastroenterology"},"zh":{"patterns":["胃胀","肚子胀","反酸","烧心","打嗝","消化不良","吃一点就饱","胃里堵得慌"],"empathy":"胃里堵得慌最影响胃口，我帮您看看怎么调。","redflagHint":"呕血、黑便、吞咽困难、体重明显下降、持续疼痛不缓解，请立即就医。","questions":[{"q":"主要是胀、反酸，还是烧心？","options":["胀","反酸","烧心","都有"]},{"q":"和吃饭有关系吗？","options":["吃饱就犯","空腹夜里犯","没关系","说不上来"]},{"q":"有没有消瘦、黑便，或者吞咽困难？","options":["都没有","瘦了不少","大便发黑","咽东西费劲"]}],"triage":"多数胀气反酸和饮食快、吃得多、油腻刺激有关：细嚼慢咽、少食多餐、睡前两小时不进食、枕头稍垫高。反复发作超过两周、影响吃饭、伴消瘦黑便，建议预约消化内科门诊，别自己长期吃抑酸药。","edu":"腹胀反酸烧心大多和胃动力、胃酸分泌或生活习惯有关，少数情况需要排除溃疡等器质性问题。要不要做胃镜、用什么药，由医生根据情况决定。","sources":[{"org":"中华医学会消化病学分会","title":"中国慢性胃炎诊治指南"},{"org":"默沙东诊疗手册（MSD Manual）大众版","title":"消化不良"}]},"zh-Hant":{"patterns":["胃脹","肚子脹","反酸","燒心","打嗝","消化不良","吃一點就飽","胃裡堵得慌"],"empathy":"胃裡堵得慌最影響胃口，我幫您看看怎麼調。","redflagHint":"嘔血、黑便、吞嚥困難、體重明顯下降、持續疼痛不緩解，請立即就醫。","questions":[{"q":"主要是脹、反酸，還是燒心？","options":["脹","反酸","燒心","都有"]},{"q":"和吃飯有關係嗎？","options":["吃飽就犯","空腹夜裡犯","沒關係","說不上來"]},{"q":"有沒有消瘦、黑便，或者吞嚥困難？","options":["都沒有","瘦了不少","大便發黑","吞東西費勁"]}],"triage":"多數脹氣反酸和飲食快、吃得多、油膩刺激有關：細嚼慢嚥、少食多餐、睡前兩小時不進食、枕頭稍墊高。反覆發作超過兩週、影響吃飯、伴消瘦黑便，建議預約消化內科門診，別自己長期吃抑酸藥。","edu":"腹脹反酸燒心大多和胃動力、胃酸分泌或生活習慣有關，少數情況需要排除潰瘍等器質性問題。要不要做胃鏡、用什麼藥，由醫生根據情況決定。","sources":[{"org":"中華醫學會消化病學分會","title":"中國慢性胃炎診治指南"},{"org":"默沙東診療手冊（MSD Manual）大眾版","title":"消化不良"}]},"en":{"patterns":["bloating","stomach bloated","acid reflux","heartburn","belching","indigestion"],"empathy":"A stuffed, burning stomach ruins your appetite. Let me see how to adjust it.","redflagHint":"Vomiting blood, black stool, trouble swallowing, clear weight loss, or pain that will not ease needs care now.","questions":[{"q":"Is it bloating, reflux, or burning?","options":["Bloating","Acid reflux","Burning","All of them"]},{"q":"Is it linked to meals?","options":["After big meals","Empty stomach at night","No pattern","Hard to say"]},{"q":"Any weight loss, black stool, or trouble swallowing?","options":["None","Lost weight","Black stool","Hard to swallow"]}],"triage":"Most bloating and reflux relate to eating fast, large or greasy meals: chew slowly, smaller portions, nothing within two hours of bed, a slightly raised pillow. Symptoms beyond two weeks, poor appetite, weight loss, or black stool deserve a gastroenterology visit, and long-term self-medication with acid suppressants is not advised.","edu":"Bloating, reflux, and heartburn usually involve stomach motility, acid, and habits, while a minority need exclusion of ulcers or other structural problems. Endoscopy and medicines are the doctor's call.","sources":[{"org":"Chinese Medical Association, Gastroenterology Branch","title":"Chinese guideline for chronic gastritis"},{"org":"MSD Manual, Consumer Version","title":"Indigestion"}]}}],"generic":{"zh":{"empathy":"我在听。为了不耽误您，我先把最危险的情况排掉。","questions":[{"q":"您主要是哪里不舒服？","options":["头上","胸口","肚子","说不上来"]},{"q":"这样的情况持续多久了？","options":["今天刚开始","两三天了","一周以上","记不清了"]}],"triage":"不确定的时候，宁可稳妥一点：如果不舒服的感觉一直存在、越来越重，或者您拿不准，建议您到就近医院门诊挂个号，让医生当面看看。","edu":"同样的不舒服可能对应很多种原因，有轻有重，仅凭几句话没法分清。我能做的是帮您把症状理清楚、提醒危险信号，具体判断要靠医生。","sources":[{"org":"国家卫生健康委员会","title":"健康科普平台"}]},"zh-Hant":{"empathy":"我在聽。為了不耽誤您，我先把最危險的情況排掉。","questions":[{"q":"您主要是哪裡不舒服？","options":["頭上","胸口","肚子","說不上來"]},{"q":"這樣的情況持續多久了？","options":["今天剛開始","兩三天了","一週以上","記不清了"]}],"triage":"不確定的時候，寧可穩妥一點：如果不舒服的感覺一直存在、越來越重，或者您拿不準，建議您到就近醫院門診掛個號，讓醫生當面看看。","edu":"同樣的不舒服可能對應很多種原因，有輕有重，僅憑幾句話沒法分清。我能做的是幫您把症狀理清楚、提醒危險信號，具體判斷要靠醫生。","sources":[{"org":"國家衛生健康委員會","title":"健康科普平台"}]},"en":{"empathy":"I am listening. To be safe, let me rule out the dangerous causes first.","questions":[{"q":"Where do you feel unwell?","options":["Head","Chest","Belly","Not sure"]},{"q":"How long has this been going on?","options":["Since today","Two to three days","Over a week","Not sure"]}],"triage":"When in doubt, choose the safe option: if the feeling persists, worsens, or you are unsure, book an appointment at a nearby hospital and let a doctor look at you.","edu":"The same symptom can have many causes, mild or serious, and a few sentences cannot tell them apart. I can organize your symptoms and flag danger signs; the judgment belongs to a doctor.","sources":[{"org":"National Health Commission of China","title":"Health public-education platform"}]}}};
+
+  /* 与语料库同一套归一化：小写 + 去空白与标点；中文不分词，靠子串匹配 */
+  var RE_PUNCT = /[\s，。,.;；:：!！?？'"“”‘’、\-_/\\()（）[\]]/g;
+  function norm(s) { return String(s || '').toLowerCase().replace(RE_PUNCT, ''); }
+
+  var LANGS = (DATA.meta && DATA.meta.langs) || ['zh', 'zh-Hant', 'en'];
+
+  /* 兜底话术的数据先存一份：下面 DATA.generic 要让位给取值函数，
+     不存这份的话数据会被同名函数覆盖，页面里就走不了兜底流程。 */
+  var GENERIC = DATA.generic;
+
+  /* 每种语言的说法提前归一化：匹配时不再做正则，纯字符串 indexOf */
+  var PREP = {
+    redflags: (DATA.redflags || []).map(function (it) {
+      var per = {};
+      LANGS.forEach(function (lg) {
+        per[lg] = (it[lg] && it[lg].patterns || []).map(function (raw) {
+          var p = norm(raw);
+          return { p: p, len: p.length, raw: raw };
+        }).filter(function (x) { return x.p; });
+      });
+      return { id: it.id, priority: it.priority || 0, per: per };
+    }),
+    topics: (DATA.topics || []).map(function (it) {
+      var per = {};
+      LANGS.forEach(function (lg) {
+        per[lg] = (it[lg] && it[lg].patterns || []).map(function (raw) {
+          var p = norm(raw);
+          return { p: p, len: p.length, raw: raw };
+        }).filter(function (x) { return x.p; });
+      });
+      return { id: it.id, priority: it.priority || 0, dept: it.dept || null, per: per };
+    })
+  };
+
+  function langOrder(lang) {
+    var l = LANGS.indexOf(lang) >= 0 ? lang : LANGS[0];
+    return [l].concat(LANGS.filter(function (x) { return x !== l; }));
+  }
+
+  /* 在一组条目里找「最长说法赢」，平手看 priority（小的赢），再平手看语言顺序 */
+  function scan(list, t, order) {
+    var best = null;
+    for (var i = 0; i < list.length; i++) {
+      var it = list[i];
+      for (var li = 0; li < order.length; li++) {
+        var lg = order[li];
+        var arr = it.per[lg];
+        if (!arr) continue;
+        for (var k = 0; k < arr.length; k++) {
+          if (t.indexOf(arr[k].p) < 0) continue;
+          var cand = { item: it, lang: lg, pattern: arr[k].raw, len: arr[k].len, li: li };
+          if (!best) { best = cand; continue; }
+          if (cand.len > best.len) { best = cand; continue; }
+          if (cand.len === best.len && it.priority < best.item.priority) best = cand;
+        }
+      }
+    }
+    return best;
+  }
+
+  /* 对外主入口：先红旗（安全优先），后主题；命中返回 { kind, id, pattern, lang } */
+  DATA.match = function (text, lang) {
+    var t = norm(text);
+    if (!t) return null;
+    var order = langOrder(lang);
+    var rf = scan(PREP.redflags, t, order);
+    if (rf) {
+      return { kind: 'redflag', id: rf.item.id, lang: rf.lang, pattern: rf.pattern, score: rf.len };
+    }
+    var tp = scan(PREP.topics, t, order);
+    if (tp) {
+      return { kind: 'topic', id: tp.item.id, lang: tp.lang, pattern: tp.pattern, score: tp.len };
+    }
+    return null;
+  };
+
+  function block(id, lang, kind) {
+    var list = kind === 'redflag' ? DATA.redflags : DATA.topics;
+    var order = langOrder(lang);
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id !== id) continue;
+      for (var li = 0; li < order.length; li++) {
+        var b = list[i][order[li]];
+        if (b) return { entry: list[i], body: b, lang: order[li] };
+      }
+    }
+    return null;
+  }
+
+  /* 取一条红旗 / 一个主题 / 兜底话术（语言跟随，界面语言没有就退回中文） */
+  DATA.redflag = function (id, lang) { return block(id, lang, 'redflag'); };
+  DATA.topic = function (id, lang) { return block(id, lang, 'topic'); };
+  DATA.generic = function (lang) {
+    var order = langOrder(lang);
+    for (var i = 0; i < order.length; i++) {
+      if (GENERIC && GENERIC[order[i]]) return { body: GENERIC[order[i]], lang: order[i] };
+    }
+    return null;
+  };
+
+  /* 把来源数组格式化成「来源：机构 · 资料名（年份）」；年份宁缺勿编 */
+  DATA.cite = function (sources, lang) {
+    if (!Array.isArray(sources) || !sources.length) return '';
+    var parts = sources.map(function (s) {
+      return s.title ? (s.org + ' · ' + s.title) : s.org;
+    });
+    return parts.join('；');
+  };
+
+  /* 主题名（用于点选 chips 与回显） */
+  DATA.topicName = function (id, lang) {
+    var tp = DATA.topic(id, lang);
+    if (!tp || !tp.body || !tp.body.patterns || !tp.body.patterns.length) return id;
+    return tp.body.patterns[0];
+  };
+
+  DATA.stats = function () {
+    var rf = 0, tp = 0;
+    LANGS.forEach(function (lg) {
+      (DATA.redflags || []).forEach(function (x) { rf += (x[lg] && x[lg].patterns || []).length; });
+      (DATA.topics || []).forEach(function (x) { tp += (x[lg] && x[lg].patterns || []).length; });
+    });
+    return {
+      redflags: (DATA.redflags || []).length,
+      topics: (DATA.topics || []).length,
+      patterns: rf + tp,
+      redflagPatterns: rf,
+      topicPatterns: tp,
+      langs: LANGS.length
+    };
+  };
+
+  g.XiaoYiLingKB = DATA;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* ============================================================
+   小医灵 · 医疗预问诊智能体（挂在适老预约挂号页上的「健康顾问」）
+
+   它是谁：
+   网页里一个会漂浮的医疗蓝绿色小光点，点一下变成小机器人，
+   陪老人把症状一条一条理清楚——先排危险信号，再问关键问题，
+   最后给分级建议和公开科普。它不诊断、不开药、不处理急症，
+   只是把「该不该去医院、多快、大概看哪一科」帮老人想明白。
+
+   形态状态机（与前端控制器约定，顺序不可乱）：
+     idle      漂浮：20-40px/s 缓慢移动、随机转向、碰视口边缘反弹；
+                同时避开输入框、按钮、弹窗关闭钮、视频控件和重要文字，
+                不遮挡老人操作。
+     hover     悬停：轻微放大、发光，气泡提示「点击问诊 / 长按拖动」。
+     pressing  长按：按住超过 450ms 变机器人形态（头、眼睛、天线、小手）。
+     dragging  拖动：长按后指针移动超过 6px，机器人跟指针走，限制在视口内。
+     chat      对话：点一下（未长按）打开对话面板，暂停漂浮，
+                机器人可眨眼、点头；关闭面板恢复漂浮。
+     松手后停留在当前位置，3 秒无操作恢复光点形态继续漂浮。
+
+   问诊流程（安全优先，顺序即优先级）：
+     共情一句 → 红旗筛查（命中立即建议 120/急诊，不进普通问诊）
+     → 一次最多 3 个关键问题（点选 chips，老人不用打字）
+     → 四级分诊（立即急诊 / 24 小时内 / 预约门诊 / 居家观察）
+     → 通俗科普 + 免责声明 + 1-3 个公开权威来源。
+
+   检索增强：
+     每次问答先查本地知识库 window.XiaoYiLingKB（data/medic-kb.json
+     的编译产物）；平台提供检索能力时，用 setSearch(fn) 挂上去，
+     fn 内部可调 knowledge_base_search / web_search，结果按来源优先级
+     合并进引用。检索不到可靠资料时明说「建议咨询医生」，不编造。
+
+   三条硬约束（与主项目一致）：
+   1. 智能体只做决策与话术，不碰页面；只有老人点「我想挂号」才
+      走 XiaoYuEr.nav('restart') 白名单动作。
+   2. 零依赖、纯 ES5、双击文件就能跑；没有麦克风、没有网络照样能
+      全程点选完成问诊。
+   3. 隐私：不索要姓名、身份证、手机号，并提醒老人不要发送。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var X = window.XiaoYuEr;
+  var KB = window.XiaoYiLingKB;
+  if (!X || !KB) return;
+
+  /* ---------------- 三语文案 ---------------- */
+  var I18N = {
+    zh: {
+      'medic.title': '小医灵 · 医疗问诊',
+      'medic.sub': '先排危险，再慢慢问',
+      'medic.close': '关闭',
+      'medic.tip': '点击问诊 · 长按拖动',
+      'medic.orbLabel': '小医灵，点我问诊',
+      'medic.inlineTitle': '不舒服？先问小医灵',
+      'medic.inlineDesc': '点一下，它帮您看看要不要紧、该看哪一科（不替医生下诊断）',
+      'medic.hello': '您好，我是小医灵。哪里不舒服，点下面的字，或者按住麦克风说一句都行。',
+      'medic.mic': '按住说话',
+      'medic.micStop': '不说了',
+      'medic.listening': '我在听，您说…',
+      'medic.recognizing': '正在认您说的话…',
+      'medic.noSpeech': '没听到声音。您离近一点再说一次，或者直接点下面的字。',
+      'medic.noVoice': '这台设备现在还不能直接说话。可以在右下角「小鱼儿」面板里点一次「用离线识别」装好；现在先点下面的字，一样能问。',
+      'medic.voiceReady': '说话功能已就绪，按住麦克风就能说。',
+      'medic.voiceLoading': '正在装说话功能…',
+      'medic.chipsLabel': '您可以这样点：',
+      'medic.askMore': '就这些，给我建议',
+      'medic.restart': '重新问一次',
+      'medic.booking': '我想挂号',
+      'medic.thanks': '不客气。您多保重，有不舒服随时再问我。',
+      'medic.erNote': '这种情况请不要等我，立即拨打 120 或去最近的急诊——这是现在最要紧的事。',
+      'medic.escalated': '您刚才的回答里有危险信号，我按急症提醒您：',
+      'medic.searching': '正在查公开资料…',
+      'medic.noSource': '我暂未检索到足够可靠的公开资料，这种情况建议您直接咨询医生。',
+      'medic.bookingGo': '好的，我请您回到挂号第一步，从选症状开始。选好症状我就能接着帮您。',
+      'medic.askWhat': '您主要是哪里不舒服？',
+      'medic.qIndex': '第 {n} 个问题',
+      'medic.levelLabel': '我的建议：'
+    },
+    'zh-Hant': {
+      'medic.title': '小醫靈 · 醫療問診',
+      'medic.sub': '先排危險，再慢慢問',
+      'medic.close': '關閉',
+      'medic.tip': '點擊問診 · 長按拖動',
+      'medic.orbLabel': '小醫靈，點我問診',
+      'medic.inlineTitle': '不舒服？先問小醫靈',
+      'medic.inlineDesc': '點一下，它幫您看看要不要緊、該看哪一科（不替醫生下診斷）',
+      'medic.hello': '您好，我是小醫靈。哪裡不舒服，點下面的字，或者按住麥克風說一句都行。',
+      'medic.mic': '按住說話',
+      'medic.micStop': '不說了',
+      'medic.listening': '我在聽，您說…',
+      'medic.recognizing': '正在認您說的話…',
+      'medic.noSpeech': '沒聽到聲音。您離近一點再說一次，或者直接點下面的字。',
+      'medic.noVoice': '這台設備現在還不能直接說話。可以在右下角「小魚兒」面板裡點一次「用離線識別」裝好；現在先點下面的字，一樣能問。',
+      'medic.voiceReady': '說話功能已就緒，按住麥克風就能說。',
+      'medic.voiceLoading': '正在裝說話功能…',
+      'medic.chipsLabel': '您可以這樣點：',
+      'medic.askMore': '就這些，給我建議',
+      'medic.restart': '重新問一次',
+      'medic.booking': '我想掛號',
+      'medic.thanks': '不客氣。您多保重，有不舒服隨時再問我。',
+      'medic.erNote': '這種情況請不要等我，立即撥打 120 或去最近的急診——這是現在最要緊的事。',
+      'medic.escalated': '您剛才的回答裡有危險信號，我按急症提醒您：',
+      'medic.searching': '正在查公開資料…',
+      'medic.noSource': '我暫未檢索到足夠可靠的公開資料，這種情況建議您直接諮詢醫生。',
+      'medic.bookingGo': '好的，我請您回到掛號第一步，從選症狀開始。選好症狀我就能接著幫您。',
+      'medic.askWhat': '您主要是哪裡不舒服？',
+      'medic.qIndex': '第 {n} 個問題',
+      'medic.levelLabel': '我的建議：'
+    },
+    en: {
+      'medic.title': 'Ling · Pre-consultation',
+      'medic.sub': 'Safety first, then details',
+      'medic.close': 'Close',
+      'medic.tip': 'Tap to ask · hold to drag',
+      'medic.orbLabel': 'Ling, tap to ask',
+      'medic.inlineTitle': 'Feel unwell? Ask Ling first',
+      'medic.inlineDesc': 'Tap and it helps you judge urgency and which clinic, without replacing a doctor',
+      'medic.hello': 'Hello, I am Ling. Tell me what hurts: tap a phrase below, or hold the mic and speak.',
+      'medic.mic': 'Hold to speak',
+      'medic.micStop': 'Stop',
+      'medic.listening': 'I am listening…',
+      'medic.recognizing': 'Recognizing what you said…',
+      'medic.noSpeech': 'I did not hear anything. Come closer and try again, or tap a phrase below.',
+      'medic.noVoice': 'This device cannot listen yet. Install offline recognition once from the XiaoYuEr panel at the bottom right; for now, tapping the phrases below works just as well.',
+      'medic.voiceReady': 'Voice is ready. Hold the mic and speak.',
+      'medic.voiceLoading': 'Preparing voice…',
+      'medic.chipsLabel': 'You can tap:',
+      'medic.askMore': 'That is all, give advice',
+      'medic.restart': 'Start over',
+      'medic.booking': 'I want to book',
+      'medic.thanks': 'You are welcome. Take care, and ask me any time.',
+      'medic.erNote': 'Please do not wait for me. Call 120 or go to the nearest ER now, that is the most urgent thing.',
+      'medic.escalated': 'One of your answers contains a danger sign. Treating this as an emergency:',
+      'medic.searching': 'Checking public sources…',
+      'medic.noSource': 'I could not find reliable public sources for this. Please ask a doctor directly.',
+      'medic.bookingGo': 'Sure, taking you back to booking step one. Pick your symptom and I will keep helping.',
+      'medic.askWhat': 'Where do you feel unwell?',
+      'medic.qIndex': 'Question {n}',
+      'medic.levelLabel': 'My advice:'
+    }
+  };
+  X.registerI18n(I18N);
+  var T = function (k, v) { return X.t(k, v); };
+
+  /* ---------------- 机器人图形（医疗蓝绿，白主体 + 深青描边） ---------------- */
+  var BOT_SVG =
+    '<svg class="bot" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' +
+    '<line x1="24" y1="7" x2="24" y2="12.5" stroke="#2F5D62" stroke-width="2" stroke-linecap="round"/>' +
+    '<circle cx="24" cy="5.4" r="2.6" fill="#2F5D62"/>' +
+    '<circle cx="6.5" cy="30" r="3.1" fill="#E4EFED" stroke="#2F5D62" stroke-width="1.8"/>' +
+    '<circle cx="41.5" cy="30" r="3.1" fill="#E4EFED" stroke="#2F5D62" stroke-width="1.8"/>' +
+    '<rect x="10" y="12" width="28" height="24" rx="9" fill="#FFFFFF" stroke="#2F5D62" stroke-width="2.2"/>' +
+    '<g class="bot__eyes">' +
+    '<circle class="bot__eye" cx="18.6" cy="23" r="2.7" fill="#2F5D62"/>' +
+    '<circle class="bot__eye" cx="29.4" cy="23" r="2.7" fill="#2F5D62"/>' +
+    '</g>' +
+    '<path class="bot__mouth" d="M19 30.6c2.3 2.1 7.7 2.1 10 0" stroke="#2F5D62" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    '<path d="M23.2 16.4h1.6v1.6h1.6v1.6h-1.6v1.6h-1.6v-1.6h-1.6v-1.6h1.6z" fill="#2F5D62"/>' +
+    '</svg>';
+
+  /* ---------------- DOM：光点 / 机器人 + 对话面板 ---------------- */
+  var root = document.createElement('div');
+  root.className = 'medic';
+  root.id = 'medic-root';
+  root.innerHTML =
+    '<button type="button" class="medic-orb" id="medic-orb" aria-haspopup="dialog">' +
+      '<span class="medic-orb__glow" aria-hidden="true"></span>' +
+      '<span class="medic-orb__dot" aria-hidden="true"></span>' +
+      '<span class="medic-orb__bot" aria-hidden="true">' + BOT_SVG + '</span>' +
+    '</button>' +
+    '<span class="medic-tip" id="medic-tip" hidden></span>' +
+    '<div class="medic-panel" id="medic-panel" hidden>' +
+      '<div class="medic__mask" data-medic-close="1"></div>' +
+      '<div class="medic__box" role="dialog" aria-modal="true" aria-labelledby="medic-title">' +
+        '<div class="medic__head">' +
+          '<span class="medic__mark" aria-hidden="true">' + BOT_SVG + '</span>' +
+          '<div class="medic__headtext">' +
+            '<h2 class="medic__title" id="medic-title"></h2>' +
+            '<p class="medic__status" id="medic-status"></p>' +
+          '</div>' +
+          '<button type="button" class="medic__x" id="medic-close"></button>' +
+        '</div>' +
+        '<div class="medic__log" id="medic-log" role="log" aria-live="polite"></div>' +
+        '<div class="medic__row">' +
+          '<button type="button" class="medic__mic" id="medic-mic" data-state="off">' +
+            '<span class="medic__ring" aria-hidden="true"></span>' +
+            '<span id="medic-mic-label"></span>' +
+          '</button>' +
+          '<button type="button" class="medic__stop" id="medic-stop" hidden></button>' +
+        '</div>' +
+        '<p class="medic__voicehint" id="medic-voicehint" hidden></p>' +
+        '<p class="medic__chiplabel" id="medic-chiplabel"></p>' +
+        '<div class="medic__chips" id="medic-chips"></div>' +
+        '<p class="medic__disclaimer" id="medic-disclaimer"></p>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(root);
+
+  var orb = document.getElementById('medic-orb');
+  var tip = document.getElementById('medic-tip');
+  var panel = document.getElementById('medic-panel');
+  var logBox = document.getElementById('medic-log');
+  var statusEl = document.getElementById('medic-status');
+  var chipsBox = document.getElementById('medic-chips');
+  var chipLabel = document.getElementById('medic-chiplabel');
+  var micBtn = document.getElementById('medic-mic');
+  var micLabel = document.getElementById('medic-mic-label');
+  var stopBtn = document.getElementById('medic-stop');
+  var voiceHint = document.getElementById('medic-voicehint');
+  var disclaimerEl = document.getElementById('medic-disclaimer');
+  var botBox = orb.querySelector('.medic-orb__bot');
+
+  /* ============================================================
+     一、形态状态机：漂浮 / 避让 / 悬停 / 长按 / 拖动 / 对话
+     ============================================================ */
+  var form = 'idle';           // idle | hover | pressing | dragging | chat
+  var ORB = 34;                // 光点直径（与 CSS 保持一致）
+  var pos = { x: 0, y: 0 };
+  var ang = 0;
+  var spd = 26;                // 当前速度 px/s（20-40 之间随机）
+  var rafId = null;
+  var lastT = 0;
+  var parkTimer = null;        // 松手后 3 秒恢复漂浮
+  var wanderAt = 0;
+  var zones = [];
+  var zonesAt = 0;
+  var reduced = false;
+  try {
+    reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch (e) { reduced = false; }
+
+  function vp() {
+    return {
+      w: window.innerWidth || document.documentElement.clientWidth || 320,
+      h: window.innerHeight || document.documentElement.clientHeight || 480
+    };
+  }
+
+  function initPos() {
+    var v = vp();
+    pos.x = Math.max(8, v.w - ORB - 18);
+    pos.y = Math.max(8, v.h - ORB - 96);
+    ang = -Math.PI * (0.55 + Math.random() * 0.2);
+    apply();
+    /* 右下角正是小鱼儿悬浮按钮待的地方，初始位置可能直接压在它上面 ——
+       先避开再开漂，不然老人第一眼就看到两个按钮叠在一起。 */
+    zones = collectZones();
+    for (var i = 0; i < 24 && hitZone(); i++) {
+      pos.y -= 12;
+      if (pos.y < 8) { pos.y = 8; pos.x = Math.max(8, pos.x - 70); }
+      apply();
+    }
+  }
+
+  function apply() {
+    orb.style.left = pos.x + 'px';
+    orb.style.top = pos.y + 'px';
+    /* 气泡跟着光点走，始终浮在它上方 */
+    tip.style.left = (pos.x + ORB / 2) + 'px';
+    tip.style.top = pos.y + 'px';
+  }
+
+  /* 避让区：输入框、按钮、弹窗、视频、底部操作栏、步骤条、右栏、重要文字。
+     老人最怕「想点的东西被挡住」，所以光点宁可绕路也不压上去。 */
+  var AVOID_SEL = 'button, input, textarea, select, .ai__box, .aifab, .ai-inline__btn, ' +
+    '.modal__box, #actionbar, .stepbar, #aside, video, .title, .notice__strong, ' +
+    '[data-medic-avoid]';
+
+  function collectZones() {
+    var out = [];
+    var list = document.querySelectorAll(AVOID_SEL);
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i];
+      if (!el || el === orb) continue;
+      if (root.contains(el)) continue;                 // 自己的面板/光点不算
+      var r = el.getBoundingClientRect();
+      if (!r.width || !r.height) continue;             // 隐藏元素没有 Rect
+      out.push({ x: r.left, y: r.top, w: r.width, h: r.height, cx: r.left + r.width / 2, cy: r.top + r.height / 2 });
+    }
+    return out;
+  }
+
+  function hitZone() {
+    var pad = ORB / 2 + 4;
+    var x0 = pos.x - pad, y0 = pos.y - pad, x1 = pos.x + ORB + pad, y1 = pos.y + ORB + pad;
+    for (var i = 0; i < zones.length; i++) {
+      var z = zones[i];
+      if (x1 > z.x && x0 < z.x + z.w && y1 > z.y && y0 < z.y + z.h) return z;
+    }
+    return null;
+  }
+
+  function steer(z) {
+    /* 一次推到底，但只挑「推得出去」的方向：贴在视口边缘的区域
+       （比如右下角的悬浮按钮）往那一边推会被边界钳位抵消，光点会
+       永远卡在原地，还会把老人的点击挡掉。四个方向都出不去时就地转向。 */
+    var pad = ORB / 2 + 4;
+    var v = vp();
+    var cands = [
+      { x: z.x + z.w + pad, y: pos.y, ang: 0 },        // 往右
+      { x: z.x - ORB - pad, y: pos.y, ang: Math.PI },  // 往左
+      { x: pos.x, y: z.y + z.h + pad, ang: Math.PI / 2 },   // 往下
+      { x: pos.x, y: z.y - ORB - pad, ang: -Math.PI / 2 }   // 往上
+    ];
+    var best = null;
+    for (var i = 0; i < cands.length; i++) {
+      var c = cands[i];
+      if (c.x < 6 || c.y < 6 || c.x > v.w - ORB - 6 || c.y > v.h - ORB - 6) continue;
+      var d = Math.abs(c.x - pos.x) + Math.abs(c.y - pos.y);
+      if (!best || d < best.d) best = { c: c, d: d };
+    }
+    if (best) {
+      pos.x = best.c.x;
+      pos.y = best.c.y;
+      ang = best.c.ang + (Math.random() - 0.5) * 0.6;
+    } else {
+      ang += Math.PI / 2;                 // 四面都堵住：转个方向等它让开
+    }
+    spd = 20 + Math.random() * 20;
+  }
+
+  function loop(now) {
+    rafId = requestAnimationFrame(loop);
+    if (form !== 'idle') { lastT = now; return; }
+    var dt = Math.min(0.05, Math.max(0, (now - lastT) / 1000));
+    lastT = now;
+    if (!dt) return;
+
+    if (now > wanderAt) {                    // 随机转向，走出自然的曲线
+      wanderAt = now + 1200 + Math.random() * 1800;
+      ang += (Math.random() - 0.5) * 1.1;
+      spd = 20 + Math.random() * 20;
+    }
+    if (now > zonesAt) { zonesAt = now + 500; zones = collectZones(); }
+
+    pos.x += Math.cos(ang) * spd * dt;
+    pos.y += Math.sin(ang) * spd * dt;
+
+    var v = vp();
+    if (pos.x < 6) { pos.x = 6; ang = Math.PI - ang; }
+    if (pos.y < 6) { pos.y = 6; ang = -ang; }
+    if (pos.x > v.w - ORB - 6) { pos.x = v.w - ORB - 6; ang = Math.PI - ang; }
+    if (pos.y > v.h - ORB - 6) { pos.y = v.h - ORB - 6; ang = -ang; }
+
+    var z = hitZone();
+    if (z) steer(z);
+    apply();
+  }
+
+  function startFloat() {
+    if (reduced || rafId) return;
+    lastT = 0;
+    rafId = requestAnimationFrame(loop);
+  }
+  function stopFloat() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+
+  function setForm(next) {
+    if (form === next) return;
+    form = next;
+    root.setAttribute('data-form', next);
+    if (next === 'chat') { stopFloat(); clearPark(); }
+    else if (next === 'dragging' || next === 'pressing') { clearPark(); }
+    else if (next === 'idle') { startFloat(); }
+  }
+
+  function clearPark() {
+    if (parkTimer) { clearTimeout(parkTimer); parkTimer = null; }
+  }
+  /* 松手后停留 3 秒，让老人看清它在哪，再继续漂 */
+  function park() {
+    clearPark();
+    stopFloat();
+    parkTimer = setTimeout(function () {
+      parkTimer = null;
+      if (form === 'idle') startFloat();
+    }, 3000);
+  }
+
+  /* ---------- 指针交互：点击开面板 / 长按变机器人 / 拖动 ---------- */
+  var press = null;   // { x, y, t, armed, moved }
+
+  function pressStart(cx, cy) {
+    press = { x: cx, y: cy, t: Date.now(), armed: false, moved: false };
+    orb.classList.add('is-pressing');
+    press.timer = setTimeout(function () {
+      if (!press) return;
+      press.armed = true;
+      setForm('pressing');
+    }, 450);
+  }
+
+  function pressMove(cx, cy) {
+    if (!press) return;
+    var dx = cx - press.x, dy = cy - press.y;
+    if (!press.moved && Math.sqrt(dx * dx + dy * dy) > 6) {
+      press.moved = true;
+      setForm('dragging');
+    }
+    if (press.moved) {
+      var v = vp();
+      pos.x = Math.max(6, Math.min(v.w - ORB - 6, cx - ORB / 2));
+      pos.y = Math.max(6, Math.min(v.h - ORB - 6, cy - ORB / 2));
+      apply();
+    }
+  }
+
+  function pressEnd() {
+    if (!press) return;
+    var p = press;
+    press = null;
+    if (p.timer) clearTimeout(p.timer);
+    orb.classList.remove('is-pressing');
+    if (p.moved) {
+      setForm('idle');
+      park();                                   // 拖完停 3 秒再漂
+      return;
+    }
+    if (p.armed) { setForm('idle'); park(); return; }   // 长按未拖动：机器人形态停 3 秒
+    openPanel();                                // 普通点击：开面板
+  }
+
+  orb.addEventListener('mousedown', function (ev) {
+    if (ev.button !== undefined && ev.button !== 0) return;
+    ev.preventDefault();
+    pressStart(ev.clientX, ev.clientY);
+  });
+  document.addEventListener('mousemove', function (ev) { if (press) pressMove(ev.clientX, ev.clientY); });
+  document.addEventListener('mouseup', function () { if (press) pressEnd(); });
+  orb.addEventListener('touchstart', function (ev) {
+    var t = ev.touches && ev.touches[0];
+    if (!t) return;
+    ev.preventDefault();
+    pressStart(t.clientX, t.clientY);
+  }, { passive: false });
+  orb.addEventListener('touchmove', function (ev) {
+    if (!press) return;
+    var t = ev.touches && ev.touches[0];
+    if (t) { ev.preventDefault(); pressMove(t.clientX, t.clientY); }
+  }, { passive: false });
+  orb.addEventListener('touchend', function () { if (press) pressEnd(); });
+  orb.addEventListener('touchcancel', function () { if (press) pressEnd(); });
+  /* 键盘（回车/空格）激活：detail===0 表示不是鼠标点出来的 */
+  orb.addEventListener('click', function (ev) {
+    if (ev.detail === 0) openPanel();
+  });
+
+  orb.addEventListener('mouseenter', function () {
+    if (form === 'idle') setForm('hover');
+  });
+  orb.addEventListener('mouseleave', function () {
+    if (form === 'hover') setForm('idle');
+  });
+
+  /* ============================================================
+     二、预问诊会话引擎
+     ============================================================ */
+  var S = { stage: 'idle', topicId: '', qi: 0, answers: [], escalated: false };
+  var searchFn = null;      // 检索增强挂点：setSearch(fn)
+  var greeted = false;
+  var lastReply = '';
+
+  function lang() { return X.getState().lang; }
+
+  function bubble(who, text) {
+    var b = document.createElement('div');
+    b.className = 'medic__msg medic__msg--' + who;
+    var span = document.createElement('span');
+    span.className = 'medic__text';
+    span.textContent = text;
+    b.appendChild(span);
+    logBox.appendChild(b);
+    logBox.scrollTop = logBox.scrollHeight;
+    if (who === 'ai') { lastReply = text; nod(); }
+  }
+
+  function nod() {
+    if (form !== 'chat') return;
+    botBox.classList.remove('is-nod');
+    void botBox.offsetWidth;
+    botBox.classList.add('is-nod');
+    setTimeout(function () { botBox.classList.remove('is-nod'); }, 700);
+  }
+
+  function setStatus(text) { statusEl.textContent = text || ''; }
+
+  function speakShort(text) {
+    /* 只念要点（共情/危险提醒/分级），来源和免责声明不念，免得又长又吵 */
+    try { X.speak(text); } catch (e) { /* 忽略 */ }
+  }
+
+  /* ---------- chips ---------- */
+  function chip(text, onClick) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'medic__chip';
+    b.textContent = text;
+    b.addEventListener('click', function () { onClick(text); });
+    return b;
+  }
+
+  function clearChips() { chipsBox.innerHTML = ''; }
+
+  function renderIdleChips() {
+    clearChips();
+    KB.topics.forEach(function (tp) {
+      var name = KB.topicName(tp.id, lang());
+      chipsBox.appendChild(chip(name, function (t) { ask(t); }));
+    });
+    chipsBox.appendChild(chip(T('medic.askWhat'), function () { ask(T('medic.askWhat')); }));
+  }
+
+  function renderAskChips() {
+    clearChips();
+    var tp = KB.topic(S.topicId, lang());
+    var body = tp ? tp.body : KB.generic(lang()).body;
+    var q = body.questions[Math.min(S.qi, body.questions.length - 1)];
+    (q.options || []).forEach(function (o) {
+      chipsBox.appendChild(chip(o, function (t) { ask(t); }));
+    });
+    chipsBox.appendChild(chip(T('medic.askMore'), function () { ask(T('medic.askMore')); }));
+  }
+
+  function renderEndChips() {
+    clearChips();
+    chipsBox.appendChild(chip(T('medic.restart'), function () { ask(T('medic.restart')); }));
+    chipsBox.appendChild(chip(T('medic.booking'), function () { ask(T('medic.booking')); }));
+  }
+
+  function renderChips() {
+    chipLabel.textContent = T('medic.chipsLabel');
+    if (S.stage === 'ask') renderAskChips();
+    else if (S.stage === 'done') renderEndChips();
+    else renderIdleChips();
+  }
+
+  /* ---------- 红旗：命中就直接进急救劝导，不进普通问诊 ---------- */
+  function goEmergency(id, prefix) {
+    var rf = KB.redflag(id, lang());
+    S.stage = 'done';
+    S.escalated = true;
+    if (prefix) bubble('ai', prefix);
+    bubble('ai', rf.body.reply);
+    bubble('ai', T('medic.erNote'));
+    speakShort(prefix ? (prefix + rf.body.reply) : rf.body.reply);
+    setStatus(T('medic.erNote'));
+    renderChips();
+  }
+
+  function escalationOf(text) {
+    var m = KB.match(text, lang());
+    return (m && m.kind === 'redflag') ? m : null;
+  }
+
+  /* ---------- 一次问诊的主流程 ---------- */
+  function askQuestion() {
+    var tp = KB.topic(S.topicId, lang());
+    var body = tp ? tp.body : KB.generic(lang()).body;
+    var q = body.questions[Math.min(S.qi, body.questions.length - 1)];
+    bubble('ai', q.q);
+    speakShort(q.q);
+    setStatus(T('medic.qIndex', { n: S.qi + 1 }) + ' · ' + T('medic.sub'));
+    renderChips();
+  }
+
+  function nextQuestion() {
+    S.qi++;
+    var tp = KB.topic(S.topicId, lang());
+    var body = tp ? tp.body : KB.generic(lang()).body;
+    if (S.qi >= body.questions.length) return giveAdvice();
+    askQuestion();
+  }
+
+  /* ---------- 分诊建议（四级） + 科普 + 来源 ---------- */
+  function giveAdvice() {
+    var tp = KB.topic(S.topicId, lang());
+    var body = tp ? tp.body : KB.generic(lang()).body;
+    var levels = KB.meta.triageLevels;
+    var level = 'appointment';
+    /* 回答里出现过红旗 → 一律升到「立即急诊」 */
+    if (S.escalated) level = 'er';
+    S.stage = 'done';
+
+    bubble('ai', T('medic.levelLabel') + levels[level][lang()]);
+    bubble('ai', body.triage);
+    if (level !== 'er') {
+      bubble('ai', body.edu);
+      bubble('ai', KB.meta.disclaimer[lang()]);
+    }
+    var primary = (level === 'er' ? '' : body.triage);
+    speakShort(primary || T('medic.erNote'));
+
+    /* 来源：先本地知识库；挂了检索就再补公开检索，合并后最多 3 条 */
+    setStatus(T('medic.searching'));
+    withSources(body).then(function (sources) {
+      if (sources && sources.length) {
+        bubble('ai', '来源：' + KB.cite(sources, lang()));
+      } else {
+        bubble('ai', T('medic.noSource'));
+      }
+      setStatus(T('medic.sub'));
+      renderChips();
+    });
+    renderChips();
+  }
+
+  /* 检索增强：本地不足 / 需要补充时调用挂上来的检索函数 */
+  function withSources(body) {
+    var local = Array.isArray(body.sources) ? body.sources.slice(0, 3) : [];
+    if (typeof searchFn !== 'function') return Promise.resolve(local);
+    var query = (body.patterns && body.patterns[0]) || '';
+    if (!query) return Promise.resolve(local);
+    return Promise.resolve(searchFn(query, lang())).then(function (extra) {
+      var out = local.slice();
+      (Array.isArray(extra) ? extra : []).forEach(function (s) {
+        if (out.length >= 3) return;
+        if (s && s.org && s.title && out.indexOf(s) < 0) out.push(s);
+      });
+      return out;
+    }).catch(function () { return local; });
+  }
+
+  /* ---------- 一句话进来 ----------
+     指令的顺序很讲究：重来 / 挂号 / 「就这些」是老人点的按钮和常说的话，
+     必须先认；但也不能把「我头疼想挂号」这种带症状的句子直接劫去挂号，
+     所以挂号指令要求句子短、且症状检索没有命中。 */
+  function handle(text) {
+    var t = String(text || '').trim();
+    if (!t) { bubble('ai', T('medic.noSpeech')); return; }
+
+    if (/重新|再来一|换一个/.test(t)) { resetSession(); bubble('ai', T('medic.hello')); speakShort(T('medic.hello')); renderChips(); return; }
+
+    var shortBooking = t.length <= 10 && /挂号/.test(t);
+    if (shortBooking) {
+      bubble('ai', T('medic.bookingGo'));
+      speakShort(T('medic.bookingGo'));
+      try { X.nav('restart'); } catch (e) { /* 忽略 */ }
+      renderChips();
+      return;
+    }
+
+    if (S.stage === 'ask' && /就这些|不用问|给我建议|差不多了|没有了/.test(t)) { giveAdvice(); return; }
+
+    /* ① 红旗筛查：任何阶段都先查，安全优先 */
+    var m = KB.match(t, lang());
+    if (m && m.kind === 'redflag') {
+      goEmergency(m.id, S.stage === 'ask' ? T('medic.escalated') : '');
+      return;
+    }
+
+    /* ② 追问阶段：记录回答，继续下一问 */
+    if (S.stage === 'ask') {
+      S.answers.push(t);
+      nextQuestion();
+      return;
+    }
+
+    /* ③ 新症状：共情 + 红旗提示 + 第一个问题 */
+    if (m && m.kind === 'topic') {
+      var tp = KB.topic(m.id, lang());
+      S.topicId = m.id;
+      S.stage = 'ask';
+      S.qi = 0;
+      S.answers = [];
+      S.escalated = false;
+      bubble('ai', tp.body.empathy);
+      bubble('ai', tp.body.redflagHint);
+      speakShort(tp.body.empathy);
+      setStatus(T('medic.sub'));
+      askQuestion();
+      return;
+    }
+
+    /* ④ 客气话 */
+    if (/谢谢|多谢|感谢/.test(t)) { bubble('ai', T('medic.thanks')); speakShort(T('medic.thanks')); renderChips(); return; }
+
+    /* ⑤ 没匹配上：走兜底，先把最危险的情况排掉 */
+    var g = KB.generic(lang());
+    S.topicId = '';
+    S.stage = 'ask';
+    S.qi = 0;
+    S.answers = [];
+    S.escalated = false;
+    bubble('ai', g.body.empathy);
+    speakShort(g.body.empathy);
+    askQuestion();
+  }
+
+  function resetSession() {
+    S.stage = 'idle';
+    S.topicId = '';
+    S.qi = 0;
+    S.answers = [];
+    S.escalated = false;
+  }
+
+  function ask(text) {
+    if (panel.hidden) openPanel(false);
+    bubble('me', text);
+    handle(text);
+    return Promise.resolve();
+  }
+
+  /* ============================================================
+     三、面板：开关、麦克风（全页只授权一次）
+     ============================================================ */
+  function renderTexts() {
+    document.getElementById('medic-title').textContent = T('medic.title');
+    document.getElementById('medic-close').textContent = T('medic.close');
+    micLabel.textContent = T('medic.mic');
+    stopBtn.textContent = T('medic.micStop');
+    tip.textContent = T('medic.tip');
+    orb.setAttribute('aria-label', T('medic.orbLabel'));
+    disclaimerEl.textContent = KB.meta.disclaimer[lang()] + ' ' + KB.meta.privacyNote[lang()];
+    renderChips();
+  }
+
+  function openPanel(autostart) {
+    panel.hidden = false;
+    document.body.classList.add('medic-open');
+    setForm('chat');
+    renderTexts();
+    if (!greeted) {
+      greeted = true;
+      bubble('ai', T('medic.hello'));
+      speakShort(T('medic.hello'));
+    }
+    setStatus(T('medic.sub'));
+    renderVoiceHint();
+  }
+
+  function closePanel() {
+    stopListen();
+    panel.hidden = true;
+    document.body.classList.remove('medic-open');
+    setForm('idle');
+    park();
+  }
+
+  document.getElementById('medic-close').addEventListener('click', closePanel);
+  var inlineOpen = document.getElementById('medic-inline-open');
+  if (inlineOpen) inlineOpen.addEventListener('click', function () { openPanel(false); });
+  panel.addEventListener('click', function (ev) {
+    var el = ev.target;
+    if (el && el.getAttribute && el.getAttribute('data-medic-close')) closePanel();
+  });
+  panel.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') { closePanel(); return; }
+    if (ev.key !== 'Tab') return;
+    var items = panel.querySelectorAll('button:not([disabled])');
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  });
+
+  /* ---------- 语音：复用小鱼儿的识别模块，不重复要麦克风权限 ---------- */
+  var listening = false;
+  var rec = null;
+
+  function offline() { return window.XiaoYuErSpeech || null; }
+
+  function renderVoiceHint() {
+    var OS = offline();
+    var box = voiceHint;
+    if (OS && OS.ready()) {
+      box.hidden = false;
+      box.textContent = T('medic.voiceReady');
+    } else if (OS && OS.supported && OS.supported()) {
+      box.hidden = false;
+      box.textContent = T('medic.noVoice');
+    } else {
+      box.hidden = true;
+    }
+  }
+
+  function setMic(state) {
+    micBtn.setAttribute('data-state', state);
+    stopBtn.hidden = state !== 'on';
+  }
+
+  function stopListen() {
+    if (!listening) return;
+    listening = false;
+    setMic('off');
+    setStatus(T('medic.sub'));
+    var OS = offline();
+    if (OS) { try { OS.stop(); } catch (e) { /* 忽略 */ } }
+    try { if (rec) rec.abort(); } catch (e2) { /* 忽略 */ }
+  }
+
+  function startListen() {
+    if (listening) { stopListen(); return; }
+    var OS = offline();
+    if (OS && OS.ready()) {
+      listening = true;
+      setMic('on');
+      setStatus(T('medic.listening'));
+      /* 麦克风只问一次：授权预检由 speech.js 统一收口 */
+      Promise.resolve(OS.ensureMic ? OS.ensureMic() : true).then(function () {
+        if (!listening) return null;
+        return OS.listen({
+          language: lang() === 'en' ? 'en' : 'zh',
+          onTick: function (phase) {
+            if (phase === 'recognizing') setStatus(T('medic.recognizing'));
+          }
+        });
+      }).then(function (text) {
+        listening = false;
+        setMic('off');
+        setStatus(T('medic.sub'));
+        if (text && text.trim()) ask(text);
+        else { bubble('ai', T('medic.noSpeech')); speakShort(T('medic.noSpeech')); }
+      }).catch(function (err) {
+        listening = false;
+        setMic('off');
+        setStatus(T('medic.sub'));
+        var code = err && err.code;
+        if (code === 'denied') bubble('ai', T('medic.noVoice'));
+        else bubble('ai', T('medic.noSpeech'));
+      });
+      return;
+    }
+    /* 离线引擎没装：说清楚去哪儿装，不反复弹权限 */
+    bubble('ai', T('medic.noVoice'));
+    speakShort(T('medic.noVoice'));
+    renderVoiceHint();
+  }
+
+  micBtn.addEventListener('click', function () { startListen(); });
+  stopBtn.addEventListener('click', stopListen);
+
+  /* ---------- 跟随界面语言与步骤 ---------- */
+  X.onRender(function () {
+    renderTexts();
+    if (!panel.hidden) renderVoiceHint();
+  });
+
+  renderTexts();
+  initPos();
+  tip.hidden = false;          // 显隐交给 CSS（data-form=hover 时才淡入）
+  setForm('idle');
+  startFloat();
+  X.setLanguage(X.getState().lang);   // 触发一次重绘，把注册的文案刷到页面上
+
+  /* ---------------- 对外接口（自检与后续扩展都走这里） ---------------- */
+  window.XiaoYiLing = {
+    version: '1.0.0',
+    /* 形态状态机 */
+    form: function () { return form; },
+    state: function () {
+      return {
+        form: form,
+        x: Math.round(pos.x), y: Math.round(pos.y),
+        speed: Math.round(spd),
+        zones: zones.length,
+        reduced: reduced
+      };
+    },
+    open: openPanel,
+    close: closePanel,
+    isOpen: function () { return !panel.hidden; },
+    /* 问诊引擎 */
+    ask: ask,
+    say: ask,
+    session: function () { return { stage: S.stage, topicId: S.topicId, qi: S.qi, answers: S.answers.slice(), escalated: S.escalated }; },
+    lastReply: function () { return lastReply; },
+    reset: resetSession,
+    /* 知识库 */
+    kb: {
+      loaded: true,
+      stats: function () { return KB.stats(); }
+    },
+    /* 检索增强挂点：fn(query, lang) → Promise<[{org,title,year}]> */
+    setSearch: function (fn) { searchFn = typeof fn === 'function' ? fn : null; },
+    /* 语音 */
+    isListening: function () { return listening; },
+    startListen: startListen,
+    stopListen: stopListen
   };
 })();
 </script>

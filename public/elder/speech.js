@@ -23,6 +23,9 @@
                                       opts.onTick(阶段, 信息): listening / recognizing
      stop()                        → 停止录音 / 中断识别
      setModel('fast'|'best')      → 换模型（fast≈41MB / best≈77MB）
+     ensureMic()                   → 麦克风一次性授权预检（全页共用，只问一次）
+     resetMic()                    → 清掉授权记忆，允许再问一次（手动重试用）
+     micGranted()                  → 本次是否已经拿到过授权
    ============================================================ */
 (function () {
   'use strict';
@@ -108,10 +111,53 @@
       window.WebAssembly && (window.AudioContext || window.webkitAudioContext));
   }
 
+  /* ---------------- 麦克风授权：整个页面只问一次 ----------------
+     老人点一次麦克风，就应该只看到一次「是否允许使用麦克风」。
+     反复弹窗会让老人以为页面坏了，干脆不再点。
+     所以第一次取麦克风成功后，立刻把音轨释放掉，并把「已授权」记住
+     （内存 + localStorage）：
+       · 后续 listen() 先过 ensureMic()，已授权就直接通过——
+         不再查权限、不再触发弹窗；
+       · 被拒绝时绝不自动重试（ Chrome 被拒后本来也不会再弹），
+         只保留老人手动点的「再试一次」；
+       · 小鱼儿面板与小医灵面板共用这一个授权，不会各问一遍。 */
+  var micGranted = false;
+  try {
+    micGranted = !!(window.localStorage && window.localStorage.getItem('xye.mic.granted') === '1');
+  } catch (e) { micGranted = false; }
+
+  function ensureMic() {
+    if (micGranted) return Promise.resolve(true);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return Promise.reject(micError('insecure', '这个页面没有麦克风接口（可能不是 https 打开）'));
+    }
+    return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      /* 预检拿到就还回去：真正录音时还会再取一次，那次不会再弹窗 */
+      try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { /* 忽略 */ }
+      micGranted = true;
+      try {
+        if (window.localStorage) window.localStorage.setItem('xye.mic.granted', '1');
+      } catch (e2) { /* 隐私模式下写不进去也不致命：本次会话内仍只问一次 */ }
+      return true;
+    }).catch(function (err) {
+      throw (err && MIC_CODES[err.name]) ? micError(err.name, err.message) : err;
+    });
+  }
+
+  /* 手动重试时清掉记忆，允许再问一次 */
+  function resetMic() {
+    micGranted = false;
+    try {
+      if (window.localStorage) window.localStorage.removeItem('xye.mic.granted');
+    } catch (e) { /* 忽略 */ }
+  }
+
   /* 麦克风权限现在是什么状态。
      注意：这个 API 不是哪儿都准（有的浏览器在被策略禁用时仍答 "prompt"），
-     所以它只用来"提前告诉老人一声"，真正拍板要靠 getUserMedia 抛出的错误码。 */
+     所以它只用来"提前告诉老人一声"，真正拍板要靠 getUserMedia 抛出的错误码。
+     已经授权过就直接答 granted，不再去问浏览器——少一次查询，少一次等待。 */
   function micState() {
+    if (micGranted) return Promise.resolve('granted');
     try {
       if (!navigator.permissions || !navigator.permissions.query) return 'unsupported';
       return navigator.permissions.query({ name: 'microphone' }).then(function (r) {
@@ -361,29 +407,32 @@
   function listen(opts) {
     var o = opts || {};
     if (!asr) return Promise.reject(new Error('离线识别还没准备好'));
-    return new Promise(function (resolve, reject) {
-      var rec = new Recorder({
-        maxMs: o.maxMs, quietMs: o.quietMs, noSpeechMs: o.noSpeechMs,
-        onTick: o.onTick,
-        onFinish: function (spoke, samples) {
-          active = null;
-          if (!spoke) { resolve(''); return; }
-          if (typeof o.onTick === 'function') o.onTick('recognizing');
-          var seconds = samples.length / 16000;
-          if (seconds < 0.4) { resolve(''); return; }
-          try {
-            Promise.resolve(asr(samples, {
-              language: o.language || 'zh',   // 界面是英文时传 'en'，其余都按中文听
-              task: 'transcribe',
-              return_timestamps: false
-            }))
-              .then(function (out) { resolve(clean(out && out.text)); })
-              .catch(function (err) { reject(err); });
-          } catch (err) { reject(err); }
-        }
+    /* 先过一次性授权预检：已授权就直接录音，不再弹窗、不再查权限 */
+    return ensureMic().then(function () {
+      return new Promise(function (resolve, reject) {
+        var rec = new Recorder({
+          maxMs: o.maxMs, quietMs: o.quietMs, noSpeechMs: o.noSpeechMs,
+          onTick: o.onTick,
+          onFinish: function (spoke, samples) {
+            active = null;
+            if (!spoke) { resolve(''); return; }
+            if (typeof o.onTick === 'function') o.onTick('recognizing');
+            var seconds = samples.length / 16000;
+            if (seconds < 0.4) { resolve(''); return; }
+            try {
+              Promise.resolve(asr(samples, {
+                language: o.language || 'zh',   // 界面是英文时传 'en'，其余都按中文听
+                task: 'transcribe',
+                return_timestamps: false
+              }))
+                .then(function (out) { resolve(clean(out && out.text)); })
+                .catch(function (err) { reject(err); });
+            } catch (err) { reject(err); }
+          }
+        });
+        active = rec;
+        rec.start().catch(function (err) { active = null; reject(err); });
       });
-      active = rec;
-      rec.start().catch(function (err) { active = null; reject(err); });
     });
   }
 
@@ -423,9 +472,13 @@
   }
 
   window.XiaoYuErSpeech = {
-    version: '1.1.0',
+    version: '1.2.0',
     supported: supported,
     micState: micState,
+    /* 一次性授权预检：整个页面（小鱼儿 + 小医灵）共用，只问一次 */
+    ensureMic: ensureMic,
+    resetMic: resetMic,
+    micGranted: function () { return micGranted; },
     state: function () { return state; },
     ready: function () { return !!asr; },
     cached: cached,

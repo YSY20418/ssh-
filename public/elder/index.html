@@ -9,6 +9,7 @@
 <title>小鱼兒 · 预约挂号</title>
 <link rel="stylesheet" href="styles.css" charset="utf-8">
 <link rel="stylesheet" href="ai.css" charset="utf-8">
+<link rel="stylesheet" href="medic.css" charset="utf-8">
 </head>
 <body>
 
@@ -223,6 +224,18 @@
     </button>
   </div>
 
+  <!-- 小医灵：医疗预问诊。点这张卡片，或点页面里漂浮的蓝绿色小光点 -->
+  <div class="medic-inline" id="medic-inline">
+    <button type="button" class="medic-inline__btn" id="medic-inline-open">
+      <span class="medic-inline__mark" data-icon="stethoscope" aria-hidden="true"></span>
+      <span class="medic-inline__main">
+        <span class="medic-inline__title" data-i18n="medic.inlineTitle"></span>
+        <span class="medic-inline__desc" data-i18n="medic.inlineDesc"></span>
+      </span>
+      <span class="medic-inline__go" aria-hidden="true">›</span>
+    </button>
+  </div>
+
 </div><!-- /.flow -->
 
 <!-- 宽屏右栏：随时能看到自己选到哪了（窄屏自动隐藏） -->
@@ -289,5 +302,8 @@
 <!-- 对话语料库（本地数据库 data/corpus.json 的编译产物，由 npm run build:corpus 生成） -->
 <script src="corpus.js" charset="utf-8"></script>
 <script src="ai.js" charset="utf-8"></script>
+<!-- 小医灵医学知识库（本地数据库 data/medic-kb.json 的编译产物，由 npm run build:medic 生成） -->
+<script src="medic-kb.js" charset="utf-8"></script>
+<script src="medic.js" charset="utf-8"></script>
 </body>
 </html>
