@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>小鱼儿 · 交接文档</title>
+<style>
+  :root { --ink:#14202e; --muted:#5b6673; --line:#e3e8ef; --blue:#1668dc; --bg:#f7f9fc; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; color:var(--ink); background:#fff; line-height:1.75; font-size:15px; }
+  .wrap { display:flex; max-width:1180px; margin:0 auto; }
+  nav { width:236px; flex:none; border-right:1px solid var(--line); padding:28px 18px 60px; position:sticky; top:0; height:100vh; overflow:auto; background:var(--bg); }
+  nav h1 { font-size:17px; margin:0 0 4px; }
+  nav .sub { font-size:12px; color:var(--muted); margin-bottom:18px; }
+  nav a { display:block; padding:6px 10px; border-radius:8px; color:var(--muted); text-decoration:none; font-size:14px; }
+  nav a:hover { background:#eaf1fb; color:var(--blue); }
+  nav .grp { font-size:12px; color:#9aa3af; margin:16px 0 6px 10px; }
+  main { flex:1; min-width:0; padding:28px 40px 80px; }
+  h2 { font-size:21px; margin:36px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+  h3 { font-size:16px; margin:22px 0 8px; }
+  h4 { font-size:14px; margin:18px 0 6px; color:#374151; font-weight:600; }
+  p, li { color:#33404f; }
+  code { background:#f1f4f8; padding:1px 6px; border-radius:4px; font-size:13px; font-family:ui-monospace,Menlo,Consolas,monospace; }
+  pre { background:#f7f9fc; border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow:auto; font-size:13px; line-height:1.6; }
+  table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--bg); font-weight:600; }
+  .card { border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:14px 0; background:#fff; }
+  .card.warn { border-color:#f0c36d; background:#fffaf0; }
+  .card.ok { border-color:#9fe1cb; background:#eafaf0; }
+  .muted { color:var(--muted); font-size:13px; }
+  ul.tight, ol.tight { margin:6px 0; }
+  .dl-list { margin:8px 0 14px; }
+  .dl-list dt { font-weight:600; color:#374151; margin-top:8px; }
+  .dl-list dd { margin:2px 0 0 16px; color:#33404f; }
+  .section { border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:18px 0; background:#fff; }
+  .section h3 { margin-top:0; }
+  .section h4 { color:#0f6e8f; }
+  @media (max-width:860px){
+    nav{display:none}
+    main{padding:20px}
+    /* 窄屏下表格自己横向滚动，不让整页跟着溢出（整页溢出会把目录与正文一起推出屏幕） */
+    table{ display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    pre{ white-space:pre-wrap; word-break:break-word; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <h1>小鱼儿 · 交接</h1>
+  <div class="sub">项目移交文档 · v1.0</div>
+  <div class="grp">认识项目</div>
+  <a href="#overview">1 这个项目是什么</a>
+  <a href="#stack">2 技术栈与零成本约束</a>
+  <a href="#layout">3 目录结构</a>
+  <div class="grp">所有对话框</div>
+  <a href="#dialogs-console">4.1 主控台</a>
+  <a href="#dialogs-elder">4.2 适老预约挂号页</a>
+  <div class="grp">其它</div>
+  <a href="#safety">5 安全与可控性</a>
+  <a href="#commands">6 跑起来要哪几条命令</a>
+  <a href="#modules">7 关键模块对照表</a>
+  <a href="#lessons">8 已踩过的坑</a>
+  <a href="#selfcheck">9 当前自检状态</a>
+  <a href="#todo">10 未完成的事</a>
+  <a href="#index">11 其它文档索引</a>
+</nav>
+
+<main>
+
+<h2 id="overview">1 这个项目是什么</h2>
+<p><strong>一句话</strong>：面向银发群体的 <strong>AI 网页代驾</strong>——老人用口语或语音说出需求，四个智能体在真实网页流程中替他跑完挂号 / 缴费等全部步骤；涉及不可撤销的高危动作时，强制停下等待本人授权。</p>
+
+<h3>1.1 范式：与常见 AI Web 产品的差异</h3>
+<table>
+<tr><th>维度</th><th>常见 AI Web 产品</th><th>小鱼儿</th></tr>
+<tr><td>AI 的角色</td><td>顾问：告诉你怎么做</td><td>代办者：直接替你做完</td></tr>
+<tr><td>交互范式</td><td>人操作网页，AI 在旁边答疑</td><td>人说话，AI 操作网页</td></tr>
+<tr><td>网页形态</td><td>为人设计的 DOM</td><td>为人渲染，同时为 Agent 暴露<strong>能力清单</strong></td></tr>
+<tr><td>风险控制</td><td>无</td><td>高危动作强制人工授权 + 全程审计 + 敏感值脱敏</td></tr>
+<tr><td>兜底</td><td>模型不可用即不可用</td><td>大模型与规则引擎双链路，无缝降级</td></tr>
+</table>
+
+<h3>1.2 演示形态一览</h3>
+<p>仓库里有<strong>两类交付物</strong>，分别面向不同场景。</p>
+<table>
+<tr><th>形态</th><th>路径</th><th>怎么打开</th><th>适用场景</th></tr>
+<tr><td>主控台（Next.js）</td><td><code>app/page.tsx</code></td><td><code>npm install &amp;&amp; npm run dev</code>，开 <code>http://localhost:3000</code></td><td>看四智能体协同、能力清单、审计日志、轨迹回放</td></tr>
+<tr><td>适老预约挂号页</td><td><code>public/elder/index.html</code></td><td><strong>双击</strong> index.html，或 <code>npm run serve:static public</code></td><td>给老人用的纯静态页，含语音助手、小医灵</td></tr>
+<tr><td>适老页单文件版</td><td><code>public/elder/standalone.html</code></td><td>双击即可</td><td>手机端最稳（无任何外链，无编码问题）</td></tr>
+</table>
+<p>被代驾的两个站点（市第一医院 / 市民之家）通过 <code>/sim/city-hospital</code> 与 <code>/sim/citizen-hall</code> 路由访问，由主控台 iframe 承载。</p>
+
+<h2 id="stack">2 技术栈与零成本约束</h2>
+<ul>
+<li><strong>前端</strong>：Next.js 15 App Router + React 19 + Tailwind v4</li>
+<li><strong>AI 接入</strong>：Vercel AI SDK + OpenAI 兼容协议（智谱 GLM / SiliconFlow / OpenRouter / Ollama 任选）</li>
+<li><strong>类型系统</strong>：TypeScript strict，<code>tsc --noEmit</code> 零错误</li>
+<li><strong>适老页</strong>：零框架、零依赖、纯 ES5；<code>file://</code> 双击可开</li>
+<li><strong>零成本兜底</strong>：未配置 <code>LLM_API_KEY</code> 时自动走规则引擎，链路完全一致；不填 Key 必须能完整演示</li>
+</ul>
+
+<h2 id="layout">3 目录结构（按角色梳理）</h2>
+<pre>webpilot/
+├─ app/                                  # Next.js 主控台
+│  ├─ page.tsx                           # 主控台（SSE 事件流消费 + 授权卡片 + 站点切换）
+│  ├─ sim/[site]/page.tsx                # 被代驾站点容器（postMessage 协议）
+│  ├─ layout.tsx / globals.css
+│  └─ api/
+│     ├─ agent/route.ts                  # Agent 事件流（SSE）
+│     ├─ confirm/route.ts                # 人工授权
+│     ├─ mcp/route.ts                    # 标准 MCP 能力服务器（JSON-RPC 2.0）
+│     ├─ session/route.ts                # 会话查询与重置
+│     ├─ audit/route.ts                  # 审计日志（脱敏后输出）
+│     └─ eval/route.ts                   # 评测结果
+├─ components/
+│  ├─ SimSite.tsx                        # 站点无关渲染器（能力清单 + ARIA）
+│  ├─ TechPanels.tsx                     # 技术面板：能力清单 / 审计 / 评测 / 回放
+│  └─ VoiceInput.tsx                     # 语音输入
+├─ lib/
+│  ├─ agents/                            # 四智能体
+│  │  ├─ engine.ts                       # 编排主循环 + 自我反思
+│  │  ├─ prompts.ts                      # 四角色提示词
+│  │  ├─ rules.ts                        # 规则引擎（零成本兜底）
+│  │  ├─ llm.ts                          # 大模型接入与引擎选择
+│  │  ├─ capmatch.ts                     # 能力语义检索
+│  │  └─ events.ts                       # SSE 事件协议
+│  ├─ safety/guardian.ts                 # 风险裁决 / 注入检测 / 脱敏
+│  ├─ rag/guides.ts                      # 办事指南知识库与 TF-IDF
+│  ├─ mcp/core.ts                        # MCP 协议核心（服务端与浏览器共用）
+│  ├─ runtime/                           # 浏览器内运行时（静态形态用）
+│  ├─ sim/                               # 站点协议 + 两个站点实现 + 注册表
+│  └─ store.ts                           # 会话状态机与审计日志
+├─ data/
+│  ├─ corpus.json                        # 本地对话数据库（唯一手改的话术文件）
+│  └─ medic-kb.json                      # 本地医学知识库
+├─ public/elder/                         # 适老预约挂号页（独立交付物）
+│  ├─ index.html                         # 五步流程骨架 + 语音条 + 操作栏
+│  ├─ styles.css / app.js                # 页面样式与主逻辑
+│  ├─ icons.js                           # 29 个内联 SVG 图标
+│  ├─ speech.js                          # 离线语音识别（浏览器内 Whisper）
+│  ├─ ai.js / ai.css                     # 语音智能助手
+│  ├─ corpus.js                          # 语料库编译产物
+│  ├─ medic-kb.js                        # 医学知识库编译产物
+│  ├─ medic.js / medic.css               # 小医灵
+│  └─ standalone.html                    # 单文件版（全部内联）
+├─ scripts/
+│  ├─ demo.mjs                           # 一键演示启动器
+│  ├─ eval.mjs / acceptance.mjs / verify.mjs
+│  ├─ build-static.mjs / fix-static-paths.mjs / serve-static.mjs
+│  ├─ build-corpus.mjs / check-corpus.mjs
+│  ├─ build-medic.mjs / check-medic.mjs
+│  ├─ build-elder-single.mjs
+│  ├─ check-elder.mjs / check-docs.mjs
+│  ├─ server.mjs / start-cloud.mjs
+│  └─ trace-guard.cjs
+├─ docs/                                 # 所有阶段文档
+│  ├─ ACCEPTANCE.md                      # 功能验收（自动生成）
+│  ├─ voice-corpus.md                    # 小鱼兒实现依据与话术手册
+│  ├─ voice-medic.md                     # 小医灵实现依据与话术手册
+│  ├─ hospital-flow-notes.md             # 真实挂号流程审核与提炼
+│  ├─ workbuddy-overlay.md               # 平台 Workbuddy 字眼诊断与处置
+│  ├─ devlog-2026-10-10.md               # 早期阶段日志
+│  ├─ devlog-2026-10-11.md
+│  ├─ devlog-2026-10-13.md
+│  ├─ devlog-2026-10-14.md
+│  └─ devlog-2026-10-15.md
+└─ docs-site/
+   ├─ index.html                         # 项目知识中心（HTML 展示页）
+   ├─ handover.html                      # 交接文档（HTML 单页版，与本文件同源）
+   └─ acceptance.html                    # 验收报告 HTML 版</pre>
+
+<h2 id="dialogs">4 所有对话框（弹窗 / 面板 / 入口卡片 / 对话流程）</h2>
+<div class="card">
+<p style="margin-top:0">每一个「会跳出来回应用户」的可交互元素都列在这里。约定四个描述维度：</p>
+<ul class="tight">
+<li><strong>触发</strong>：在什么条件下出现</li>
+<li><strong>行为</strong>：能做什么、不能做什么</li>
+<li><strong>关闭</strong>：怎么关</li>
+<li><strong>联动</strong>：和上下文的哪些地方同步</li>
+</ul>
+<p style="margin-bottom:0">元素命名沿用源码里的 <code>id</code> / <code>class</code>，方便读代码时对上号。</p>
+</div>
+
+<h3 id="dialogs-console">4.1 主控台（Next.js / app/page.tsx）</h3>
+
+<div class="section">
+<h3>4.1.1 授权卡片（<code>need_confirm</code> 高危授权弹窗）</h3>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>四智能体链路发出 <code>need_confirm</code> 事件——Guardian 判定当前动作是 high 风险（提交、支付、删除等）。</dd>
+<dt>位置</dt>
+<dd>主控台右侧「执行轨迹」面板内，<strong>就地嵌入</strong>（不是覆盖全屏），用淡黄描边卡片（<code>bg-[#fffaf0]</code> + <code>border-[#e0b563]</code>）。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>显示一句人话化的解释（<code>confirm.reason</code>），让老人知道「系统要在这一步做什么、为什么要等」。</li>
+<li>显示「待执行动作：xxx」（<code>confirm.label</code>）。</li>
+<li>提供两颗按钮：<strong>「我确认，让它提交」</strong>（实心深黄）→ 调 <code>postConfirm({ grant: true })</code>；<strong>「先不要」</strong>（白底描边）→ 调 <code>postConfirm({ grant: false })</code>。</li>
+<li>「先不要」被点后流程<strong>立即终止且不产生回执</strong>——这是兜底，不是错误。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>点两颗按钮之一即关闭卡片、继续或终止流程；<strong>没有外部取消</strong>——授权是强制门禁。</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>SSE 事件流 → 右侧轨迹区追加一条 <code>need_confirm</code> 留痕。</li>
+<li>后端 <code>confirm.actionId</code> 与当前页能力清单核对，越权授权会被服务端的 Guardian 二次拦截。</li>
+<li>用户授权后事件流继续推进；拒绝则事件流在 <code>confirm</code> 处终止并显示「流程已被取消」。</li>
+</ul>
+</dd>
+</dl>
+<div class="muted">同样的「高危授权」闸门在适老页<strong>也会出现一次</strong>，见 4.2.2。</div>
+</div>
+
+<h3 id="dialogs-elder">4.2 适老预约挂号页（public/elder/index.html）</h3>
+<p>适老页有 12 个对话框 / 面板 / 入口卡片 / 控件条 / 流程节点，按用途分 5 组：<strong>弹窗类</strong>、<strong>控件条类</strong>、<strong>入口卡片类</strong>、<strong>面板与悬浮物类</strong>、<strong>流程节点类</strong>。每个对话框都按 触发 / 位置 / 行为 / 关闭 / 联动 五段描述。</p>
+
+<h3>弹窗类（<code>#modal</code> 共用容器，三种用途）</h3>
+
+<div class="section">
+<h4>信息缺失提示弹窗（<code>alertDialog</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>点底部「下一步」但当前步骤必选项未选完（<code>canGoNext()</code> 返回 false 时）——例如第 1 步没选症状就点下一步。</dd>
+<dt>位置</dt>
+<dd>全屏居中覆盖（<code>.modal</code> + 半透明遮罩 <code>.modal__mask</code>）。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>标题是固定的「还需要再选一项」（<code>dialog.needTitle</code>）。</li>
+<li>正文用一句大白话告诉老人「还需要再选 XXX」（如「还需要选您要看的症状」「还需要选付款方式」）。</li>
+<li>单一按钮「好」（<code>dialog.ok</code>）。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>点「好」、点遮罩、按 Esc。</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>焦点自动落在「好」上（避免老人按 Tab 跑到背景里）。</li>
+<li>Tab 焦点锁在弹窗内（<code>trapFocus()</code>），不会跑到背后的页面上。</li>
+<li>不影响页面状态——关闭后仍可继续点缺失的项。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<div class="section">
+<h4>高危确认弹窗（<code>confirmDialog</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>第 4 步核对页点「下一步」且<strong>四项信息齐全</strong>时（已选症状→科室→医生→时间→就诊人→付款方式），这是整页唯一的不可撤销动作。</dd>
+<dt>位置</dt>
+<dd>全屏居中覆盖（同上 <code>alertDialog</code> 的 <code>#modal</code> 容器）。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>标题是「请再核对一下您要挂的」（<code>dialog.confirmTitle</code>）。</li>
+<li>正文把刚才选的所有项拼成一段通顺的话（<code>dialog.confirmBody</code>，含 <code>{dept}</code> <code>{doctor}</code> <code>{time}</code> <code>{patient}</code> <code>{pay}</code> 五个占位符）。</li>
+<li>两颗按钮——<strong>「先不要」</strong>（<code>dialog.confirmNo</code>，白底）和<strong>「确认预约」</strong>（<code>dialog.confirmYes</code>，实心深青绿主色）。</li>
+<li>弹窗出现的<strong>同时</strong>用语音朗读一遍标题 + 正文（<code>speak()</code>），让老人听到自己选了什么。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>点两颗按钮之一；点遮罩、按 Esc <strong>不会关</strong>——故意屏蔽外部取消，避免「误触到闲」导致预约错挂。</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>标记 <code>pendingConfirm = true</code>，语音助手在此期间<strong>只听「确认 / 取消」</strong>，其他话一律被吞（<code>understand()</code> 的第一关），守护老人在弹窗里的注意力。</li>
+<li>点「确认预约」→ <code>submitBooking()</code> 生成取号码（<code>A</code> + 3 位数，基于四项信息的哈希），跳到第 5 步成功页，<code>pendingConfirm = false</code>。</li>
+<li>点「先不要」→ 弹窗关闭、流程停在第 4 步不动，所有选项保持原状，可继续修改。</li>
+<li>对应能力清单：第 4 步所有信息齐全是 <code>XiaoYuEr.capabilities</code> 中 <code>submit</code> 能力接受的前提；信息不全直接拒绝执行（call 返回 <code>{ok:false}</code>）。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<div class="section">
+<h4>帮助弹窗（<code>helpDialog</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>点底部「需要帮助」按钮（<code>#btn-help</code>），或在第 1-4 步停住 75 秒不动时点空闲条上的「需要帮助」（见「空闲关怀条」）。</dd>
+<dt>位置</dt>
+<dd>全屏居中覆盖（<code>#modal</code>）。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>标题「要帮您做点什么？」（<code>dialog.helpTitle</code>）。</li>
+<li>正文三条要点（<code>dialog.help1</code> / <code>help2</code> / <code>help3</code>，介绍每一步该做什么、用语音怎么说话、随时可以重新选）。</li>
+<li>两颗按钮——<strong>「念一遍」</strong>（<code>dialog.helpSpeak</code>，点一下会用语音把三条要点念出来）和<strong>「关」</strong>（<code>dialog.close</code>）。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>点「关」、点遮罩、按 Esc。</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>弹窗打开时<strong>自动用语音朗读</strong>标题 + 三条要点（<code>speak()</code> 调用）——老人打开就能听见，不必读字。</li>
+<li>「念一遍」按钮可重复触发（<strong>朗读态</strong><code>#voicebar[data-speaking="1"]</code> 切换，会自动显示「停止朗读」按钮）。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<h3>控件条类（顶部 / 底部常驻）</h3>
+
+<div class="section">
+<h4>语音朗读按钮（<code>#voicebar</code> / <code>#btn-speak</code> / <code>#btn-stop</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>每一步顶部都常驻；点「听一遍」（<code>#btn-speak</code>）就读当前步骤的当前页文案；点「停止朗读」（<code>#btn-stop</code>，默认隐藏，朗读态才出现）立刻停。</dd>
+<dt>位置</dt>
+<dd>每步标题与内容之间，常驻可见。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>用 <code>speechSynthesis</code> 朗读当前步骤的语音脚本（<code>stepVoice()</code> 按步骤返回 1-3 句话的简短引导）。</li>
+<li>朗读中再次点「听一遍」会先停再说；点「停止朗读」立刻停。</li>
+<li>朗读中 <code>#btn-stop</code> 显示（CSS 把默认 <code>hidden</code> 去掉），避免老人看不到怎么停。</li>
+<li>朗读被打断（手动 stop 或句末自然结束）后：<code>data-speaking</code> 复位为 <code>0</code>，按钮文字回到「听一遍」。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>本身就是过渡态控件，不需要关闭。</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>打开帮助弹窗时<strong>自动朗读</strong>弹窗内容；按「念一遍」按钮<strong>重复触发</strong>朗读。</li>
+<li>与 <code>speak()</code> 同一条通道——若用户已经在朗读，又触发了一次朗读，<strong>会自动 stop 再 start</strong>，避免叠加。</li>
+<li>朗读中切换语言，<strong>朗读态立刻结束</strong>（<code>speak()</code> 内部有 cancellationToken）。</li>
+<li>配套可达性：<code>#live</code>（<code>role="status" aria-live="polite"</code>）同时把朗读内容落到可见的「实时区域」，让听力下降的老人也能看到字。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<div class="section">
+<h4>空闲关怀条（<code>#idlebar</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>进入第 1-4 步后开始计时；若 <strong>75 秒</strong>（<code>IDLE_MS = 75000</code>）内没有任何点击 / 按键 / 触摸（<code>click</code> / <code>keydown</code> / <code>touchstart</code> 三个事件），提示条从底部上方滑出。</dd>
+<dt>位置</dt>
+<dd>底部操作栏上方（<code>#actionbar</code> 之上），<code>z-index: 41</code>。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>一句温和的问句（<code>idle.text</code>，如「需要我帮您看看下一步吗？」）。</li>
+<li>两颗按钮——<strong>「需要帮助」</strong>（<code>#idlebar-help</code>，黄底）和<strong>「不用」</strong>（<code>#idlebar-close</code>）。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>
+<ul class="tight">
+<li>点「不用」立刻隐藏。</li>
+<li>任意用户输入（点击 / 按键 / 触摸）→ <code>resetIdle()</code> 重置计时并隐藏。</li>
+<li>离开第 1-4 步范围（例如到第 5 步成功页或第 0 步开始页）→ 自动隐藏。</li>
+<li>不会因为点击它自己就消失（避免「点了还没出现」的尴尬）。</li>
+</ul>
+</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>出现时给 <code>&lt;body&gt;</code> 加 <code>idle-on</code> class，留作 CSS 钩子（如让底部操作栏让位 padding）。</li>
+<li>点「需要帮助」→ <strong>直接打开「帮助弹窗」</strong>——这条路径是空闲关怀的实际价值。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<h3>入口卡片类</h3>
+
+<div class="section">
+<h4>小鱼兒入口卡片（<code>#ai-inline</code> / <code>#ai-inline-open</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>常驻第 0-5 步全部页面，第 0 步作为主 CTA「让小鱼兒替您办」（<code>ai.inlineTitle</code> + <code>ai.inlineDesc</code>），其他步骤作为入口提示；点开卡片本身即开面板。</dd>
+<dt>位置</dt>
+<dd>流程主区末尾，第 0 步紧跟开始按钮下方。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>卡片左侧「鱼」字 logo（<code>ai-inline__mark</code>）+ 中部标题/描述 + 右侧 chevron（›）。</li>
+<li>点卡片 → 打开「小鱼兒语音助手面板」。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>它本身是入口，不是弹窗；没有关闭动作。</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>这是<strong>全页唯一打开语音助手的方式</strong>——小鱼兒没有悬浮按钮（<code>aifab</code> 已移除，避免和「小医灵悬浮光点」冲突）。</li>
+<li>老人找得到入口：第 0 步是大卡片，后续步骤是小卡片。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<div class="section">
+<h4>小医灵入口卡片（<code>#medic-inline</code> / <code>#medic-inline-open</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>常驻第 0-5 步全部页面，紧跟小鱼兒入口之后；点开卡片本身即<strong>打开面板</strong>（注意：与小鱼兒不同，<strong>小医灵有悬浮光点</strong>也有入口卡片——老人想用哪个都行）。</dd>
+<dt>位置</dt>
+<dd>流程主区末尾，第 0 步紧跟小鱼兒入口下方。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>卡片左侧听诊器图标（<code>data-icon="stethoscope"</code>）+ 中部标题/描述（<code>medic.inlineTitle</code> 「不舒服？先问小医灵」+ <code>medic.inlineDesc</code> 「先排危险信号，再去挂号」）+ 右侧 chevron。</li>
+<li>点卡片 → 打开「小医灵面板」。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>本身是入口。</dd>
+<dt>联动</dt>
+<dd>与小医灵悬浮光点共享同一份预问诊引擎，点哪个入口都打开同一面板。</dd>
+</dl>
+</div>
+
+<h3>面板与悬浮物类</h3>
+
+<div class="section">
+<h4>小鱼兒语音助手面板（<code>#ai-panel</code> / <code>.ai</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>点小鱼兒入口卡片；或在确认窗期间（高危确认弹窗）由代码主动打开。</dd>
+<dt>位置</dt>
+<dd>右侧抽屉 / 底部弹出（CSS 通过 <code>.ai</code> 容器 + 媒体查询控制位置，桌面右侧抽屉，手机底部全宽）。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>标题栏（<code>ai-title</code>）「小鱼兒 · 替您一步步辦」+ 状态行（麦克风状态：已允许 / 被拦住 / 还没问过 / 查不出来）。</li>
+<li>对话气泡区（<code>ai-log</code>）：助手气泡（淡青绿底）+ 用户气泡（白底 + 描边），按时间顺序排列。</li>
+<li>麦克风按钮（<code>ai__mic</code>，<strong>点一下开始听，再点停止</strong>——不是「按住说话」）。</li>
+<li>「常说的话」chips 区（<code>ai-chips</code>）：根据当前步骤给出 6-8 张建议卡片（<strong>点击即等同于用那句话说话</strong>），例如第 1 步「我腿疼」「我头晕」「我胃不舒服」。</li>
+<li>步骤提示行（<code>ai-step</code>）：当前是第几步、下一步建议做什么。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>
+<ul class="tight">
+<li>右上角 <code>×</code> 按钮。</li>
+<li>点遮罩（<code>.ai__mask</code>）。</li>
+<li>按 <strong>Esc</strong>（<strong>挂在 <code>document</code> 上，不依赖焦点</strong>——老人点开面板后鼠标点遮罩，焦点根本不在面板里，这条路径是修「打开了无法关闭」的核心）。</li>
+<li>三条路径都接真实鼠标事件（CDP <code>Input.dispatchMouseEvent</code>），不用 <code>el.click()</code>（合成点击绕过命中测试）。</li>
+</ul>
+</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>入口卡片被点击 → 面板打开 → 自动聚焦到麦克风按钮。</li>
+<li>麦克风状态行由 <code>navigator.permissions.query</code> 包装，每次停下都重读（老人可能在浏览器里改过设置）。</li>
+<li>被浏览器拦截时（<code>NotAllowedError</code>）→ 状态行变「被拦住」、展开<strong>三步恢复指引</strong> + 「再试一次麦克风」按钮。</li>
+<li>用户的语音识别结果<strong>走四道关</strong>：确认窗开着只听确认取消 → 页面控制命令（念 / 停 / 字号 / 前后步）→ 业务动作（症状 / 科室 / 医生 / 时间 / 付款 / 提交）→ 都不命中才进对话层（<code>corpus.match()</code>）。</li>
+<li>业务动作的取值<strong>只能来自当前可选项</strong>（<code>XiaoYuEr.options()</code>），说一个页面上没有的（例如「挂心脏病科」）被挡回。</li>
+<li>业务动作的步骤闸门（<code>STEP_GUARD</code>）：选医生只能在第 2 步、付款只能在第 4 步，在错误步骤说不会被乱执行。</li>
+<li>「确认预约」只在第 4 步有 <code>pendingConfirm=true</code> 时生效，<strong>否则只把确认窗叫出来</strong>——高危授权闸门被语音也遵守。</li>
+<li><strong>离线 + 云端双链路</strong>（<code>speech.js</code>）：离线引擎（浏览器内跑 Whisper）优先；浏览器自带 Web Speech API（要把录音送到云端，国内基本连不上）作备用；都连不上 → 「常说的话」chips 仍然可用。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<div class="section">
+<h4>小医灵面板（<code>#medic-panel</code> / <code>.medic-panel</code> / <code>.medic__box</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>点小医灵入口卡片，或点小医灵悬浮光点（轻点 = 开面板，长按 = 拖动机器人）。</dd>
+<dt>位置</dt>
+<dd>桌面右侧抽屉，手机底部全宽（<code>.medic__box</code> 用 <code>min(86vh, 720px)</code> / <code>calc(100dvh - 12px)</code> 两种高度约束）。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>标题栏（<code>medic-title</code>）「小医灵 · 陪您梳理症状」+ 状态行（当前主题 / 红旗升级标记）。</li>
+<li>对话气泡区（<code>medic-log</code>）：小医灵气泡（蓝绿主色底）+ 用户选择回显（点选 chip 回填）。</li>
+<li><strong>红旗筛查在最前</strong>：说「我胸口疼得厉害」→ 立即给「先打 120」的急症建议，<strong>不</strong>进入普通问诊（安全优先）。</li>
+<li><strong>追问一次只问一个</strong>：每条消息问 1 个主问题 + 2-4 个点选 chip（部位 / 时间 → 性质 / 程度 → 背景与伴随）。</li>
+<li><strong>最多 3 轮追问</strong>，然后给四级分诊（立即急诊 / 24 小时内 / 预约门诊 / 居家观察）+ 通俗科普 + 免责声明 + 1-3 条公开权威来源。</li>
+<li><strong>回答里再出红旗会升级</strong>：问「有没有看东西模糊」，老人点了「看东西模糊」——这是中风信号，当场中断流程升级为急症。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>
+<ul class="tight">
+<li>右上角 <code>×</code> 按钮。</li>
+<li>点遮罩（<code>.medic__mask</code>）。</li>
+<li>按 <strong>Esc</strong>（文档级，不依赖焦点）。</li>
+<li>同一修复背景（<code>pointer-events: auto</code>）——<strong>面板点得动、关得上</strong>。</li>
+</ul>
+</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>面板里的麦克风按钮同样<strong>点一下开始听、再点停止</strong>——和小鱼兒语音助手面板一致。</li>
+<li>麦克风授权<strong>全页只问一次</strong>（<code>speech.js.ensureMic()</code>）：小鱼兒与小医灵共用同一个闸门。</li>
+<li>来源只写「机构 · 资料名」，<strong>不写死 URL</strong>——防止链接失效，也防止为了凑格式编造出不存在的页面；年份宁可不写，也不编。</li>
+<li>规则不动 DOM；只有老人点「我想挂号」才调 <code>X.nav('restart')</code> 回小鱼兒流程。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<div class="section">
+<h4>小医灵悬浮光点（<code>#medic-root</code> / <code>.medic-orb</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>进入任一步骤页面，光点自动在视口内<strong>缓慢漂浮</strong>（20-40 px/s，每 1.2-3 s 随机转向）。</dd>
+<dt>位置</dt>
+<dd>右下角浮于内容之上（避让去过的避让区）。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>形态状态机：<code>idle</code>（光点漂浮）/ <code>hover</code>（悬停放大发光 + 气泡「点击问诊 · 长按拖动」）/ <code>pressing</code>（按下）/ <code>dragging</code>（拖动）/ <code>chat</code>（打开对话面板）。</li>
+<li>轻点（不移动）→ 打开「小医灵面板」。</li>
+<li>长按 <strong>450 ms</strong> → 变机器人形态（白主体 + 深青描边 + 淡青小手）。</li>
+<li>拖动超过 <strong>6 px</strong> → 跟手移动且限视口内。</li>
+<li>松手停 <strong>3 秒</strong> → 恢复漂浮。</li>
+<li>机器人可眨眼（<code>scaleY</code>）、点头（<code>rotate</code>）。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>没有关闭按钮——<strong>它是入口</strong>，不是弹窗。</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li><strong>避让是硬约束</strong>：每 500 ms 重取避让区（按钮 / 输入 / 视频 / 弹窗关闭钮 / 重要文字）的 Rect，每帧矩形相交检测。</li>
+<li>撞上按四方向「推出距离」取最小，<strong>只挑推得出去的方向</strong>——贴在视口边缘时往那侧推会被边界钳位抵消（这是修「光点永久卡在右缘挡住小鱼兒」bug 的核心）。</li>
+<li><strong>全页唯一悬浮语音模块</strong>——小鱼兒固定悬浮球（<code>aifab</code>）已移除，避免两个悬浮物老人分不清该点哪个。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<div class="section">
+<h4>通用能力清单（<code>window.XiaoYuEr</code>）</h4>
+<p class="muted">不是弹窗，但所有面板 / 弹窗背后的执行都走它：</p>
+<ul>
+<li><strong>9 项标准能力</strong>（<code>XiaoYuEr.capabilities</code>）：选症状 / 选科室 / 选医生 / 选日期 / 选时段 / 选就诊人 / 选付款 / 提交 / 朗读。</li>
+<li><strong>12 个导航白名单命令</strong>（<code>XiaoYuEr.nav</code>）：next / prev / help / read / stop / confirm / confirmYes / confirmNo / closeModal / restart / done / font（字号缩放）。</li>
+<li><strong>步骤闸门</strong>（<code>STEP_GUARD</code>）：每个动作只在合法步骤生效。</li>
+<li><strong>高危授权</strong>：<code>submit</code> 只能在第 4 步 + 所有信息齐全时执行，<strong>不会越权</strong>。</li>
+</ul>
+</div>
+
+<h3>流程节点类</h3>
+
+<div class="section">
+<h4>成功页（<code>#step-5</code> / <code>.success</code> / <code>#ticket</code>）</h4>
+<dl class="dl-list">
+<dt>触发</dt>
+<dd>点高危确认弹窗的「确认预约」后跳到。</dd>
+<dt>位置</dt>
+<dd>流程主区。</dd>
+<dt>行为</dt>
+<dd>
+<ul class="tight">
+<li>顶部成功徽章（绿色对勾）+ 标题「预约成功了」（<code>step5.title</code>）+ 一句简短引导（<code>step5.lead</code>）。</li>
+<li><strong>取号码票面</strong>（<code>#ticket</code>）：大字号取号码 <code>Axxx</code> + 科室 / 医生 / 时间 / 就诊人 / 付款方式的简明列表。</li>
+<li><strong>到院须知</strong>（<code>.notice--tips</code>）：带身份证、提前 15 分钟到、分时段就诊三条，每条配图标。</li>
+<li><strong>防护贴士</strong>（<code>.protect</code>）：口罩 / 不乱吃药 / 勤洗手 / 注意交叉感染四条，每条配图标。</li>
+<li>底部两颗按钮——<strong>「再挂一个」</strong>（白底 ghost，调 <code>restart</code>，回到第 0 步） / <strong>「好了」</strong>（实心主色，调 <code>done</code>，停留不动）。</li>
+</ul>
+</dd>
+<dt>关闭</dt>
+<dd>它本身就是终点页。</dd>
+<dt>联动</dt>
+<dd>
+<ul class="tight">
+<li>「好了」按钮不会「关闭」任何东西——只是清状态、不弹任何弹窗（避免老人被突然弹窗吓到）。</li>
+<li>「再挂一个」→ 状态重置到第 0 步开始页，所有选择清空。</li>
+<li>取号码基于四项信息的哈希生成（<code>hash(state.dept + state.doctor + state.date + state.slot + state.patient)</code>），同一组信息每次都拿到同一个号码，方便老人复用与查询。</li>
+</ul>
+</dd>
+</dl>
+</div>
+
+<h2 id="safety">5 安全与可控性</h2>
+<div class="muted">详细文档见 <code>docs/voice-medic.md</code>（红旗筛查与四级分诊）与 <code>README.md</code>（主项目安全章节）。这里只列硬约束：</div>
+<ol>
+<li><strong>三级风险裁决</strong>：<code>low</code>（浏览 / 普通填写） / <code>medium</code>（身份证 / 手机号等隐私字段） / <code>high</code>（提交 / 支付 / 删除）。</li>
+<li><strong>人工授权门禁</strong>：<code>high</code> 级动作必须本人点击授权；拒绝则流程终止且<strong>绝不提交</strong>。</li>
+<li><strong>敏感值脱敏</strong>：身份证 <code>110105********1234</code>、手机 <code>138****8000</code>，真实值只存于会话内存，界面与日志另有输出侧兜底过滤。</li>
+<li><strong>提示词注入检测</strong>：覆盖「覆盖系统指令 / 套取系统提示词 / 角色劫持 / <strong>绕过人工授权</strong>」四类意图，命中即在进模型前拦截。</li>
+<li><strong>防幻觉闸门</strong>：Navigator 输出的动作 id 若不在当前页能力清单内，直接丢弃并重试；MCP 通道的 <code>tools/call</code> 同样受此约束。</li>
+<li><strong>双链路兜底</strong>：模型不可用或输出不可解析时，自动切到规则引擎，流程照样跑完。</li>
+</ol>
+
+<h2 id="commands">6 跑起来要哪几条命令</h2>
+<pre># 0) 环境：Node ≥ 18.18（推荐 20 LTS 或 22 LTS）
+node -v
+
+# 1) 装依赖
+npm install
+
+# 2) 跑起来：主控台 + 两个站点，http://localhost:3000
+npm run dev
+# 或
+npm run demo                  # 一键：起服务 + 打局域网 IP + 推荐话术
+
+# 3) 适老页单独看
+npm run serve:static public   # 起 0.0.0.0 静态服务（响应头强制 charset=utf-8）
+
+# 4) 体检
+npm run typecheck             # tsc --noEmit
+npm run acceptance            # 起服务 → 12 类功能 → 41 断言 → docs/ACCEPTANCE.md
+npm run check:elder           # 适老页 jsdom 自检（54 项）
+npm run check:medic           # 小医灵沙盒测试（19 项）
+npm run check:corpus          # 语料库沙盒测试（6942 次识别）
+npm run check:docs            # 文档结构与编号自检（10 文档 / 7 项）
+npm run eval                  # 智能体回归评测（10 用例 / 94 断言）
+
+# 5) 改话术后的两件事
+npm run build:corpus          # data/corpus.json → public/elder/corpus.js
+npm run build:medic           # data/medic-kb.json → public/elder/medic-kb.js
+
+# 6) 发布前
+npm run build:elder           # 生成单文件版 standalone.html</pre>
+
+<h2 id="modules">7 关键模块对照表</h2>
+<table>
+<tr><th>模块</th><th>职责</th></tr>
+<tr><td><code>lib/agents/engine.ts</code></td><td>编排主循环：Planner/Navigator/Guardian/Reporter 调度、失败自省、步数上限</td></tr>
+<tr><td><code>lib/agents/llm.ts</code></td><td>大模型接入（OpenAI 兼容）+ 引擎选择（有密钥走模型，否则规则引擎）</td></tr>
+<tr><td><code>lib/agents/rules.ts</code></td><td>规则引擎：无模型时的确定性决策</td></tr>
+<tr><td><code>lib/agents/prompts.ts</code></td><td>四个角色的提示词与 JSON 强约束输出</td></tr>
+<tr><td><code>lib/agents/capmatch.ts</code></td><td>能力语义检索：中文二元组余弦 + 核心字加成 + 编辑距离</td></tr>
+<tr><td><code>lib/safety/guardian.ts</code></td><td>三级风险裁决、人工授权门禁、脱敏、提示词注入检测</td></tr>
+<tr><td><code>lib/rag/guides.ts</code></td><td>办事指南知识库 + 零依赖中文 TF-IDF 检索器</td></tr>
+<tr><td><code>lib/sim/types.ts</code></td><td>站点协议（SiteDef / PageDef / Capability）</td></tr>
+<tr><td><code>lib/sim/hospital.ts</code></td><td>站点一：医院预约挂号</td></tr>
+<tr><td><code>lib/sim/gov.ts</code></td><td>站点二：市民之家医保/社保缴费</td></tr>
+<tr><td><code>lib/sim/registry.ts</code></td><td>站点注册表与能力清单编译器</td></tr>
+<tr><td><code>lib/mcp/core.ts</code></td><td>MCP 协议核心（服务端与浏览器共用一份裁决）</td></tr>
+<tr><td><code>lib/runtime/transport.ts</code></td><td>静态形态下的浏览器内运行时</td></tr>
+<tr><td><code>lib/store.ts</code></td><td>会话状态机、审计日志、执行轨迹</td></tr>
+<tr><td><code>public/elder/icons.js</code></td><td>适老页 29 个内联 SVG 图标</td></tr>
+<tr><td><code>public/elder/speech.js</code></td><td>离线语音识别（浏览器内跑 Whisper）+ 麦克风授权</td></tr>
+<tr><td><code>public/elder/ai.js</code></td><td>语音智能助手（识别 + 本地意图 + 只走能力清单执行）</td></tr>
+<tr><td><code>public/elder/corpus.js</code></td><td>对话语料库编译产物（3929 条三语说法）</td></tr>
+<tr><td><code>public/elder/medic-kb.js</code></td><td>医学知识库编译产物（10 类红旗 + 12 个主题，537 条三语说法）</td></tr>
+<tr><td><code>public/elder/medic.js</code></td><td>小医灵本体：形态状态机 + 预问诊会话引擎 + 面板</td></tr>
+<tr><td><code>public/elder/medic.css</code></td><td>小医灵配套样式</td></tr>
+<tr><td><code>data/corpus.json</code></td><td>本地对话数据库：改话术只改这里</td></tr>
+<tr><td><code>data/medic-kb.json</code></td><td>本地医学知识库：改话术只改这里</td></tr>
+</table>
+
+<h2 id="lessons">8 已踩过的坑（接手时不必再踩一遍）</h2>
+
+<h3>8.1 平台层 Workbuddy 字眼（详见 docs/workbuddy-overlay.md）</h3>
+<p>托管在 <code>workbuddy.link</code> 上的页会被平台注入默认 meta——<code>og:site_name = "WorkBuddy"</code>、<code>og:description = "Workbuddy - 可人机协作的在线Page"</code>、<code>favicon</code> 是平台 logo、地址栏永远是平台域名。<strong>这五处改不了</strong>。</p>
+<p>我们能改的（<strong>已全部改完</strong>）：</p>
+<ul>
+<li>产物内文 0 处 Workbuddy。</li>
+<li>产物 <code>og:title</code> / <code>twitter:title</code> = 「小鱼兒 · 预约挂号」（平台从 <code>&lt;title&gt;</code> 提取）。</li>
+<li>浏览器 tab 标题同上。</li>
+<li>节点 title（管理列表里显示）通过 <code>space.workspace.rename-node</code> 改。</li>
+</ul>
+<p>想彻底解决：自部署到自有域名（README 部署段已写好）。</p>
+
+<h3>8.2 <code>pointer-events: none</code> 是继承的</h3>
+<p><code>aifab</code>（小鱼兒固定悬浮球，已移除）根容器写 <code>pointer-events: none</code>，是为了让悬浮物不挡页面操作；但 <code>pointer-events</code> 是<strong>继承属性</strong>——<code>.medic-panel</code> 必须显式写 <code>auto</code>，否则整棵面板子树收不到真实点击（关闭按钮 / 遮罩 / chips 全死）。<code>el.click()</code> 测试不出来（合成点击绕过命中测试），必须用真实鼠标事件（CDP <code>Input.dispatchMouseEvent</code>）。</p>
+
+<h3>8.3 <code>el.click()</code> 不是点击</h3>
+<p>JS 合成点击绕过命中测试、滚动定位、遮挡检测——测「点不点得到」必须用真实鼠标事件。这条已固化为真机脚本的默认写法。</p>
+
+<h3>8.4 编码四层防护</h3>
+<p>适老页有三千多个汉字。常见静态服务器只对 <code>.html</code> / <code>.js</code> / <code>.css</code> 返回 <code>text/html</code> / <code>text/javascript</code> / <code>text/css</code>，<strong>不带 charset</strong>；外链脚本没有编码线索时，部分手机内核按 GBK 解析 → 电脑上正常、手机上乱码。</p>
+<p>防护层（<strong>已全部就位</strong>）：</p>
+<ol>
+<li>HTML <code>&lt;meta charset="utf-8"&gt;</code> + <code>http-equiv</code> 双声明。</li>
+<li>外链 <code>&lt;link&gt;</code> / <code>&lt;script&gt;</code> 都显式 <code>charset="utf-8"</code>。</li>
+<li>CSS 文件首行 <code>@charset "UTF-8";</code>。</li>
+<li>JS 文件带 UTF-8 BOM。</li>
+</ol>
+<p>最稳的一招：单文件版 <code>npm run build:elder</code> → <code>standalone.html</code>，全部内联，编码只由 <code>&lt;meta charset&gt;</code> 决定。</p>
+
+<h3>8.5 Whisper 幻听治理</h3>
+<p>Whisper-tiny 遇到环境音会输出「好」「（音樂）」「谢谢观看」之类。两层处理：</p>
+<ul>
+<li><code>speech.js</code> 的 <code>clean()</code>：剥掉括号引号 → 原始串与剥壳串都去撞幻听清单，命中返空串。</li>
+<li><code>ai.js</code> 的 <code>hear()</code>：识别结果是 1-2 字且规则引擎认不出 → 当环境音处理，回「没有听到声音，请再说一次」，<strong>不执行任何动作</strong>，也<strong>不说「没听明白」</strong>——那会让老人以为自己说错了。</li>
+</ul>
+
+<h3>8.6 沙箱环境坑</h3>
+<ul>
+<li>npm 必须 <code>--registry=https://registry.npmjs.org</code>（淘宝源会 403）。</li>
+<li>沙箱内 <code>next build</code> 写 <code>.next/trace</code> 会 EPERM → 用 <code>tsc --noEmit</code> + dev/curl 验证；<code>scripts/trace-guard.cjs</code> 预载补丁。</li>
+<li>curl 本地服务加 <code>--noproxy '*'</code>；无头 Chrome 加 <code>--no-proxy-server</code>。</li>
+<li>Windows <code>spawn('npx.cmd')</code> 报 EINVAL → <code>spawn(process.execPath, ['node_modules/next/dist/bin/next','build'])</code>。</li>
+<li>Git Bash 里 node 的 <code>/tmp</code> 解析成 <code>F:\tmp</code> → 临时文件写当前目录。</li>
+<li>沙箱拦截对 <code>.next</code> 的删除 → 用「整体 renameSync 挪走」代替 <code>rm -rf</code>。</li>
+<li><strong>任何验证类脚本都必须自动关停</strong>，不留后台常驻进程。</li>
+</ul>
+
+<h3>8.7 云端托管页手术（详见 docs/workbuddy-overlay.md）</h3>
+<p><code>workbuddy.link/p/ukGnjmEILo83bQqTprrtTM</code> 是云端托管的 standalone 版本。平台改写时会注入 <code>data-page-node-id</code>、<code>&lt;!--pnid:--&gt;</code> 注释、<code>&lt;script src="/page/page_comm/inject.js"&gt;</code>，<strong>必须</strong>定点手术（保留原 CRLF/BOM），不能整文件覆盖。流程：开事务（带 <code>baseVersion</code>）→ 下载基线 → 定点改 → 上传 → 提交（version+1）→ <code>publish_page.py</code> 发布。</p>
+
+<h2 id="selfcheck">9 当前自检状态</h2>
+<p>最后一次全量验证（2026-10-15）：</p>
+<table>
+<tr><th>检查</th><th>结果</th></tr>
+<tr><td><code>npm run check:elder</code></td><td><strong>54 / 54</strong>（含小医灵接入、面板 pointer-events 可交互、Esc 文档级可关）</td></tr>
+<tr><td><code>npm run check:medic</code></td><td><strong>19 / 19</strong>（537 条医学说法 + 红旗优先 + 问诊全流程 + 禁词隐私）</td></tr>
+<tr><td><code>npm run check:corpus</code></td><td><strong>6942 次识别</strong>全对</td></tr>
+<tr><td><code>npm run check:docs</code></td><td><strong>10 文档 / 7 项</strong>全过</td></tr>
+<tr><td><code>npm run acceptance</code></td><td><strong>12 / 12 类功能 / 41 / 41 断言</strong>（自动生成 ACCEPTANCE.md）</td></tr>
+<tr><td><code>npm run eval</code></td><td><strong>10 用例 / 94 断言</strong></td></tr>
+<tr><td><code>npx tsc --noEmit</code></td><td>0 错误</td></tr>
+<tr><td>CDP 真实浏览器</td><td><strong>24 / 24</strong>（真实鼠标开关面板、chips 推进问诊、3 秒采样零遮挡、窄屏无溢出、控制台零报错）</td></tr>
+<tr><td>单文件版体积</td><td>494,581 字节（≈ 483 KB），<code>aifab</code> 残留 0、<code>workbuddy</code> 残留 0</td></tr>
+</table>
+
+<h2 id="todo">10 未完成的事</h2>
+<ol>
+<li><strong>README「作者与分工」</strong> —— 唯一空缺项，等用户提供姓名 / 学校 / 分工。</li>
+<li><strong>演示视频</strong>（5-8 分钟 1080p）—— 分镜尚未开始。</li>
+<li><strong>技术文档 PDF</strong>（≤ 30 页）—— 尚未开始。</li>
+<li><strong>真实站点 MCP Server 适配层</strong>（对接公开政务/医疗站点）。</li>
+<li><strong>端侧小模型意图理解</strong>（Transformers.js / WebGPU，弱网与隐私场景）。</li>
+<li><strong>多轮方言语音优化与纠错</strong>。</li>
+<li><strong>代驾过程的可视化编排器</strong>（把流程画出来，而不只是看轨迹）。</li>
+<li><strong>云端托管页同步</strong>：本轮本地改动同步到云端 standalone（medic.css / medic-kb.js / medic.js / 入口卡片 / speech.js ensureMic）由用户在适当时机发起。</li>
+</ol>
+
+<h2 id="index">11 其它文档索引</h2>
+<table>
+<tr><th>主题</th><th>路径</th></tr>
+<tr><td>项目说明 / 安装 / 部署</td><td><code>README.md</code></td></tr>
+<tr><td>小鱼兒实现依据与话术手册</td><td><code>docs/voice-corpus.md</code></td></tr>
+<tr><td>小医灵实现依据与话术手册</td><td><code>docs/voice-medic.md</code></td></tr>
+<tr><td>真实挂号流程审核与提炼</td><td><code>docs/hospital-flow-notes.md</code></td></tr>
+<tr><td>平台 Workbuddy 字眼诊断</td><td><code>docs/workbuddy-overlay.md</code></td></tr>
+<tr><td>功能验收报告（自动生成）</td><td><code>docs/ACCEPTANCE.md</code></td></tr>
+<tr><td>早期开发日志</td><td><code>docs/devlog-2026-10-10.md</code> / <code>2026-10-11.md</code> / <code>2026-10-13.md</code></td></tr>
+<tr><td>中期开发日志（离线语音 / 小医灵）</td><td><code>docs/devlog-2026-10-14.md</code></td></tr>
+<tr><td>最新开发日志（只留一个悬浮 / 面板可关 / 平台字眼）</td><td><code>docs/devlog-2026-10-15.md</code></td></tr>
+<tr><td>项目知识中心（HTML）</td><td><code>docs-site/index.html</code></td></tr>
+<tr><td>验收报告 HTML 版</td><td><code>docs-site/acceptance.html</code></td></tr>
+<tr><td>交接文档 HTML 单页版</td><td><code>docs-site/handover.html</code></td></tr>
+</table>
+
+</main>
+</div>
+</body>
+</html>

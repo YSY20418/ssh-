@@ -63,6 +63,9 @@
   <div class="grp">使用指南</div>
   <a href="#start">16 快速开始：安装与运行</a>
   <a href="#deploy">17 部署</a>
+  <div class="grp">移交</div>
+  <a href="#handover">18 交接文档（含全部对话框）</a>
+  <a href="handover.html">↗ 独立页面：handover.html</a>
 </nav>
 
 <main>
@@ -406,6 +409,21 @@ npm run start:cloud    # scripts/start-cloud.mjs</pre>
 </div>
 <h3>环境变量</h3>
 <p>生产环境建议显式设置 <code>LLM_API_KEY</code>、<code>LLM_BASE_URL</code>、<code>LLM_MODEL</code>、<code>REQUIRE_HUMAN_CONFIRM=1</code>。密钥只走环境变量，仓库内只有 <code>.env.example</code> 模板。</p>
+
+<h2 id="handover">18 交接文档（含全部对话框）</h2>
+<p>如果你接手这个项目，先看这一份就够：每个对话框都按"触发 / 位置 / 行为 / 关闭 / 联动"五段式描述，沿用源码里的 <code>id</code> / <code>class</code> 名，读代码时能直接对上号。</p>
+<div class="card ok">
+<strong>入口</strong>
+<ul style="margin:8px 0 0">
+<li><a href="handover.html">docs-site/handover.html</a>（网页版，与本知识中心同目录）</li>
+<li>本地仓库：<code>docs/HANDOVER.md</code>（Markdown 主档）</li>
+<li>两版内容同源、同步维护，互为镜像。</li>
+</ul>
+</div>
+<div class="card">
+<strong>文档里收录的对话框</strong>
+<p style="margin:6px 0 0">主控台授权卡片 / alertDialog / helpDialog / confirmDialog / idlebar / voicebar / ai-inline / ai-panel / medic-inline / medic-panel / medic-orb / 成功页，共 12 个，覆盖主控台、适老页、小医灵三处入口的全部弹窗、面板、悬浮物与流程节点。</p>
+</div>
 </main>
 </div>
 </body>

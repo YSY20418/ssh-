@@ -657,6 +657,21 @@ webpilot/
 
 ---
 
-## 十一、作者与分工
+## 十一、交接文档与延伸阅读
+
+> 给接手维护这个项目的人一份"看过 HANDOVER 就能动手"的索引；不重复正文细节，只列入口。
+
+| 用途 | 入口 |
+| --- | --- |
+| 完整交接文档（含所有对话框 / 触发 / 位置 / 行为 / 关闭 / 联动） | [`docs/HANDOVER.md`](docs/HANDOVER.md) |
+| 同等通分的网页版 | [`docs-site/handover.html`](docs-site/handover.html) |
+| 项目知识中心总目录 | [`docs-site/index.html`](docs-site/index.html) |
+| 离线语音双链路 + 幻听治理 | `docs/devlog-2026-10-14.md` 第四节 |
+| 麦克风全页只问一次 / 权限修复 | `docs/devlog-2026-10-14.md` 第六节 |
+| 适老口语语料 | `docs/voice-corpus.md`、`docs/voice-medic.md` |
+| 多平台渲染规范 | `docs/workbuddy-overlay.md` |
+| 站点流程备注 | `docs/hospital-flow-notes.md` |
+
+## 十二、作者与分工
 
 > 待填写：姓名 / 学校 / 分工。
