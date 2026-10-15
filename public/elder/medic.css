@@ -141,12 +141,16 @@
    面板整棵子树会继承 none → 关闭按钮、遮罩、点选 chips 全部点不动，
    老人打开面板就关不上了。 */
 .medic-panel { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; pointer-events: auto; }
+/* 阻止老人长按触发浏览器文本选择 / 系统菜单：mic 按钮文案是「点这里说话」，
+   老人若误会成长按会想选中文本，全 panel 蓝底高亮看着像失控。 */
+.medic-panel, .medic-panel * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .medic-panel[hidden] { display: none; }
 .medic__mask { position: absolute; inset: 0; background: rgba(31, 43, 51, 0.34); }
 .medic__box {
   position: relative;
   width: min(560px, 100%);
-  max-height: min(86vh, 720px);
+  height: min(86vh, 720px);   /* 用 height 强制遵守上限：max-height 在 flex align-items 下不约束「撑开」 */
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--card);
@@ -159,9 +163,10 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
+  padding: 0.75rem var(--sp-4);
   background: var(--brand);
   color: #fff;
+  flex: 0 0 auto;             /* 不参与 grow/shrink：log 才是要占满的 */
 }
 .medic__mark {
   flex: 0 0 auto;
@@ -190,6 +195,7 @@
 
 .medic__log {
   flex: 1 1 auto;
+  min-height: 0;             /* flex item 必填：让 log 真的占满剩余空间并可滚动，不被内容自然高度顶出去 */
   overflow-y: auto;
   padding: var(--sp-4);
   display: flex;
@@ -223,7 +229,7 @@
 }
 
 /* 麦克风与停止 */
-.medic__row { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4) 0; }
+.medic__row { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4) 0; flex: 0 0 auto; }
 .medic__mic {
   flex: 1 1 auto;
   display: inline-flex;
@@ -271,16 +277,18 @@
   color: var(--warn-ink);
   font-size: 0.98rem;
   line-height: 1.55;
+  flex: 0 0 auto;
 }
 .medic__voicehint[hidden] { display: none; }
 
 /* 点选 chips：一次最多 3 个问题、每题 2-4 个选项，老人不用打字 */
-.medic__chiplabel { margin: var(--sp-4) var(--sp-4) 0; font-size: 1rem; color: var(--ink-2); }
+.medic__chiplabel { margin: var(--sp-4) var(--sp-4) 0; font-size: 1rem; color: var(--ink-2); flex: 0 0 auto; }
 .medic__chips {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-4) 0;
+  flex: 0 0 auto;
 }
 .medic__chip {
   min-height: 3rem;
@@ -305,6 +313,7 @@
   color: var(--muted);
   font-size: 0.92rem;
   line-height: 1.6;
+  flex: 0 0 auto;
 }
 
 /* ---------- 动画 ---------- */
@@ -326,14 +335,31 @@
   50% { transform: scale(1.35); opacity: 0.55; }
 }
 
-/* ---------- 自适应：窄屏从底部弹出，宽屏居中偏下 ---------- */
+/* ---------- 自适应：窄屏从底部弹出（高度顶满），宽屏居中偏下 ---------- */
 @media (min-width: 701px) {
   .medic-panel { align-items: center; padding: var(--sp-4); }
   .medic__box { border-radius: var(--radius-lg); }
 }
 @media (max-width: 700px) {
-  .medic__box { max-height: 92vh; }
-  .medic__text { max-width: 92%; font-size: 1.1rem; }
+  /* 窄屏 box 顶满 100dvh（避开地址栏/工具栏）+ 圆角去掉；老浏览器兜底 100vh。
+     老人手机内容是 head + 长气泡 + mic + 长提示 + 13 个 chips + 双行免责，
+     86vh/720 装不下——log 会被压到 51px，气泡文字基本看不到。 */
+  .medic__box {
+    height: calc(100dvh - 12px);
+    max-height: calc(100vh - 12px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .medic__head { padding: 0.7rem 1rem; }
+  .medic__row { padding: 0.5rem 0.8rem 0; gap: 0.6rem; }
+  .medic__log { padding: 0.7rem 0.8rem; gap: 0.5rem; }
+  .medic__voicehint { margin: 0.4rem 0.8rem 0; padding: 0.45rem 0.65rem; line-height: 1.45; }
+  .medic__chiplabel { margin: 0.5rem 0.8rem 0; font-size: 0.95rem; }
+  .medic__chips { gap: 0.4rem; padding: 0.3rem 0.8rem 0; }
+  .medic__chip { min-height: 2.6rem; padding: 0.35rem 0.85rem; font-size: 0.98rem; }
+  .medic__disclaimer { margin: 0.5rem 0.8rem 0.7rem; padding-top: 0.5rem; font-size: 0.88rem; line-height: 1.5; }
+  .medic__text { max-width: 92%; font-size: 1.05rem; padding: 0.55rem 0.8rem; line-height: 1.5; }
+  .medic__title { font-size: 1.1rem; }
+  .medic__status { font-size: 0.88rem; }
 }
 
 /* 老人要求「别动」时：去掉呼吸与脉冲，漂浮由 JS 侧停掉 */
