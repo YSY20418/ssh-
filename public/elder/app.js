@@ -1074,13 +1074,6 @@
   /* 单块渲染隔离：某一块数据缺失时，不让它拖垮整页渲染 */
   function safeRender(fn) { try { fn(); } catch (e) { /* 忽略单块异常 */ } }
 
-  /* 底部操作栏高度：供悬浮按钮避让，避免遮住「需要帮助」等按钮 */
-  function syncActionbar() {
-    var bar = $('#actionbar');
-    var h = (bar && !bar.hidden) ? bar.offsetHeight : 0;
-    document.documentElement.style.setProperty('--actionbar-h', h + 'px');
-  }
-
   function renderStep() {
     for (var i = 0; i <= 5; i++) {
       var el = $('#step-' + i);
@@ -1105,7 +1098,6 @@
 
     renderStepbar();
     renderAside();
-    syncActionbar();
     window.scrollTo(0, 0);
     if (autoSpeak) { var voice = ''; try { voice = stepVoice(); } catch (e) { /* 播报文案异常不阻断渲染 */ } if (voice) speak(voice); }
     renderHooks.forEach(function (fn) { try { fn(); } catch (e) { /* 外部模块出错不影响主流程 */ } });
@@ -1461,10 +1453,6 @@
     document.documentElement.style.setProperty('--topbar-h', el.offsetHeight + 'px');
   }
   window.addEventListener('resize', syncTopbar);
-  window.addEventListener('resize', syncActionbar);
-  if (typeof window.ResizeObserver === 'function') {
-    try { new window.ResizeObserver(syncActionbar).observe($('#actionbar')); } catch (e) { /* 忽略 */ }
-  }
   if (typeof window.ResizeObserver === 'function') {
     try { new window.ResizeObserver(syncTopbar).observe($('.topbar')); } catch (e) { /* 忽略 */ }
   }

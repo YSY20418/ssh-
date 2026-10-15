@@ -30,7 +30,6 @@
     zh: {
       'ai.inlineTitle': '不想自己点？让小鱼兒替您办',
       'ai.inlineDesc': '点一下，对着手机说「我腿疼」，它替您选好',
-      'ai.fab': '跟我说话',
       'ai.title': '小鱼兒 · 语音助手',
       'ai.sub': '您说一句，我替您点',
       'ai.close': '关闭',
@@ -119,7 +118,6 @@
     'zh-Hant': {
       'ai.inlineTitle': '不想自己點？讓小鱼兒替您辦',
       'ai.inlineDesc': '點一下，對著手機說「我腿疼」，它替您選好',
-      'ai.fab': '跟我說話',
       'ai.title': '小鱼兒 · 語音助手',
       'ai.sub': '您說一句，我替您點',
       'ai.close': '關閉',
@@ -208,7 +206,6 @@
     en: {
       'ai.inlineTitle': 'Rather not tap? Let Xiao Yu Er do it',
       'ai.inlineDesc': 'Tap here and say "my leg hurts" — it will pick for you',
-      'ai.fab': 'Talk to me',
       'ai.title': 'Xiao Yu Er · Voice helper',
       'ai.sub': 'Say one sentence, I tap for you',
       'ai.close': 'Close',
@@ -675,11 +672,7 @@
         '<p class="ai__chiplabel" id="ai-chiplabel"></p>' +
         '<div class="ai__chips" id="ai-chips"></div>' +
       '</div>' +
-    '</div>' +
-    '<button type="button" class="aifab" id="aifab" aria-haspopup="dialog">' +
-      '<span class="aifab__mark" aria-hidden="true">鱼</span>' +
-      '<span class="aifab__text" id="aifab-text"></span>' +
-    '</button>';
+    '</div>';
   document.body.appendChild(wrap);
 
   var panel = document.getElementById('ai-panel');
@@ -689,7 +682,6 @@
   var cancelBtn = document.getElementById('ai-cancel');
   var statusEl = document.getElementById('ai-status');
   var chipsBox = document.getElementById('ai-chips');
-  var fab = document.getElementById('aifab');
   var offBox = document.getElementById('ai-offline-box');
   var offBtn = document.getElementById('ai-offline');
   var offNote = document.getElementById('ai-offline-note');
@@ -781,9 +773,8 @@
   function renderTexts() {
     document.getElementById('ai-title').textContent = T('ai.title');
     document.getElementById('ai-chiplabel').textContent = T('ai.chips');
-    document.getElementById('aifab-text').textContent = T('ai.fab');
-    /* 窄屏只显示圆形鱼标（见 ai.css），文字藏起来后靠 aria-label 供读屏识别 */
-    fab.setAttribute('aria-label', T('ai.fab'));
+    /* 全页只保留一个可移动的悬浮语音模块（小医灵光点）；
+       小鱼儿从流程里的入口卡片打开，不再放固定悬浮球。 */
     document.getElementById('ai-close').textContent = T('ai.close');
     cancelBtn.textContent = T('ai.stopListen');
     if (listening) { micLabel.textContent = T('ai.stopListen'); }
@@ -873,7 +864,8 @@
   }
   function toggle() { if (panel.hidden) open(true); else close(); }
 
-  fab.addEventListener('click', function () { open(true); });
+  /* 点入口卡片（流程里那张「小鱼兒」卡）打开；不再有固定悬浮球——
+     全页只留小医灵那一个可移动的悬浮语音模块。 */
   var inlineOpen = document.getElementById('ai-inline-open');
   if (inlineOpen) inlineOpen.addEventListener('click', function () { open(true); });
   document.getElementById('ai-close').addEventListener('click', close);
@@ -889,6 +881,13 @@
     var first = items[0], last = items[items.length - 1];
     if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
     else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  });
+  /* Esc 不依赖焦点（与小医灵一致）：焦点不在面板里也要能关 */
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape' || panel.hidden) return;
+    var a = document.activeElement;
+    if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT')) return;
+    close();
   });
 
   /* ---------------- 语音识别（两条链路，谁可用用谁） ----------------

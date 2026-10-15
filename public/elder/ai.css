@@ -40,53 +40,9 @@
 .ai-inline__desc { font-size: 1.02rem; color: var(--ink-2); line-height: 1.55; }
 .ai-inline__go { font-size: 1.7rem; color: var(--brand); flex: 0 0 auto; }
 
-/* ---------- 悬浮按钮 ---------- */
-.aifab {
-  position: fixed;
-  right: 1rem;
-  bottom: calc(var(--actionbar-h, 7.8rem) + 1rem + env(safe-area-inset-bottom));
-  z-index: 44;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-height: 4rem;
-  padding: 0.45rem 1rem 0.45rem 0.45rem;
-  border: 0;
-  border-radius: 999px;
-  background: var(--brand);
-  color: #fff;
-  font-family: inherit;
-  font-size: 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(47, 93, 98, 0.28);
-}
-.aifab:active { transform: scale(0.98); }
-.aifab:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
-.aifab__mark {
-  width: 2.9rem; height: 2.9rem;
-  display: grid; place-items: center;
-  border-radius: 50%;
-  background: #fff;
-  color: var(--brand);
-  font-size: 1.45rem;
-  font-weight: 700;
-  flex: 0 0 auto;
-}
-body[data-step="5"] .aifab { bottom: calc(1.4rem + env(safe-area-inset-bottom)); }
-body.idle-on .aifab { bottom: calc(var(--actionbar-h, 7.8rem) + 5.6rem + env(safe-area-inset-bottom)); }
-body.ai-open .aifab { display: none; }
-
-/* 窄屏与平板：悬浮球收成一个圆形鱼标。
-   带文字的药丸会压住下面的选项卡片——对老人来说，「挡住能点的东西」
-   比「少两个字」糟得多。文字改由 aria-label 供读屏识别。 */
-@media (max-width: 899px) {
-  .aifab { min-height: 0; padding: 0.25rem; gap: 0; }
-  .aifab__text { display: none; }
-  .aifab__mark { width: 3.2rem; height: 3.2rem; font-size: 1.6rem; }
-  /* 球变小了，空闲关怀条出现时不用再抬那么高 */
-  body.idle-on .aifab { bottom: calc(var(--actionbar-h, 7.8rem) + 4.6rem + env(safe-area-inset-bottom)); }
-}
+/* 说明：全页只保留一个可移动的悬浮语音模块（小医灵光点，见 medic.css）。
+   小鱼儿不再放固定悬浮球——两个球漂在页面上老人会分不清该点哪个；
+   小鱼儿从流程里的入口卡片（.ai-inline）打开。原固定悬浮球样式已移除。 */
 
 /* ---------- 对话面板 ---------- */
 .ai { position: fixed; inset: 0; z-index: 45; display: flex; align-items: flex-end; justify-content: center; }
@@ -338,5 +294,5 @@ body.ai-open .aifab { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aifab, .ai__mic, .ai__ring { transition: none; animation: none; }
+  .ai__mic, .ai__ring { transition: none; animation: none; }
 }

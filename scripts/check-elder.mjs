@@ -353,9 +353,8 @@ check('细节增强：步骤条可回退、下一步就绪高亮、朗读按钮�
 
 /* ---------- 17. 语音助手入口 ---------- */
 const ai = window.XiaoYuErAI;
-check('语音助手：悬浮按钮 + 页内入口 + 降级用的「常说的话」', () => {
+check('语音助手：页内入口打开 + 降级用的「常说的话」', () => {
   assert(ai, '未挂载语音助手');
-  assert($('#aifab'), '缺少悬浮按钮');
   assert($('#ai-inline-open'), '缺少页内入口');
   ai.open();
   assert(!$('#ai-panel').hidden, '面板没有打开');
@@ -612,13 +611,43 @@ check('状态不全也能进第 4 步，付款方式照常显示', () => {
   return '跳过前置步骤直接进第 4 步不报错，付款方式与信息区照常渲染';
 });
 
-check('悬浮按钮避让底部操作栏，不遮挡按钮', () => {
-  const js = readFileSync(path.join(ELDER, 'app.js'), 'utf8');
+check('全页只有一个可移动的悬浮语音模块（小医灵光点）', () => {
+  const js = readFileSync(path.join(ELDER, 'ai.js'), 'utf8');
   const css = readFileSync(path.join(ELDER, 'ai.css'), 'utf8');
-  assert(/syncActionbar/.test(js) && /--actionbar-h/.test(js), '缺少操作栏高度同步逻辑');
-  assert(/bottom:\s*calc\(var\(--actionbar-h/.test(css), '悬浮按钮未按操作栏高度避让');
-  assert(/body\[data-step="5"\]\s*\.aifab/.test(css), '成功页缺少悬浮按钮复位规则');
-  return '按 --actionbar-h 动态避让，窄屏不再压住「需要帮助」';
+  /* 小鱼儿不再放固定悬浮球：两个球漂在页面上老人分不清该点哪个 */
+  assert(!/aifab/.test(js), 'ai.js 还挂着悬浮球');
+  assert(!/\.aifab\b/.test(css), 'ai.css 还留着悬浮球样式');
+  assert(!$('#aifab'), '页面上还有固定悬浮球');
+  assert($('#medic-orb'), '缺少可移动的小医灵光点');
+  return '小鱼儿从页内入口卡片打开；唯一悬浮模块是小医灵光点（可长按拖动）';
+});
+
+check('小医灵面板可交互：pointer-events 不继承根容器的 none', () => {
+  /* 根容器 .medic 是 pointer-events:none（漂移不挡页面），面板必须显式 auto，
+     否则关闭按钮/遮罩/chips 全点不动——真机测试用真实鼠标逮过这个 bug。 */
+  const css = readFileSync(path.join(ELDER, 'medic.css'), 'utf8');
+  assert(/\.medic-panel\s*\{[^}]*pointer-events:\s*auto/.test(css), '.medic-panel 缺少 pointer-events: auto');
+  const pe = window.getComputedStyle($('#medic-panel')).pointerEvents;
+  assert(pe === 'auto', '面板 computed pointer-events 是 ' + pe);
+  assert(window.getComputedStyle($('#medic-close')).pointerEvents === 'auto', '关闭按钮点不到（pointer-events 被继承成 none）');
+  assert(window.getComputedStyle($('#medic-chips')).pointerEvents === 'auto', '点选 chips 点不到（pointer-events 被继承成 none）');
+  return '关闭按钮 / 遮罩 / chips 均可点击，Esc 亦不依赖焦点';
+});
+
+check('两个面板都能用 Esc 关闭，且不依赖焦点', () => {
+  const aiJs = readFileSync(path.join(ELDER, 'ai.js'), 'utf8');
+  const medicJs = readFileSync(path.join(ELDER, 'medic.js'), 'utf8');
+  assert(/document\.addEventListener\('keydown'[\s\S]{0,200}Escape/.test(medicJs), '小医灵缺文档级 Esc 关闭');
+  assert(/document\.addEventListener\('keydown'[\s\S]{0,200}Escape/.test(aiJs), '小鱼儿缺文档级 Esc 关闭');
+  window.XiaoYiLing.open(false);
+  assert(!$('#medic-panel').hidden, '面板打不开');
+  doc.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert($('#medic-panel').hidden, '焦点不在面板里时 Esc 关不上');
+  ai.open();
+  assert(!$('#ai-panel').hidden, '小鱼儿面板打不开');
+  doc.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert($('#ai-panel').hidden, '小鱼儿面板 Esc 关不上');
+  return '打开 → Esc → 收起，焦点在页面上也有效';
 });
 
 /* ---------- 图标：内联 SVG、零图片请求、配色不越界 ---------- */

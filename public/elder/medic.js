@@ -263,7 +263,7 @@
 
   /* 避让区：输入框、按钮、弹窗、视频、底部操作栏、步骤条、右栏、重要文字。
      老人最怕「想点的东西被挡住」，所以光点宁可绕路也不压上去。 */
-  var AVOID_SEL = 'button, input, textarea, select, .ai__box, .aifab, .ai-inline__btn, ' +
+  var AVOID_SEL = 'button, input, textarea, select, .ai__box, .ai-inline__btn, ' +
     '.modal__box, #actionbar, .stepbar, #aside, video, .title, .notice__strong, ' +
     '[data-medic-avoid]';
 
@@ -754,6 +754,15 @@
     var first = items[0], last = items[items.length - 1];
     if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
     else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  });
+  /* Esc 不依赖焦点：老人点开面板后鼠标点在遮罩上、焦点根本不在面板里，
+     这时按 Esc 也必须能关——「打开关不上」是最伤信任的事。
+     焦点在输入框里时不抢（本页 0 输入框，防御性写法）。 */
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape' || panel.hidden) return;
+    var a = document.activeElement;
+    if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT')) return;
+    closePanel();
   });
 
   /* ---------- 语音：复用小鱼儿的识别模块，不重复要麦克风权限 ---------- */

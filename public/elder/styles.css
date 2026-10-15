@@ -88,7 +88,7 @@ body::before {
 }
 
 /* 背景之上的所有内容抬升一层 */
-.topbar, .stepbar, .wrap, .actionbar, .idlebar, .modal, .aifab, .ai { position: relative; z-index: 1; }
+.topbar, .stepbar, .wrap, .actionbar, .idlebar, .modal, .ai { position: relative; z-index: 1; }
 .topbar { z-index: 30; }
 .stepbar { z-index: 29; }
 .actionbar { z-index: 40; }
@@ -881,7 +881,7 @@ body::before {
 @media print {
   body::before { display: none !important; }
   .topbar, .stepbar, .actionbar, .voicebar, .idlebar,
-  .aifab, .ai, .ai-inline, #modal, .skip-link { display: none !important; }
+  .ai, .ai-inline, #modal, .skip-link { display: none !important; }
   body { padding: 0; background: #fff; }
   .wrap { max-width: none; }
   .shell { grid-template-columns: 1fr; }
